@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +29,11 @@ import com.zhuzi.app.data.hsk1Lessons
 fun LessonListScreen(
     bestScore: (Int, QuizMode) -> Int,
     onOpen: (Lesson) -> Unit,
+    dueCount: Int,
+    dueTomorrow: Int,
+    knownCount: Int,
+    masteredCount: Int,
+    onReview: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     LazyColumn(
@@ -43,6 +50,33 @@ fun LessonListScreen(
             Text("HSK 1 · ${hsk1Lessons.sumOf { it.words.size }} mots en ${hsk1Lessons.size} leçons",
                 style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.padding(4.dp))
+        }
+        item {
+            Card(
+                Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("🔁 Révision du jour", style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.padding(2.dp))
+                    when {
+                        dueCount > 0 -> {
+                            Text("$dueCount mot(s) à revoir aujourd'hui.")
+                            Spacer(Modifier.padding(4.dp))
+                            Button(onClick = onReview) { Text("Commencer la révision") }
+                        }
+                        knownCount == 0 -> Text("Ouvre une leçon : les mots que tu découvres " +
+                            "reviendront ici au bon moment pour que tu ne les oublies pas.")
+                        else -> Text("Rien à revoir aujourd'hui 🎉" +
+                            if (dueTomorrow > 0) " Demain : $dueTomorrow mot(s)." else "")
+                    }
+                    if (knownCount > 0) {
+                        Spacer(Modifier.padding(2.dp))
+                        Text("$knownCount mots découverts · $masteredCount bien retenus",
+                            style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
         }
         items(hsk1Lessons, key = { it.id }) { lesson ->
             Card(Modifier.fillMaxWidth().clickable { onOpen(lesson) }) {

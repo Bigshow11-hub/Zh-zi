@@ -10,16 +10,17 @@
 - Meilleur score de quiz gardé sur le téléphone, affiché dans la liste des leçons.
 - Audio : voix chinoise du téléphone (synthèse vocale Android), rien à télécharger.
 - Quiz en 3 modes : Sens (caractère → français), Écrit (français → caractère), Écoute (on entend le mot). Score par mode.
+- Révision espacée (0.3.0, `data/Srs.kt`) : 6 boîtes, revoir après 1, 2, 4, 7, 15, 30 jours. Un mot entre quand on retourne sa carte ou qu'on le rencontre en quiz ; une erreur en quiz le renvoie en boîte 1. Carte « Révision du jour » en haut de l'accueil.
 - Lien de téléchargement fixe : https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
 - Construction automatique de l'APK par GitHub Actions.
 
 ## Idées de suite
 
-2. Révision espacée (revoir un mot au bon moment).
-3. Prononciation audio des mots.
-4. Quiz (choisir la bonne traduction, le bon ton).
-5. Tracé des caractères.
-6. Suivi des progrès et série de jours.
+1. Rappel quotidien (notification) et série de jours.
+2. Quiz des tons.
+3. Tracé des caractères.
+4. Phrases d'exemple pour chaque mot.
+5. HSK 2.
 
 ## Décisions
 

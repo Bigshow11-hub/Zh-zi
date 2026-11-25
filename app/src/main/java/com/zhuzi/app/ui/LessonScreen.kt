@@ -44,6 +44,8 @@ fun LessonScreen(
     speaker: Speaker,
     onBack: () -> Unit,
     onQuizDone: (QuizMode, Int) -> Unit,
+    onSeen: (Word) -> Unit,
+    onQuizAnswer: (Word, Boolean) -> Unit,
     contentPadding: PaddingValues,
 ) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -57,16 +59,16 @@ fun LessonScreen(
             Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Quiz") })
         }
         if (tab == 0) {
-            Flashcards(lesson.words, speaker)
+            Flashcards(lesson.words, speaker, onSeen)
         } else {
-            Quiz(lesson, speaker, onQuizDone)
+            Quiz(lesson, speaker, onQuizDone, onQuizAnswer)
         }
     }
 }
 
 /** Cartes : on touche la carte pour voir le pinyin et la traduction. */
 @Composable
-private fun Flashcards(words: List<Word>, speaker: Speaker) {
+private fun Flashcards(words: List<Word>, speaker: Speaker, onSeen: (Word) -> Unit) {
     var index by rememberSaveable { mutableIntStateOf(0) }
     var revealed by rememberSaveable { mutableStateOf(false) }
     val word = words[index]
@@ -78,7 +80,10 @@ private fun Flashcards(words: List<Word>, speaker: Speaker) {
     ) {
         Text("Carte ${index + 1} / ${words.size}", style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(16.dp))
-        Card(Modifier.fillMaxWidth().height(280.dp).clickable { revealed = !revealed }) {
+        Card(Modifier.fillMaxWidth().height(280.dp).clickable {
+            revealed = !revealed
+            if (revealed) onSeen(word)
+        }) {
             Column(
                 Modifier.fillMaxSize().padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -118,7 +123,12 @@ private fun buildQuiz(words: List<Word>): List<Question> =
 
 /** Quiz en 3 modes : sens (caractère → français), écrit (français → caractère), écoute. */
 @Composable
-private fun Quiz(lesson: Lesson, speaker: Speaker, onDone: (QuizMode, Int) -> Unit) {
+private fun Quiz(
+    lesson: Lesson,
+    speaker: Speaker,
+    onDone: (QuizMode, Int) -> Unit,
+    onAnswer: (Word, Boolean) -> Unit,
+) {
     var mode by rememberSaveable { mutableStateOf(QuizMode.MEANING) }
     var round by remember { mutableIntStateOf(0) }
     val questions = remember(round, mode) { buildQuiz(lesson.words) }
@@ -188,6 +198,7 @@ private fun Quiz(lesson: Lesson, speaker: Speaker, onDone: (QuizMode, Int) -> Un
                         if (picked == null) {
                             picked = choice
                             if (choice == q.word) score++
+                            onAnswer(q.word, choice == q.word)
                             if (mode != QuizMode.LISTENING) speaker.speak(q.word.hanzi)
                         }
                     },
