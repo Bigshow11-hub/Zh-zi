@@ -4,6 +4,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,3 +24,16 @@ jobs:
         with:
           name: zhuzi-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+      # Sur main : remplace le fichier du lien fixe
+      # https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
+      - name: Publier la dernière version
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk zhuzi.apk
+          gh release delete derniere-version --cleanup-tag --yes || true
+          gh release create derniere-version zhuzi.apk \
+            --target "$GITHUB_SHA" \
+            --title "Zhúzi – dernière version" \
+            --notes "Version construite automatiquement le $(date -u '+%d/%m/%Y à %H:%M') (UTC)."

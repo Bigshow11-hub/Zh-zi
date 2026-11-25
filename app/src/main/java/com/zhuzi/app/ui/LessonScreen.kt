@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Tab
@@ -20,6 +21,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.zhuzi.app.data.QuizMode
 import com.zhuzi.app.data.Lesson
 import com.zhuzi.app.data.Word
 
@@ -40,7 +43,7 @@ fun LessonScreen(
     lesson: Lesson,
     speaker: Speaker,
     onBack: () -> Unit,
-    onQuizDone: (Int) -> Unit,
+    onQuizDone: (QuizMode, Int) -> Unit,
     contentPadding: PaddingValues,
 ) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -113,70 +116,100 @@ private fun buildQuiz(words: List<Word>): List<Question> =
         Question(word, (wrong + word).shuffled())
     }
 
-/** Quiz : on voit le caractère, on choisit la bonne traduction parmi 4. */
+/** Quiz en 3 modes : sens (caractère → français), écrit (français → caractère), écoute. */
 @Composable
-private fun Quiz(lesson: Lesson, speaker: Speaker, onDone: (Int) -> Unit) {
+private fun Quiz(lesson: Lesson, speaker: Speaker, onDone: (QuizMode, Int) -> Unit) {
+    var mode by rememberSaveable { mutableStateOf(QuizMode.MEANING) }
     var round by remember { mutableIntStateOf(0) }
-    val questions = remember(round) { buildQuiz(lesson.words) }
-    var index by remember(round) { mutableIntStateOf(0) }
-    var score by remember(round) { mutableIntStateOf(0) }
-    var picked by remember(round) { mutableStateOf<Word?>(null) }
-    var finished by remember(round) { mutableStateOf(false) }
+    val questions = remember(round, mode) { buildQuiz(lesson.words) }
+    var index by remember(round, mode) { mutableIntStateOf(0) }
+    var score by remember(round, mode) { mutableIntStateOf(0) }
+    var picked by remember(round, mode) { mutableStateOf<Word?>(null) }
+    var finished by remember(round, mode) { mutableStateOf(false) }
 
-    Column(
-        Modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        if (finished) {
-            val percent = score * 100 / questions.size
-            Text(if (percent == 100) "⭐ Parfait !" else "Terminé !",
-                style = MaterialTheme.typography.headlineMedium)
-            Text("$score / ${questions.size} bonnes réponses ($percent %)", fontSize = 20.sp)
-            Spacer(Modifier.height(24.dp))
-            Button(onClick = { round++ }) { Text("Recommencer") }
-            return@Column
-        }
-
-        val q = questions[index]
-        Text("Question ${index + 1} / ${questions.size} · Score $score",
-            style = MaterialTheme.typography.bodyMedium)
-        Spacer(Modifier.height(16.dp))
-        Text(q.word.hanzi, fontSize = 72.sp, modifier = Modifier.clickable { speaker.speak(q.word.hanzi) })
-        Text(if (picked != null) q.word.pinyin else "Que veut dire ce mot ?",
-            fontSize = 20.sp, color = MaterialTheme.colorScheme.secondary)
-        Spacer(Modifier.height(24.dp))
-
-        q.choices.forEach { choice ->
-            val colors = when {
-                picked == null -> ButtonDefaults.outlinedButtonColors()
-                choice == q.word -> ButtonDefaults.outlinedButtonColors(containerColor = Color(0x553E8E41))
-                choice == picked -> ButtonDefaults.outlinedButtonColors(containerColor = Color(0x55C0392B))
-                else -> ButtonDefaults.outlinedButtonColors()
+    Column(Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            QuizMode.entries.forEach { m ->
+                FilterChip(selected = mode == m, onClick = { mode = m }, label = { Text(m.label) })
             }
-            OutlinedButton(
-                onClick = {
-                    if (picked == null) {
-                        picked = choice
-                        if (choice == q.word) score++
-                        speaker.speak(q.word.hanzi)
-                    }
-                },
-                colors = colors,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-            ) { Text(choice.french, fontSize = 18.sp) }
         }
+        Column(
+            Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            if (finished) {
+                val percent = score * 100 / questions.size
+                Text(if (percent == 100) "⭐ Parfait !" else "Terminé !",
+                    style = MaterialTheme.typography.headlineMedium)
+                Text("$score / ${questions.size} bonnes réponses ($percent %)", fontSize = 20.sp)
+                Spacer(Modifier.height(24.dp))
+                Button(onClick = { round++ }) { Text("Recommencer") }
+                return@Column
+            }
 
-        Spacer(Modifier.height(16.dp))
-        if (picked != null) {
-            Button(onClick = {
-                if (index + 1 < questions.size) {
-                    index++; picked = null
-                } else {
-                    finished = true
-                    onDone(score * 100 / questions.size)
+            val q = questions[index]
+            if (mode == QuizMode.LISTENING) {
+                LaunchedEffect(q) { speaker.speak(q.word.hanzi) }
+            }
+            Text("Question ${index + 1} / ${questions.size} · Score $score",
+                style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(16.dp))
+
+            when (mode) {
+                QuizMode.MEANING -> Text(q.word.hanzi, fontSize = 64.sp,
+                    modifier = Modifier.clickable { speaker.speak(q.word.hanzi) })
+                QuizMode.WRITING -> Text(q.word.french, fontSize = 30.sp, textAlign = TextAlign.Center)
+                QuizMode.LISTENING -> Button(onClick = { speaker.speak(q.word.hanzi) }) {
+                    Text("🔊 Réécouter", fontSize = 22.sp)
                 }
-            }) { Text(if (index + 1 < questions.size) "Suivant" else "Voir le résultat") }
+            }
+            Spacer(Modifier.height(8.dp))
+            val hint = when {
+                picked != null -> "${q.word.hanzi} · ${q.word.pinyin} · ${q.word.french}"
+                mode == QuizMode.WRITING -> "Quel caractère veut dire ça ?"
+                mode == QuizMode.LISTENING -> "Qu'as-tu entendu ?"
+                else -> "Que veut dire ce mot ?"
+            }
+            Text(hint, fontSize = 18.sp, color = MaterialTheme.colorScheme.secondary,
+                textAlign = TextAlign.Center)
+            Spacer(Modifier.height(20.dp))
+
+            q.choices.forEach { choice ->
+                val colors = when {
+                    picked == null -> ButtonDefaults.outlinedButtonColors()
+                    choice == q.word -> ButtonDefaults.outlinedButtonColors(containerColor = Color(0x553E8E41))
+                    choice == picked -> ButtonDefaults.outlinedButtonColors(containerColor = Color(0x55C0392B))
+                    else -> ButtonDefaults.outlinedButtonColors()
+                }
+                OutlinedButton(
+                    onClick = {
+                        if (picked == null) {
+                            picked = choice
+                            if (choice == q.word) score++
+                            if (mode != QuizMode.LISTENING) speaker.speak(q.word.hanzi)
+                        }
+                    },
+                    colors = colors,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                ) {
+                    if (mode == QuizMode.WRITING) Text(choice.hanzi, fontSize = 28.sp)
+                    else Text(choice.french, fontSize = 18.sp)
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+            if (picked != null) {
+                Button(onClick = {
+                    if (index + 1 < questions.size) {
+                        index++; picked = null
+                    } else {
+                        finished = true
+                        onDone(mode, score * 100 / questions.size)
+                    }
+                }) { Text(if (index + 1 < questions.size) "Suivant" else "Voir le résultat") }
+            }
         }
     }
 }

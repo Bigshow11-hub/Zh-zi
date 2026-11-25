@@ -2,15 +2,22 @@ package com.zhuzi.app.data
 
 import android.content.Context
 
-/** Garde sur le téléphone le meilleur score de quiz de chaque leçon (en %). */
+/** Les trois sortes de quiz. */
+enum class QuizMode(val label: String, val key: String) {
+    MEANING("Sens", ""),
+    WRITING("Écrit", "_writing"),
+    LISTENING("Écoute", "_listening"),
+}
+
+/** Garde sur le téléphone le meilleur score (en %) de chaque leçon, pour chaque quiz. */
 class Progress(context: Context) {
     private val prefs = context.getSharedPreferences("progress", Context.MODE_PRIVATE)
 
-    fun bestScore(lessonId: Int): Int = prefs.getInt("best_$lessonId", -1)
+    fun bestScore(lessonId: Int, mode: QuizMode): Int = prefs.getInt("best_$lessonId${mode.key}", -1)
 
-    fun saveScore(lessonId: Int, percent: Int) {
-        if (percent > bestScore(lessonId)) {
-            prefs.edit().putInt("best_$lessonId", percent).apply()
+    fun saveScore(lessonId: Int, mode: QuizMode, percent: Int) {
+        if (percent > bestScore(lessonId, mode)) {
+            prefs.edit().putInt("best_$lessonId${mode.key}", percent).apply()
         }
     }
 }

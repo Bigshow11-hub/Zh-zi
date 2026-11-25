@@ -7,5 +7,6 @@ local.properties
 captures/
 .kotlin/
 *.keystore
+!app/debug.keystore
 *.jks
 .env*

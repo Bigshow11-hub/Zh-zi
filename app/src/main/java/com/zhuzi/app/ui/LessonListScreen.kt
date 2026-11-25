@@ -20,11 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zhuzi.app.data.Lesson
+import com.zhuzi.app.data.QuizMode
 import com.zhuzi.app.data.hsk1Lessons
 
 @Composable
 fun LessonListScreen(
-    bestScore: (Int) -> Int,
+    bestScore: (Int, QuizMode) -> Int,
     onOpen: (Lesson) -> Unit,
     contentPadding: PaddingValues,
 ) {
@@ -44,7 +45,6 @@ fun LessonListScreen(
             Spacer(Modifier.padding(4.dp))
         }
         items(hsk1Lessons, key = { it.id }) { lesson ->
-            val best = bestScore(lesson.id)
             Card(Modifier.fillMaxWidth().clickable { onOpen(lesson) }) {
                 Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(lesson.emoji, fontSize = 32.sp)
@@ -53,11 +53,16 @@ fun LessonListScreen(
                         Text("Leçon ${lesson.id} · ${lesson.title}",
                             style = MaterialTheme.typography.titleMedium)
                         Text("${lesson.words.size} mots", style = MaterialTheme.typography.bodySmall)
-                    }
-                    if (best >= 0) {
-                        Text(if (best == 100) "⭐ 100 %" else "$best %",
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.titleMedium)
+                        val scores = QuizMode.entries.joinToString(" · ") { m ->
+                            val best = bestScore(lesson.id, m)
+                            m.label + " " + when {
+                                best == 100 -> "⭐"
+                                best >= 0 -> "$best %"
+                                else -> "–"
+                            }
+                        }
+                        Text(scores, style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }

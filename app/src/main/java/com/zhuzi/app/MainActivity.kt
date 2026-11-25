@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
                     val lesson = hsk1Lessons.firstOrNull { it.id == openLesson }
                     if (lesson == null) {
                         LessonListScreen(
-                            bestScore = { id -> if (scoreVersion >= 0) progress.bestScore(id) else -1 },
+                            bestScore = { id, mode -> if (scoreVersion >= 0) progress.bestScore(id, mode) else -1 },
                             onOpen = { openLesson = it.id },
                             contentPadding = padding,
                         )
@@ -47,8 +47,8 @@ class MainActivity : ComponentActivity() {
                             lesson = lesson,
                             speaker = speaker,
                             onBack = { openLesson = 0 },
-                            onQuizDone = { percent ->
-                                progress.saveScore(lesson.id, percent)
+                            onQuizDone = { mode, percent ->
+                                progress.saveScore(lesson.id, mode, percent)
                                 scoreVersion++
                             },
                             contentPadding = padding,

@@ -4,8 +4,8 @@ Application Android pour apprendre le chinois, pas à pas, comme pousse le bambo
 
 ## Installer la dernière version sur un téléphone
 
-1. Onglet **Actions** du dépôt → dernière construction réussie.
-2. Télécharger l'artefact **zhuzi-apk**, le décompresser, ouvrir `app-debug.apk` sur le téléphone (autoriser l'installation d'applications inconnues).
+Ouvrir sur le téléphone : https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
+puis ouvrir le fichier téléchargé (autoriser l'installation d'applications inconnues).
 
 ## Développer
 
