@@ -2,6 +2,8 @@
 
 ## État (25/11/2026)
 
+- Version 0.2.0 installée par le propriétaire sur son téléphone : elle marche.
+
 - Dépôt GitHub : `Bigshow11-hub/Zh-zi` (public).
 - HSK 1 : 151 mots en 11 leçons thématiques (`data/Hsk1.kt`).
 - Chaque leçon : cartes (toucher pour retourner, bouton 🔊 Écouter) et quiz (caractère → 4 traductions).
