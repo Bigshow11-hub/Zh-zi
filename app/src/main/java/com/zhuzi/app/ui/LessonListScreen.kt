@@ -16,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.zhuzi.app.data.Lesson
 import com.zhuzi.app.data.QuizMode
 import com.zhuzi.app.data.hsk1Lessons
+import com.zhuzi.app.reminder.Reminders
 
 @Composable
 fun LessonListScreen(
@@ -34,6 +36,9 @@ fun LessonListScreen(
     knownCount: Int,
     masteredCount: Int,
     onReview: () -> Unit,
+    streakDays: Int,
+    reminderOn: Boolean,
+    onEnableReminder: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     LazyColumn(
@@ -49,6 +54,11 @@ fun LessonListScreen(
                 color = MaterialTheme.colorScheme.primary)
             Text("HSK 1 · ${hsk1Lessons.sumOf { it.words.size }} mots en ${hsk1Lessons.size} leçons",
                 style = MaterialTheme.typography.bodyMedium)
+            if (streakDays > 0) {
+                Text("🔥 Série : $streakDays jour(s) d'affilée",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.secondary)
+            }
             Spacer(Modifier.padding(4.dp))
         }
         item {
@@ -74,6 +84,13 @@ fun LessonListScreen(
                         Spacer(Modifier.padding(2.dp))
                         Text("$knownCount mots découverts · $masteredCount bien retenus",
                             style = MaterialTheme.typography.bodySmall)
+                    }
+                    Spacer(Modifier.padding(2.dp))
+                    if (reminderOn) {
+                        Text("🔔 Rappel chaque soir vers ${Reminders.HOUR} h si tu n'as pas encore étudié",
+                            style = MaterialTheme.typography.bodySmall)
+                    } else {
+                        TextButton(onClick = onEnableReminder) { Text("🔔 Activer le rappel quotidien") }
                     }
                 }
             }

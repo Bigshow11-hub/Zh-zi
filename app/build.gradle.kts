@@ -12,8 +12,8 @@ android {
         applicationId = "com.zhuzi.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.3.0"
+        versionCode = 4
+        versionName = "0.4.0"
     }
 
     // Clé de test fixe (sans secret) : chaque nouvelle version s'installe par-dessus l'ancienne.
@@ -46,5 +46,6 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
+    implementation(libs.androidx.work.runtime.ktx)
     debugImplementation(libs.compose.ui.tooling)
 }

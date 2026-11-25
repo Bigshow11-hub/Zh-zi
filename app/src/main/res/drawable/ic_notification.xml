@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tige de bambou avec une feuille (icône blanche de notification) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M10,2h3v5h-3z M10,8h3v6h-3z M10,15h3v7h-3z M13,9.5c2,-2.5 5,-3.5 8,-3c-1,2.5 -4,4.5 -8,4.5z M10,16c-2,-2 -5,-2.5 -7,-1.5c1.5,2 4,3 7,2.5z" />
+</vector>

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Rappel quotidien (Android 13 et plus demande l'accord) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- Nécessaire depuis Android 11 pour trouver la voix du téléphone -->
     <queries>
         <intent>
