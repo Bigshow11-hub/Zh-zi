@@ -26,6 +26,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Module de lecture du chinois (services Google) : téléchargé dès l'installation -->
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="ocr_chinese" />
+
         <!-- Photos prises pour en faire des cartes : rangées dans le cache de l'appli -->
         <provider
             android:name="androidx.core.content.FileProvider"

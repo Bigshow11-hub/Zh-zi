@@ -319,12 +319,15 @@ private fun AddWordForm(onSave: (String, String, String) -> Unit) {
 
 // ——— Photo → cartes ———
 
-/** Lit le texte chinois d'une photo, sur le téléphone (ML Kit) : rend les suites de caractères trouvées. */
-suspend fun readChinese(context: Context, uri: Uri): List<String> = suspendCancellableCoroutine { cont ->
+/**
+ * Lit le texte chinois d'une photo, sur le téléphone (ML Kit) : rend les suites de caractères trouvées,
+ * ou null si la lecture n'a pas pu se faire (module pas encore téléchargé, photo illisible).
+ */
+suspend fun readChinese(context: Context, uri: Uri): List<String>? = suspendCancellableCoroutine { cont ->
     val image = try {
         InputImage.fromFilePath(context, uri)
     } catch (e: Exception) {
-        cont.resume(emptyList()); return@suspendCancellableCoroutine
+        cont.resume(null); return@suspendCancellableCoroutine
     }
     val reader = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
     reader.process(image)
@@ -341,7 +344,7 @@ suspend fun readChinese(context: Context, uri: Uri): List<String> = suspendCance
         }
         .addOnFailureListener {
             reader.close()
-            cont.resume(emptyList())
+            cont.resume(null)
         }
 }
 
@@ -371,7 +374,7 @@ fun PhotoImportScreen(
     val context = LocalContext.current
     val lang = currentLang()
     val scope = rememberCoroutineScope()
-    // 0 : choisir · 1 : lecture en cours · 2 : résultats · 3 : rien trouvé
+    // 0 : choisir · 1 : lecture en cours · 2 : résultats · 3 : rien trouvé · 4 : lecture impossible
     var step by remember { mutableStateOf(if (previewDrafts != null) 2 else 0) }
     var preview by remember { mutableStateOf<Bitmap?>(null) }
     val drafts = remember { mutableStateListOf<Draft>().apply { previewDrafts?.let { addAll(it) } } }
@@ -383,6 +386,7 @@ fun PhotoImportScreen(
             preview = withContext(Dispatchers.IO) { loadPreview(context, uri) }
             val runs = readChinese(context, uri)
             drafts.clear()
+            if (runs == null) { step = 4; return@launch }
             runs.forEach { r ->
                 val known = com.zhuzi.app.data.hsk1Lessons.flatMap { it.words }.firstOrNull { it.hanzi == r }
                 drafts += Draft(r, PinyinAuto.of(r), known?.meaning(lang) ?: "", selected = r.length <= 6)
@@ -415,7 +419,7 @@ fun PhotoImportScreen(
         AnimatedContent(step, transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
             label = "photoStep", modifier = Modifier.weight(1f)) { s ->
             when (s) {
-                0, 3 -> PhotoStart(s == 3, takePhoto, pick, contentPadding)
+                0, 3, 4 -> PhotoStart(s, takePhoto, pick, contentPadding)
                 1 -> Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center) {
                     preview?.let {
@@ -434,7 +438,7 @@ fun PhotoImportScreen(
 }
 
 @Composable
-private fun PhotoStart(nothing: Boolean, takePhoto: () -> Unit, pick: () -> Unit, contentPadding: PaddingValues) {
+private fun PhotoStart(step: Int, takePhoto: () -> Unit, pick: () -> Unit, contentPadding: PaddingValues) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
             .padding(start = 20.dp, end = 20.dp, bottom = contentPadding.calculateBottomPadding() + 24.dp),
@@ -442,10 +446,14 @@ private fun PhotoStart(nothing: Boolean, takePhoto: () -> Unit, pick: () -> Unit
         ScreenTitle(tr("Photo → cartes", "Photo → cards", "Фото → карточки"),
             tr("Prends en photo ton manuel, une fiche ou le tableau.", "Snap your textbook, a handout or the board.",
                 "Сфотографируй учебник, листок или доску."))
-        if (nothing) {
-            Text(tr("Aucun caractère chinois trouvé sur cette photo. Essaie de plus près, bien droit et avec plus de lumière.",
-                "No Chinese characters found on this photo. Try closer, straight on, with more light.",
-                "На фото не найдено иероглифов. Попробуй ближе, ровнее и при лучшем свете."),
+        if (step >= 3) {
+            Text(
+                if (step == 3) tr("Aucun caractère chinois trouvé sur cette photo. Essaie de plus près, bien droit et avec plus de lumière.",
+                    "No Chinese characters found on this photo. Try closer, straight on, with more light.",
+                    "На фото не найдено иероглифов. Попробуй ближе, ровнее и при лучшем свете.")
+                else tr("La lecture n'a pas pu se faire. Le module de lecture du chinois se télécharge peut-être encore (services Google) : vérifie ta connexion et réessaie dans une minute.",
+                    "Reading failed. The Chinese reading module may still be downloading (Google services): check your connection and try again in a minute.",
+                    "Не удалось прочитать. Модуль распознавания китайского, возможно, ещё загружается (сервисы Google): проверь соединение и попробуй через минуту."),
                 color = Wrong, fontSize = 14.sp,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Wrong.copy(alpha = 0.08f)).padding(14.dp))
             Spacer(Modifier.height(14.dp))
