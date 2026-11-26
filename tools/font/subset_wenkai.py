@@ -3,8 +3,12 @@ from fontTools.ttLib import TTFont
 from fontTools import subset
 from fontTools.merge import Merger
 src, kt, out = sys.argv[1], sys.argv[2], sys.argv[3]
-text = open(kt, encoding='utf-8').read()
-chars = set(c for c in text if '一' <= c <= '鿿') | set('竹子记')
+# kt : un fichier .kt, ou un dossier (tous ses .kt : mots, exemples, proverbes…)
+files = [kt] if kt.endswith('.kt') else sorted(glob.glob(kt + '/*.kt'))
+text = ''.join(open(f, encoding='utf-8').read() for f in files)
+# Caractères chinois + ponctuation chinoise, et ceux de l'interface (onglets, sceaux)
+chars = set(c for c in text if '一' <= c <= '鿿' or '　' <= c <= '〿' or '＀' <= c <= '￯')
+chars |= set('竹子记家学字好')
 print(len(chars), 'caractères')
 need = {}
 for f in sorted(glob.glob(src + '/lxgwwenkai-regular-subset-*.woff2')):

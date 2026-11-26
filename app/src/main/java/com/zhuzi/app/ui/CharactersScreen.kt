@@ -230,6 +230,8 @@ private fun WordDetail(word: Word, lesson: Lesson, box: Int, speak: (String) -> 
         ToneLegend()
         Spacer(Modifier.height(20.dp))
         InkButton(tr("Écouter", "Listen", "Слушать"), { speak(word.hanzi) }, Modifier.fillMaxWidth())
+        Spacer(Modifier.height(16.dp))
+        ExampleBlock(word, speak)
         Spacer(Modifier.height(28.dp))
         StrokePanel(word)
     }

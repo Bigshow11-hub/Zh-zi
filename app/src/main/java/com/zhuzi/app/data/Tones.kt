@@ -27,7 +27,8 @@ object Tones {
         val out = mutableListOf<Pair<String, Int?>>()
         val part = StringBuilder()
         for (c in nfd) {
-            if (c == ' ' || c == '\'' || c == '’') {
+            // Tout ce qui n'est ni lettre ni signe de ton sépare les syllabes : espace, apostrophe, ponctuation
+            if (!Character.isLetter(c) && Character.getType(c) != Character.NON_SPACING_MARK.toInt()) {
                 out += segment(part.toString()); part.clear()
                 out += c.toString() to null
             } else {

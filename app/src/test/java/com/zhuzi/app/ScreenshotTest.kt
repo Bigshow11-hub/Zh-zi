@@ -9,6 +9,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.dp
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -94,6 +96,8 @@ class ScreenshotTest {
     @Composable
     private fun home(p: PaddingValues, due: Int = 8, knownTotal: Int = 37, streak: Int = 12) = HomeScreen(
         todayLabel = "Mercredi 26 novembre",
+        greeting = com.zhuzi.app.data.greetingNow(java.time.LocalTime.of(20, 0)),
+        proverb = com.zhuzi.app.data.proverbs[2],
         streakDays = streak,
         dueWords = all.take(due),
         dueTomorrow = 5,
@@ -113,6 +117,14 @@ class ScreenshotTest {
     fun accueil() {
         inTab(Tab.HOME) { home(it) }
         shot("1-accueil")
+    }
+
+    @Test
+    fun accueilBas() {
+        inTab(Tab.HOME) { home(it) }
+        compose.onRoot().performTouchInput { swipeUp(startY = bottom - 300f, endY = top + 100f) }
+        compose.waitForIdle()
+        shot("17-accueil-bas")
     }
 
     @Test

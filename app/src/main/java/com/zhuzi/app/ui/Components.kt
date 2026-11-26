@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -39,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.SpanStyle
@@ -168,14 +170,17 @@ fun PinyinText(
     modifier: Modifier = Modifier,
     fontWeight: FontWeight = FontWeight.Bold,
     textAlign: TextAlign? = null,
+    maxLines: Int = 1,
 ) {
     val pieces = Tones.pieces(pinyin)
     val colors = pieces.map { (_, t) -> if (t == null) Ink else toneColor(t) }
     val text = buildAnnotatedString {
         pieces.forEachIndexed { i, (s, _) -> withStyle(SpanStyle(color = colors[i])) { append(s) } }
     }
+    // Police du téléphone : elle a toutes les voyelles à tons (ǎ, ǐ, ǒ…), que Manrope n'a pas
     Text(text, modifier = modifier, fontSize = fontSize, fontWeight = fontWeight, textAlign = textAlign,
-        maxLines = 1, overflow = TextOverflow.Ellipsis)
+        fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
+        maxLines = maxLines, overflow = TextOverflow.Ellipsis)
 }
 
 /** Légende des couleurs de tons. */
@@ -255,10 +260,17 @@ fun ProgressBar(
 
 /** Anneau de progression (mots découverts sur le total). */
 @Composable
-fun ProgressRing(progress: Float, size: Dp, modifier: Modifier = Modifier, stroke: Dp = 8.dp) {
+fun ProgressRing(
+    progress: Float,
+    size: Dp,
+    modifier: Modifier = Modifier,
+    stroke: Dp = 8.dp,
+    color: Color = Ink,
+    trackColor: Color = Rule,
+) {
     val p by animateFloatAsState(progress.coerceIn(0f, 1f), tween(900), label = "ring")
-    val track = Rule
-    val ink = Ink
+    val track = trackColor
+    val ink = color
     Canvas(modifier.size(size)) {
         val w = stroke.toPx()
         val inset = w / 2
@@ -325,5 +337,102 @@ fun StreakBadge(days: Int, modifier: Modifier = Modifier) {
         Text("  " + tr(if (days > 1) "jours d'affilée" else "jour", if (days == 1) "day streak" else "day streak",
             ruPlural(days, "день подряд", "дня подряд", "дней подряд")), color = Ink,
             fontWeight = FontWeight.Bold, fontSize = 14.sp)
+    }
+}
+
+/** Bouton clair, posé sur la carte encre profonde. */
+@Composable
+fun LightButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val interaction = remember { MutableInteractionSource() }
+    Button(
+        onClick = onClick,
+        shape = PillShape,
+        interactionSource = interaction,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = com.zhuzi.app.ui.theme.OnDeep,
+            contentColor = com.zhuzi.app.ui.theme.DeepInk,
+        ),
+        modifier = modifier.height(56.dp).pressScale(interaction),
+    ) { Text(text, style = androidx.compose.material3.MaterialTheme.typography.labelLarge) }
+}
+
+/**
+ * Tiges de bambou dessinées au trait, très discrètes : le décor de la carte « Aujourd'hui ».
+ * Trois tiges à nœuds, quelques feuilles effilées.
+ */
+@Composable
+fun BambooArt(modifier: Modifier = Modifier, color: Color = Color.White) {
+    Canvas(modifier) {
+        val w = size.width
+        val h = size.height
+        val stalks = listOf(
+            Triple(0.30f, 0.050f, 0.10f), // position x, épaisseur, opacité
+            Triple(0.58f, 0.065f, 0.14f),
+            Triple(0.84f, 0.045f, 0.08f),
+        )
+        stalks.forEachIndexed { k, (fx, fw, a) ->
+            val x = w * fx
+            val sw = w * fw
+            val seg = h / (4.2f + k * 0.4f)
+            var y = h
+            while (y > -seg) {
+                // Un segment, un peu plus étroit au nœud
+                drawRoundRect(
+                    color.copy(alpha = a), topLeft = Offset(x - sw / 2, y - seg + sw * 0.35f),
+                    size = Size(sw, seg - sw * 0.7f), cornerRadius = CornerRadius(sw / 2, sw / 2),
+                )
+                y -= seg
+            }
+        }
+        // Feuilles : fines amandes inclinées
+        fun leaf(cx: Float, cy: Float, len: Float, angle: Float, a: Float) {
+            val path = androidx.compose.ui.graphics.Path().apply {
+                moveTo(0f, 0f)
+                quadraticTo(len * 0.5f, -len * 0.16f, len, 0f)
+                quadraticTo(len * 0.5f, len * 0.16f, 0f, 0f)
+                close()
+            }
+            withTransform({
+                translate(cx, cy)
+                rotate(angle, pivot = Offset.Zero)
+            }) { drawPath(path, color.copy(alpha = a)) }
+        }
+        leaf(w * 0.58f, h * 0.22f, w * 0.42f, -28f, 0.14f)
+        leaf(w * 0.58f, h * 0.24f, w * 0.34f, -150f, 0.10f)
+        leaf(w * 0.30f, h * 0.48f, w * 0.30f, -160f, 0.09f)
+        leaf(w * 0.84f, h * 0.40f, w * 0.30f, -40f, 0.08f)
+    }
+}
+
+/** Phrase d'exemple : le mot étudié ressort en couleurs de tons dans la phrase. */
+@Composable
+fun ExampleBlock(word: com.zhuzi.app.data.Word, speak: (String) -> Unit, modifier: Modifier = Modifier) {
+    val ex = com.zhuzi.app.data.examples[word.hanzi] ?: return
+    val tones = Tones.forWord(word.hanzi, word.pinyin).map { toneColor(it) }
+    val ink = Ink
+    val start = ex.hanzi.indexOf(word.hanzi)
+    val sentence = buildAnnotatedString {
+        ex.hanzi.forEachIndexed { i, c ->
+            val inWord = start >= 0 && i >= start && i < start + word.hanzi.length
+            withStyle(SpanStyle(color = if (inWord) tones[i - start] else ink)) { append(c) }
+        }
+    }
+    androidx.compose.foundation.layout.Column(
+        modifier.fillMaxWidth().clip(com.zhuzi.app.ui.theme.TileShape)
+            .background(com.zhuzi.app.ui.theme.Mist).padding(horizontal = 18.dp, vertical = 16.dp),
+    ) {
+        Text(tr("EXEMPLE", "EXAMPLE", "ПРИМЕР"), style = com.zhuzi.app.ui.theme.Kicker)
+        Text(sentence, fontFamily = Kai, fontSize = 26.sp, modifier = Modifier.padding(top = 8.dp))
+        Text(ex.pinyin, fontFamily = androidx.compose.ui.text.font.FontFamily.Default, fontSize = 14.sp,
+            color = InkSoft, modifier = Modifier.padding(top = 2.dp))
+        Text(ex.meaning(currentLang()), fontSize = 15.sp, color = Ink, fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(top = 6.dp))
+        androidx.compose.material3.TextButton(
+            onClick = { speak(ex.hanzi) },
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
+        ) {
+            Text(tr("Écouter la phrase", "Listen to the sentence", "Слушать фразу"), color = Ink,
+                fontWeight = FontWeight.Bold, textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
+        }
     }
 }

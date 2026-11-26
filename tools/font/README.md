@@ -8,9 +8,9 @@ réduite aux seuls caractères des mots de l'appli pour rester légère.
 ```bash
 pip install fonttools brotli
 mkdir -p /tmp/wk && cd /tmp/wk && npm pack lxgw-wenkai-webfont && tar xzf lxgw-wenkai-webfont-*.tgz
-python3 tools/font/subset_wenkai.py /tmp/wk/package/files app/src/main/java/com/zhuzi/app/data/Hsk1.kt app/src/main/res/font/wenkai.ttf
+python3 tools/font/subset_wenkai.py /tmp/wk/package/files app/src/main/java/com/zhuzi/app/data app/src/main/res/font/wenkai.ttf
 ```
-(lancer la dernière commande depuis la racine du dépôt ; si les mots sont dans plusieurs fichiers, les concaténer d'abord.)
+(depuis la racine du dépôt : le script lit tous les fichiers de `data/` — mots, exemples, proverbes.)
 
 `glyph_path.py` sort le tracé d'un caractère au format `pathData` Android (utilisé pour l'icône) :
 `python3 tools/font/glyph_path.py 竹 54 54 40 [police]` (caractère, centre x, centre y, taille, police : `wenkai.ttf` par défaut).

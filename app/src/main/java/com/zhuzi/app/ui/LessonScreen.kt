@@ -90,6 +90,11 @@ fun LessonScreen(
         TopBar(tr("Leçons", "Lessons", "Уроки"), tr("Leçon ", "Lesson ", "Урок ") + lesson.id, onBack)
         Text(lesson.title(currentLang()), style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(horizontal = 20.dp))
+        // L'accroche de la leçon
+        com.zhuzi.app.data.lessonIntros[lesson.id]?.let { intro ->
+            Text(intro.get(currentLang()), style = MaterialTheme.typography.bodyMedium, color = InkSoft,
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp))
+        }
         // Choix Cartes / Quiz en pilules
         Segmented(listOf(tr("Cartes", "Cards", "Карточки"), tr("Quiz", "Quiz", "Тест")), tab, { tab = it },
             Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp))
@@ -248,6 +253,14 @@ private fun Flashcards(
                 ListenLink { speak(word.hanzi) }
                 StrokeLink { strokesFor = word }
             }
+            // La phrase d'exemple apparaît quand la carte est retournée
+            androidx.compose.animation.AnimatedVisibility(
+                revealed,
+                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandVertically(),
+                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkVertically(),
+            ) {
+                ExampleBlock(word, speak, Modifier.padding(bottom = 12.dp))
+            }
         }
         // Actions en bas, sous le pouce
         BottomActions(contentPadding) {
@@ -383,7 +396,7 @@ private fun Quiz(
         ) {
             if (q != null) {
                 val ok = picked == q.word
-                FeedbackPanel(ok, q.word, last = index + 1 >= questions.size) {
+                FeedbackPanel(ok, q.word, last = index + 1 >= questions.size, seed = index) {
                     if (index + 1 < questions.size) {
                         index++; picked = null
                     } else {
@@ -439,7 +452,10 @@ private fun ChoiceTile(choice: Word, asHanzi: Boolean, state: Int, enabled: Bool
 
 /** Panneau du bas après une réponse : verdict, la bonne réponse et « Continuer ». */
 @Composable
-private fun FeedbackPanel(ok: Boolean, word: Word, last: Boolean, onNext: () -> Unit) {
+private fun FeedbackPanel(ok: Boolean, word: Word, last: Boolean, seed: Int, onNext: () -> Unit) {
+    val lang = currentLang()
+    val cheer = com.zhuzi.app.data.cheers[seed % com.zhuzi.app.data.cheers.size]
+    val nudge = com.zhuzi.app.data.nudges[seed % com.zhuzi.app.data.nudges.size]
     Column(
         Modifier.fillMaxWidth()
             .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
@@ -447,8 +463,15 @@ private fun FeedbackPanel(ok: Boolean, word: Word, last: Boolean, onNext: () -> 
             .navigationBarsPadding()
             .padding(start = 24.dp, end = 24.dp, top = 22.dp, bottom = 20.dp),
     ) {
-        Text(if (ok) tr("Bien joué !", "Well done!", "Молодец!") else tr("Pas tout à fait", "Not quite", "Не совсем"),
-            color = if (ok) Right else Wrong, fontWeight = FontWeight.Black, fontSize = 22.sp)
+        if (ok) {
+            // Encouragement en chinois, puis dans ta langue
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(cheer.hanzi, fontFamily = Kai, fontSize = 26.sp, color = Right)
+                Text("  " + cheer.local.get(lang), color = Right, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+            }
+        } else {
+            Text(nudge.get(lang), color = Wrong, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+        }
         Row(Modifier.padding(top = 8.dp, bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
             HanziText(word, 30.sp)
             Spacer(Modifier.width(12.dp))

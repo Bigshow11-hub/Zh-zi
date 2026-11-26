@@ -87,6 +87,13 @@ fun ReviewScreen(
                 ListenLink { speak(word.hanzi) }
                 StrokeLink { strokesFor = word }
             }
+            androidx.compose.animation.AnimatedVisibility(
+                revealed,
+                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandVertically(),
+                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkVertically(),
+            ) {
+                ExampleBlock(word, speak, Modifier.padding(bottom = 12.dp))
+            }
         }
 
         // Actions en bas, sous le pouce

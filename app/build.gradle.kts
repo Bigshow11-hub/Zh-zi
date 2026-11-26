@@ -12,8 +12,8 @@ android {
         applicationId = "com.zhuzi.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 11
-        versionName = "0.9.0"
+        versionCode = 12
+        versionName = "1.0.0"
     }
 
     // Clé de test fixe (sans secret) : chaque nouvelle version s'installe par-dessus l'ancienne.

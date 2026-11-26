@@ -109,34 +109,55 @@ fun toneColor(tone: Int): Color = LocalZhuziColors.current.tones[(tone.coerceIn(
 val Seal = Color(0xFFC8321E)
 val OnSeal = Color(0xFFFFFFFF)
 
-/** Police pinceau (楷书) pour les caractères chinois : LXGW WenKai, réduite aux mots de l'appli. */
+/** Carte premium « encre profonde » (panneau Aujourd'hui) : identique jour et nuit, texte clair. */
+val DeepInk = Color(0xFF131B26)
+val DeepInk2 = Color(0xFF22303F)
+val OnDeep = Color(0xFFF3F5F8)
+val OnDeepSoft = Color(0xFFAEB8C6)
+
+/** Police pinceau (楷书) pour les caractères chinois : LXGW WenKai, réduite aux caractères de l'appli. */
 val Kai = FontFamily(Font(R.font.wenkai))
 
+/** Police de l'interface : Manrope (latin + cyrillique). Le pinyin reste en police du téléphone (tous les tons). */
+val Manrope = FontFamily(
+    Font(R.font.manrope_400, FontWeight.Normal),
+    Font(R.font.manrope_500, FontWeight.Medium),
+    Font(R.font.manrope_700, FontWeight.Bold),
+    Font(R.font.manrope_800, FontWeight.ExtraBold),
+    Font(R.font.manrope_800, FontWeight.Black),
+)
+
 /** Formes : panneaux doux, boutons en pilule, cases d'écriture nettes. */
-val PanelShape = RoundedCornerShape(20.dp)
+val PanelShape = RoundedCornerShape(24.dp)
 val TileShape = RoundedCornerShape(16.dp)
 val PillShape = RoundedCornerShape(50)
 
 private val base = Typography()
 
 val ZhuziTypography = Typography(
-    displayLarge = base.displayLarge.copy(fontWeight = FontWeight.Black, letterSpacing = (-1.5).sp),
-    displaySmall = base.displaySmall.copy(fontWeight = FontWeight.Black, letterSpacing = (-1).sp),
-    headlineMedium = base.headlineMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp),
-    titleLarge = base.titleLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.3).sp),
-    titleMedium = base.titleMedium.copy(fontWeight = FontWeight.Bold),
-    bodyLarge = base.bodyLarge,
-    bodyMedium = base.bodyMedium,
-    bodySmall = base.bodySmall,
-    labelLarge = base.labelLarge.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp),
+    displayLarge = base.displayLarge.copy(fontFamily = Manrope, fontWeight = FontWeight.ExtraBold, letterSpacing = (-2).sp),
+    displaySmall = base.displaySmall.copy(fontFamily = Manrope, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp),
+    headlineLarge = base.headlineLarge.copy(fontFamily = Manrope, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.8).sp),
+    headlineMedium = base.headlineMedium.copy(fontFamily = Manrope, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.6).sp),
+    headlineSmall = base.headlineSmall.copy(fontFamily = Manrope, fontWeight = FontWeight.Bold),
+    titleLarge = base.titleLarge.copy(fontFamily = Manrope, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.3).sp),
+    titleMedium = base.titleMedium.copy(fontFamily = Manrope, fontWeight = FontWeight.Bold),
+    titleSmall = base.titleSmall.copy(fontFamily = Manrope, fontWeight = FontWeight.Bold),
+    bodyLarge = base.bodyLarge.copy(fontFamily = Manrope),
+    bodyMedium = base.bodyMedium.copy(fontFamily = Manrope),
+    bodySmall = base.bodySmall.copy(fontFamily = Manrope),
+    labelLarge = base.labelLarge.copy(fontFamily = Manrope, fontWeight = FontWeight.Bold, fontSize = 16.sp),
+    labelMedium = base.labelMedium.copy(fontFamily = Manrope, fontWeight = FontWeight.Bold),
+    labelSmall = base.labelSmall.copy(fontFamily = Manrope, fontWeight = FontWeight.Bold),
 )
 
 /** Petites capitales espacées pour les étiquettes de section. */
 val Kicker: TextStyle
     @Composable @ReadOnlyComposable get() = TextStyle(
+        fontFamily = Manrope,
         fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 1.4.sp,
+        fontWeight = FontWeight.ExtraBold,
+        letterSpacing = 1.6.sp,
         color = InkSoft,
     )
 

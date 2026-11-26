@@ -169,6 +169,8 @@ class MainActivity : ComponentActivity() {
                                             ?: hsk1Lessons.last()
                                         HomeScreen(
                                             todayLabel = todayLabel(lang),
+                                            greeting = com.zhuzi.app.data.greetingNow(),
+                                            proverb = com.zhuzi.app.data.proverbOfDay(),
                                             streakDays = streak.current(),
                                             dueWords = srs.dueWords(allWords),
                                             dueTomorrow = srs.dueTomorrow(allWords),
