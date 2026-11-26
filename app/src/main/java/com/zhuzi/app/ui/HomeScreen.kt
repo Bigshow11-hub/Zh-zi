@@ -81,6 +81,8 @@ fun HomeScreen(
     onSearch: () -> Unit,
     onReminder: () -> Unit,
     onSeeAll: () -> Unit,
+    look: com.zhuzi.app.data.AvatarLook,
+    onAvatar: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     val lang = currentLang()
@@ -114,15 +116,15 @@ fun HomeScreen(
                     Text(tr("Un peu de chinois aujourd'hui ?", "A little Chinese today?", "Немного китайского сегодня?"),
                         style = MaterialTheme.typography.bodyMedium, color = InkSoft)
                 }
-                // Avatar : le logo dans un halo lavande
+                // Avatar : la mascotte dans un halo lavande ; la toucher ouvre « Mon avatar »
                 Box(
-                    Modifier.size(84.dp).clip(CircleShape)
-                        .background(Brush.linearGradient(listOf(Accent.copy(alpha = 0.22f), Accent2.copy(alpha = 0.10f)))),
+                    Modifier.size(92.dp).clip(CircleShape)
+                        .background(Brush.linearGradient(listOf(Accent.copy(alpha = 0.22f), Accent2.copy(alpha = 0.10f))))
+                        .clickable(onClick = onAvatar)
+                        .semantics { contentDescription = tr(lang, "Mon avatar", "My avatar", "Мой аватар") },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Box(Modifier.size(64.dp).clip(CircleShape).background(Paper), contentAlignment = Alignment.Center) {
-                        Image(painterResource(R.drawable.ic_logo_mark), contentDescription = null, modifier = Modifier.size(44.dp))
-                    }
+                    PandaAvatar(look, com.zhuzi.app.data.levelFor(knownCount).number, Modifier.size(80.dp))
                 }
             }
         }

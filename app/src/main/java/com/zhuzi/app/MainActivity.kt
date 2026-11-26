@@ -55,6 +55,7 @@ import java.util.Locale
 /** Écran plein (sans barre du bas) : aucun, la révision du jour, ou une leçon (son numéro). */
 private const val NONE = 0
 private const val REVIEW = -1
+private const val AVATAR = -2
 
 class MainActivity : ComponentActivity() {
     private lateinit var speaker: Speaker
@@ -81,6 +82,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             // Langue choisie (français, anglais, russe), gardée sur le téléphone
             var lang by remember { mutableStateOf(LangPref.get(this@MainActivity)) }
+            // Mascotte : tenue, accessoire, fond choisis
+            var look by remember { mutableStateOf(com.zhuzi.app.data.AvatarPrefs.get(this@MainActivity)) }
+            val setLook: (com.zhuzi.app.data.AvatarLook) -> Unit = { l ->
+                com.zhuzi.app.data.AvatarPrefs.set(this@MainActivity, l); look = l
+            }
             CompositionLocalProvider(LocalLang provides lang) {
             ZhuziTheme {
                 var tab by rememberSaveable { mutableStateOf(Tab.HOME) }
@@ -121,6 +127,25 @@ class MainActivity : ComponentActivity() {
 
                 when {
                     // Révision du jour, plein écran
+                    // Mon avatar, plein écran
+                    overlay == AVATAR -> Surface {
+                        BackHandler(onBack = close)
+                        val known = srs.knownCount(allWords)
+                        com.zhuzi.app.ui.AvatarScreen(
+                            look = look,
+                            stats = com.zhuzi.app.data.AvatarStats(
+                                known = known,
+                                streak = streak.current(),
+                                lessonsMastered = hsk1Lessons.count { l ->
+                                    QuizMode.entries.all { progress.bestScore(l.id, it) >= 80 }
+                                },
+                                listeningPassed = hsk1Lessons.any { progress.bestScore(it.id, QuizMode.LISTENING) >= 80 },
+                            ),
+                            onChange = setLook,
+                            onBack = close,
+                            contentPadding = bars,
+                        )
+                    }
                     overlay == REVIEW -> Surface {
                         BackHandler(onBack = close)
                         ReviewScreen(
@@ -198,6 +223,8 @@ class MainActivity : ComponentActivity() {
                                             onSearch = { tab = Tab.CHARS },
                                             onReminder = { tab = Tab.PROGRESS },
                                             onSeeAll = { tab = Tab.LESSONS },
+                                            look = look,
+                                            onAvatar = { overlay = AVATAR },
                                             contentPadding = padding,
                                         )
                                     }
@@ -231,6 +258,8 @@ class MainActivity : ComponentActivity() {
                                         },
                                         versionName = versionName,
                                         lang = lang,
+                                        look = look,
+                                        onAvatar = { overlay = AVATAR },
                                         onLangChange = { l ->
                                             LangPref.set(this@MainActivity, l)
                                             lang = l

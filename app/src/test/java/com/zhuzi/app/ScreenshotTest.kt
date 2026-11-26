@@ -114,6 +114,8 @@ class ScreenshotTest {
         onSearch = {},
         onReminder = {},
         onSeeAll = {},
+        look = com.zhuzi.app.data.AvatarLook(0, com.zhuzi.app.data.Accessory.SCARF, 0),
+        onAvatar = {},
         contentPadding = p,
     )
 
@@ -173,6 +175,7 @@ class ScreenshotTest {
                 streakDays = 12, knownCount = 37, masteredCount = 20, total = all.size, dueTomorrow = 5,
                 lessonsMastered = 1, lessonsTotal = hsk1Lessons.size, reminderOn = true,
                 onReminderChange = {}, versionName = "0.9.0", lang = Lang.FR, onLangChange = {},
+                look = com.zhuzi.app.data.AvatarLook(1, com.zhuzi.app.data.Accessory.STRAW_HAT, 1), onAvatar = {},
                 contentPadding = it,
             )
         }
@@ -194,6 +197,22 @@ class ScreenshotTest {
         // Au milieu de l'animation : quelques traits finis, un en cours
         compose.mainClock.advanceTimeBy(1500)
         shot("14-ordre-traits")
+    }
+
+    @Test
+    fun avatar() {
+        compose.setContent {
+            ZhuziTheme {
+                Surface {
+                    com.zhuzi.app.ui.AvatarScreen(
+                        look = com.zhuzi.app.data.AvatarLook(0, com.zhuzi.app.data.Accessory.HEADPHONES, 0),
+                        stats = com.zhuzi.app.data.AvatarStats(known = 37, streak = 12, lessonsMastered = 1, listeningPassed = true),
+                        onChange = {}, onBack = {}, contentPadding = bars,
+                    )
+                }
+            }
+        }
+        shot("18-avatar")
     }
 
     private fun lesson(tab: Int) {

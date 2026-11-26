@@ -1,6 +1,7 @@
 package com.zhuzi.app.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,6 +59,8 @@ fun ProgressScreen(
     versionName: String,
     lang: Lang,
     onLangChange: (Lang) -> Unit,
+    look: com.zhuzi.app.data.AvatarLook,
+    onAvatar: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     Column(
@@ -68,6 +71,20 @@ fun ProgressScreen(
     ) {
         ScreenTitle(tr("Progrès", "Progress", "Прогресс"),
             tr("Ta régularité et ce que tu as retenu", "Your consistency and what you've learned", "Твоя регулярность и что ты выучил"))
+
+        // Ta mascotte et son niveau
+        Row(
+            Modifier.padding(top = 12.dp).fillMaxWidth().softCard().clickable(onClick = onAvatar).padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            PandaAvatar(look, com.zhuzi.app.data.levelFor(knownCount).number, Modifier.size(96.dp))
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                LevelInfo(knownCount)
+                Text(tr("Personnaliser ›", "Customize ›", "Настроить ›"), color = com.zhuzi.app.ui.theme.Accent,
+                    fontWeight = FontWeight.Bold, fontSize = 14.sp, modifier = Modifier.padding(top = 8.dp))
+            }
+        }
 
         // Série de jours : un grand sceau rouge avec le nombre
         Row(
