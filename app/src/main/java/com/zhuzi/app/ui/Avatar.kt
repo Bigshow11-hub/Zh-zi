@@ -47,8 +47,6 @@ fun PandaAvatar(look: AvatarLook, level: Int, modifier: Modifier = Modifier, wit
         // Ombre au sol
         drawOval(Color.Black.copy(alpha = 0.13f), topLeft = o(24f, 89f), size = s(52f, 7f))
 
-        // Tige de bambou tenue à droite : un segment de plus à chaque niveau
-        drawBamboo(u, segments = level.coerceIn(1, 5) + 1)
 
         // Corps (pull à capuche)
         drawOval(
@@ -65,9 +63,11 @@ fun PandaAvatar(look: AvatarLook, level: Int, modifier: Modifier = Modifier, wit
             topLeft = o(18f, 66f), size = s(13f, 19f))
         drawOval(Brush.radialGradient(listOf(outfit, outfitDark), center = o(72f, 70f), radius = 14f * u),
             topLeft = o(69f, 66f), size = s(13f, 19f))
+        // Tige de bambou tenue à droite (devant le bras) : un segment de plus à chaque niveau
+        drawBamboo(u, segments = level.coerceIn(1, 5) + 1)
         // Patte qui tient le bambou
-        drawCircle(Brush.radialGradient(listOf(FurDarkLight, FurDark), center = o(76f, 80f), radius = 6f * u),
-            radius = 4.6f * u, center = o(77f, 82f))
+        drawCircle(Brush.radialGradient(listOf(FurDarkLight, FurDark), center = o(86f, 79f), radius = 6f * u),
+            radius = 4.6f * u, center = o(87f, 81f))
 
         // Oreilles
         for (x in listOf(29f, 71f)) {
@@ -112,7 +112,7 @@ fun PandaAvatar(look: AvatarLook, level: Int, modifier: Modifier = Modifier, wit
 }
 
 private fun DrawScope.drawBamboo(u: Float, segments: Int) {
-    val x = 77f * u
+    val x = 88f * u
     val w = 4.6f * u
     val seg = 8.6f * u
     var y = 88f * u
