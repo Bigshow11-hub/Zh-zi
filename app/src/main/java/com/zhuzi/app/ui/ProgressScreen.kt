@@ -22,6 +22,8 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,6 +63,7 @@ fun ProgressScreen(
     onLangChange: (Lang) -> Unit,
     look: com.zhuzi.app.data.AvatarLook,
     onAvatar: () -> Unit,
+    week: List<Pair<java.time.LocalDate, Int>> = emptyList(),
     themeMode: Int = 0,
     onThemeChange: (Int) -> Unit = {},
     contentPadding: PaddingValues,
@@ -114,6 +117,9 @@ fun ProgressScreen(
                 )
             }
         }
+
+        // Ta semaine : une barre par jour
+        if (week.isNotEmpty()) WeekChart(week, Modifier.padding(top = 12.dp))
 
         // Chiffres clés
         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -206,9 +212,77 @@ private fun SectionLabel(text: String) {
 private fun StatTile(label: String, value: String, sub: String, progress: Float?, modifier: Modifier) {
     Column(modifier.softCard(androidx.compose.foundation.shape.RoundedCornerShape(22.dp)).padding(16.dp)) {
         Text(label, style = Kicker)
-        Text(value, style = MaterialTheme.typography.displaySmall, modifier = Modifier.padding(top = 4.dp))
+        val n = value.toIntOrNull()
+        if (n != null) {
+            CountUpText(n, Modifier.padding(top = 4.dp), style = MaterialTheme.typography.displaySmall)
+        } else {
+            Text(value, style = MaterialTheme.typography.displaySmall, modifier = Modifier.padding(top = 4.dp))
+        }
         Text(sub, color = InkSoft, fontSize = 12.sp)
         Spacer(Modifier.height(10.dp))
         if (progress != null) ProgressBar(progress, height = 5.dp) else Spacer(Modifier.height(5.dp))
+    }
+}
+
+/** « Ta semaine » : une barre par jour (actions faites), qui pousse à l'ouverture ; aujourd'hui en dégradé. */
+@Composable
+private fun WeekChart(days: List<Pair<java.time.LocalDate, Int>>, modifier: Modifier = Modifier) {
+    val lang = currentLang()
+    val locale = when (lang) {
+        com.zhuzi.app.data.Lang.FR -> java.util.Locale.FRENCH
+        com.zhuzi.app.data.Lang.EN -> java.util.Locale.ENGLISH
+        com.zhuzi.app.data.Lang.RU -> java.util.Locale.forLanguageTag("ru")
+    }
+    val top = maxOf(days.maxOf { it.second }, 10)
+    val total = days.sumOf { it.second }
+    val activeDays = days.count { it.second > 0 }
+    val a = com.zhuzi.app.ui.theme.Accent
+    val b = com.zhuzi.app.ui.theme.Accent2
+    Column(modifier.fillMaxWidth().softCard().padding(18.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(tr("TA SEMAINE", "YOUR WEEK", "ТВОЯ НЕДЕЛЯ"), style = Kicker, modifier = Modifier.weight(1f))
+            Text(tr("$activeDays jour${if (activeDays > 1) "s" else ""} sur 7", "$activeDays of 7 days", "$activeDays из 7 дней"),
+                fontSize = 12.sp, color = InkSoft, fontWeight = FontWeight.Bold)
+        }
+        Text(
+            "$total " + tr(if (total > 1) "actions cette semaine" else "action cette semaine", "actions this week",
+                ruPlural(total, "действие за неделю", "действия за неделю", "действий за неделю")),
+            style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 4.dp),
+        )
+        Row(
+            Modifier.fillMaxWidth().height(130.dp).padding(top = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            days.forEachIndexed { i, (day, n) ->
+                val isToday = i == days.lastIndex
+                val target = n.toFloat() / top
+                val anim = remember { androidx.compose.animation.core.Animatable(0f) }
+                LaunchedEffect(target) {
+                    kotlinx.coroutines.delay(i * 70L)
+                    anim.animateTo(target, androidx.compose.animation.core.spring(dampingRatio = 0.7f,
+                        stiffness = androidx.compose.animation.core.Spring.StiffnessLow))
+                }
+                Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (n > 0) Text("$n", fontSize = 10.sp, color = InkSoft, fontWeight = FontWeight.Bold)
+                    Box(
+                        Modifier.padding(top = 4.dp).width(22.dp)
+                            .height(androidx.compose.ui.unit.max(6.dp, 80.dp * anim.value))
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                if (isToday) androidx.compose.ui.graphics.Brush.verticalGradient(listOf(b, a))
+                                else androidx.compose.ui.graphics.SolidColor(if (n > 0) a.copy(alpha = 0.35f) else Mist),
+                            ),
+                    )
+                    Text(
+                        day.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, locale).take(3)
+                            .replaceFirstChar { it.titlecase(locale) },
+                        fontSize = 11.sp, modifier = Modifier.padding(top = 6.dp),
+                        color = if (isToday) a else InkSoft,
+                        fontWeight = if (isToday) FontWeight.ExtraBold else FontWeight.Medium,
+                    )
+                }
+            }
+        }
     }
 }

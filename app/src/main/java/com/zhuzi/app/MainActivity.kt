@@ -274,6 +274,7 @@ class MainActivity : ComponentActivity() {
                                         lang = lang,
                                         look = look,
                                         onAvatar = { overlay = AVATAR },
+                                        week = streak.lastDays(7),
                                         themeMode = themeMode,
                                         onThemeChange = { m ->
                                             com.zhuzi.app.ui.ThemePref.set(this@MainActivity, m)

@@ -174,7 +174,8 @@ class ScreenshotTest {
             ProgressScreen(
                 streakDays = 12, knownCount = 37, masteredCount = 20, total = all.size, dueTomorrow = 5,
                 lessonsMastered = 1, lessonsTotal = hsk1Lessons.size, reminderOn = true,
-                onReminderChange = {}, versionName = "0.9.0", lang = Lang.FR, onLangChange = {},
+                onReminderChange = {}, versionName = "1.5.0", lang = Lang.FR, onLangChange = {},
+                week = listOf(4, 12, 0, 7, 18, 9, 14).mapIndexed { i, n -> java.time.LocalDate.of(2026, 11, 20 + i) to n },
                 look = com.zhuzi.app.data.AvatarLook(1, com.zhuzi.app.data.Accessory.STRAW_HAT, 1), onAvatar = {},
                 contentPadding = it,
             )

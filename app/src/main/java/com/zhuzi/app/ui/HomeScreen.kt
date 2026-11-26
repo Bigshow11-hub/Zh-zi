@@ -86,6 +86,7 @@ fun HomeScreen(
     contentPadding: PaddingValues,
 ) {
     val lang = currentLang()
+    val seen = remember { mutableSetOf<Any>() }
     LazyColumn(
         contentPadding = PaddingValues(
             start = 20.dp, end = 20.dp,
@@ -94,7 +95,7 @@ fun HomeScreen(
         ),
     ) {
         // Boutons ronds : recherche et rappel
-        item {
+        staggerItem(0, seen) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(todayLabel, style = MaterialTheme.typography.bodySmall, color = InkSoft, modifier = Modifier.weight(1f))
                 RoundIcon(tr("Rechercher", "Search", "Поиск"), onSearch) { c -> SearchGlyph(c) }
@@ -103,7 +104,7 @@ fun HomeScreen(
             }
         }
         // Salut + avatar
-        item {
+        staggerItem(1, seen) {
             Row(Modifier.padding(top = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(greeting.local.get(lang) + ",", style = MaterialTheme.typography.titleMedium, color = InkSoft)
@@ -129,20 +130,20 @@ fun HomeScreen(
             }
         }
         // Trois tuiles : découverts, bien retenus, série
-        item {
+        staggerItem(2, seen) {
             Row(Modifier.padding(top = 20.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                StatTile("字", Accent2, "$knownCount", tr("Découverts", "Discovered", "Открыто"), Modifier.weight(1f))
-                StatTile("记", TileBlue, "$masteredCount", tr("Retenus", "Learned", "Выучено"), Modifier.weight(1f))
-                StatTile("天", Seal, "$streakDays",
+                StatTile("字", Accent2, knownCount, tr("Découverts", "Discovered", "Открыто"), Modifier.weight(1f))
+                StatTile("记", TileBlue, masteredCount, tr("Retenus", "Learned", "Выучено"), Modifier.weight(1f))
+                StatTile("天", Seal, streakDays,
                     tr("Série", "Streak", "Серия"),
                     Modifier.weight(1f))
             }
         }
         // Objectif du jour
-        item { GoalCard(dueWords.size, dueTomorrow, knownCount, total, next, onReview, onOpen) }
+        staggerItem(3, seen) { GoalCard(dueWords.size, dueTomorrow, knownCount, total, next, onReview, onOpen) }
 
         // Au programme
-        item {
+        staggerItem(4, seen) {
             Row(Modifier.padding(top = 28.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(tr("Au programme", "On the agenda", "План на сегодня"), style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.weight(1f))
@@ -150,7 +151,7 @@ fun HomeScreen(
                     modifier = Modifier.clickable(onClick = onSeeAll).padding(4.dp))
             }
         }
-        item {
+        staggerItem(5, seen) {
             TaskRow(
                 done = dueWords.isEmpty() && knownCount > 0,
                 title = tr("Révision du jour", "Today's review", "Повторение дня"),
@@ -159,7 +160,7 @@ fun HomeScreen(
                 onClick = if (dueWords.isNotEmpty()) onReview else ({}),
             )
         }
-        item {
+        staggerItem(6, seen) {
             TaskRow(
                 done = nextKnown >= next.words.size,
                 title = tr("Leçon ", "Lesson ", "Урок ") + next.id + " · " + next.title(lang),
@@ -167,7 +168,7 @@ fun HomeScreen(
                 onClick = { onOpen(next) },
             )
         }
-        item {
+        staggerItem(7, seen) {
             TaskRow(
                 done = wordOfDayKnown,
                 title = tr("Mot du jour : ", "Word of the day: ", "Слово дня: ") + wordOfDay.hanzi,
@@ -175,8 +176,8 @@ fun HomeScreen(
                 onClick = { speak(wordOfDay.hanzi) },
             )
         }
-        item { WordOfDayCard(wordOfDay, speak) }
-        item { ProverbCard(proverb, speak) }
+        staggerItem(8, seen) { WordOfDayCard(wordOfDay, speak) }
+        staggerItem(9, seen) { ProverbCard(proverb, speak) }
     }
 }
 
@@ -218,12 +219,12 @@ private fun BellGlyph(c: Color) {
 
 /** Tuile chiffre : pastille colorée avec un caractère, le nombre, son libellé. */
 @Composable
-private fun StatTile(glyph: String, tint: Color, value: String, label: String, modifier: Modifier) {
+private fun StatTile(glyph: String, tint: Color, value: Int, label: String, modifier: Modifier) {
     Column(modifier.softCard(RoundedCornerShape(22.dp)).padding(14.dp)) {
         Box(Modifier.size(36.dp).clip(CircleShape).background(tint.copy(alpha = 0.14f)), contentAlignment = Alignment.Center) {
             Text(glyph, fontFamily = Kai, fontSize = 20.sp, color = tint)
         }
-        Text(value, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(top = 10.dp))
+        CountUpText(value, Modifier.padding(top = 10.dp))
         Text(label, fontSize = 12.sp, color = InkSoft, maxLines = 1)
     }
 }

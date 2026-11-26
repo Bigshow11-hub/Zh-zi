@@ -1,6 +1,7 @@
 package com.zhuzi.app.ui
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -253,7 +254,10 @@ fun InkOutlinedButton(text: String, onClick: () -> Unit, modifier: Modifier = Mo
     ) { Text(text, style = androidx.compose.material3.MaterialTheme.typography.labelLarge) }
 }
 
-/** Barre de progression arrondie, qui glisse jusqu'à sa valeur. */
+/**
+ * Barre de progression « vivante » : elle se remplit depuis zéro à l'ouverture, avec un ressort,
+ * en dégradé de sa couleur, et un léger reflet qui la traverse de temps en temps.
+ */
 @Composable
 fun ProgressBar(
     progress: Float,
@@ -262,14 +266,72 @@ fun ProgressBar(
     track: Color = Rule,
     height: Dp = 8.dp,
 ) {
-    val p by animateFloatAsState(progress.coerceIn(0f, 1f), zhuziSpring(), label = "progress")
+    val target = progress.coerceIn(0f, 1f)
+    val anim = remember { Animatable(0f) }
+    LaunchedEffect(target) { anim.animateTo(target, spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessVeryLow)) }
+    val shine = androidx.compose.animation.core.rememberInfiniteTransition(label = "shine")
+    val shineX by shine.animateFloat(
+        initialValue = -0.4f, targetValue = 1.6f,
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+            tween(2200, delayMillis = 1800, easing = androidx.compose.animation.core.LinearEasing),
+        ),
+        label = "shineX",
+    )
+    val light = androidx.compose.ui.graphics.lerp(color, Color.White, 0.28f)
     Canvas(modifier.fillMaxWidth().height(height)) {
         val r = CornerRadius(size.height / 2, size.height / 2)
         drawRoundRect(track, cornerRadius = r)
+        val p = anim.value
         if (p > 0f) {
-            drawRoundRect(color, size = size.copy(width = (size.width * p).coerceAtLeast(size.height)),
-                cornerRadius = r)
+            val w = (size.width * p).coerceAtLeast(size.height)
+            drawRoundRect(
+                androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(light, color), startX = 0f, endX = w),
+                size = size.copy(width = w), cornerRadius = r,
+            )
+            // Reflet qui glisse le long de la partie remplie
+            val bandX = w * shineX
+            drawRoundRect(
+                androidx.compose.ui.graphics.Brush.horizontalGradient(
+                    listOf(Color.Transparent, Color.White.copy(alpha = 0.45f), Color.Transparent),
+                    startX = bandX - size.height * 3, endX = bandX + size.height * 3,
+                ),
+                size = size.copy(width = w), cornerRadius = r,
+            )
         }
+    }
+}
+
+/** Un nombre qui compte depuis zéro jusqu'à sa valeur, à l'ouverture. */
+@Composable
+fun CountUpText(
+    value: Int,
+    modifier: Modifier = Modifier,
+    style: androidx.compose.ui.text.TextStyle = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
+    color: Color = Color.Unspecified,
+) {
+    val anim = remember { Animatable(0f) }
+    LaunchedEffect(value) { anim.animateTo(value.toFloat(), tween(900, easing = androidx.compose.animation.core.FastOutSlowInEasing)) }
+    Text("${anim.value.toInt()}", modifier = modifier, style = style, color = color)
+}
+
+/**
+ * Entrée en cascade : glisse vers le haut et apparaît, avec un petit décalage selon la position.
+ * Ne joue qu'une fois par écran (les éléments déjà vus ne se rejouent pas au défilement).
+ */
+@Composable
+fun Modifier.staggerIn(key: Any, index: Int, seen: MutableSet<Any>): Modifier {
+    val first = remember(key) { key !in seen }
+    val anim = remember(key) { Animatable(if (first) 0f else 1f) }
+    LaunchedEffect(key) {
+        if (first) {
+            seen.add(key)
+            kotlinx.coroutines.delay((index.coerceAtMost(8) * 55).toLong())
+            anim.animateTo(1f, spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow))
+        }
+    }
+    return this.graphicsLayer {
+        alpha = anim.value
+        translationY = (1f - anim.value) * 28.dp.toPx()
     }
 }
 
@@ -283,7 +345,10 @@ fun ProgressRing(
     color: Color = com.zhuzi.app.ui.theme.Accent,
     trackColor: Color = Rule,
 ) {
-    val p by animateFloatAsState(progress.coerceIn(0f, 1f), tween(900), label = "ring")
+    // L'anneau se remplit depuis zéro à l'ouverture
+    val ring = remember { Animatable(0f) }
+    LaunchedEffect(progress) { ring.animateTo(progress.coerceIn(0f, 1f), tween(1100, easing = androidx.compose.animation.core.FastOutSlowInEasing)) }
+    val p = ring.value
     val track = trackColor
     val ink = color
     Canvas(modifier.size(size)) {
@@ -450,4 +515,13 @@ fun ExampleBlock(word: com.zhuzi.app.data.Word, speak: (String) -> Unit, modifie
                 fontWeight = FontWeight.Bold, textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
         }
     }
+}
+
+/** Un élément de liste qui entre en cascade (voir `staggerIn`). */
+fun androidx.compose.foundation.lazy.LazyListScope.staggerItem(
+    index: Int,
+    seen: MutableSet<Any>,
+    content: @Composable () -> Unit,
+) {
+    item { Box(Modifier.staggerIn(index, index, seen)) { content() } }
 }

@@ -62,6 +62,7 @@ fun LessonsScreen(
     val mastered: (Lesson) -> Boolean = { l -> QuizMode.entries.all { bestScore(l.id, it) >= 80 } }
     val masteredCount = hsk1Lessons.count(mastered)
     val current = hsk1Lessons.firstOrNull { lessonKnown(it) < it.words.size }
+    val seen = remember { mutableSetOf<Any>() }
     LazyColumn(
         contentPadding = PaddingValues(
             start = 20.dp, end = 20.dp,
@@ -70,12 +71,12 @@ fun LessonsScreen(
         ),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item {
+        staggerItem(0, seen) {
             ScreenTitle(tr("Leçons", "Lessons", "Уроки"),
                 tr("Le parcours HSK 1, thème par thème", "The HSK 1 path, theme by theme", "Путь HSK 1, тема за темой"))
         }
         // Synthèse du parcours
-        item {
+        staggerItem(1, seen) {
             val a = Accent
             val b = Accent2
             Column(
@@ -102,8 +103,10 @@ fun LessonsScreen(
                 )
             }
         }
-        items(hsk1Lessons, key = { it.id }) { lesson ->
-            LessonCard(lesson, lessonKnown(lesson), mastered(lesson), lesson == current, bestScore, onOpen)
+        hsk1Lessons.forEachIndexed { i, lesson ->
+            staggerItem(i + 2, seen) {
+                LessonCard(lesson, lessonKnown(lesson), mastered(lesson), lesson == current, bestScore, onOpen)
+            }
         }
     }
 }
@@ -142,10 +145,15 @@ private fun LessonCard(
     ) {
         Row(verticalAlignment = Alignment.Top) {
             // Grande pastille colorée avec le caractère symbole
-            Box(
-                Modifier.size(64.dp).clip(RoundedCornerShape(20.dp)).background(tint.copy(alpha = 0.14f)),
-                contentAlignment = Alignment.Center,
-            ) { Text(lesson.symbol, fontFamily = Kai, fontSize = 36.sp, color = tint) }
+            // Pastille du caractère, entourée d'un anneau de progression de la leçon
+            Box(Modifier.size(68.dp), contentAlignment = Alignment.Center) {
+                ProgressRing(known.toFloat() / lesson.words.size, 68.dp, stroke = 5.dp, color = tint,
+                    trackColor = tint.copy(alpha = 0.15f))
+                Box(
+                    Modifier.size(52.dp).clip(androidx.compose.foundation.shape.CircleShape).background(tint.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center,
+                ) { Text(lesson.symbol, fontFamily = Kai, fontSize = 30.sp, color = tint) }
+            }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
