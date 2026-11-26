@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,10 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,16 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zhuzi.app.R
 import com.zhuzi.app.data.Lesson
-import com.zhuzi.app.data.QuizMode
 import com.zhuzi.app.data.Word
-import com.zhuzi.app.data.hsk1Lessons
-import com.zhuzi.app.reminder.Reminders
-import com.zhuzi.app.ui.theme.Ink
 import com.zhuzi.app.ui.theme.InkSoft
 import com.zhuzi.app.ui.theme.Kicker
 import com.zhuzi.app.ui.theme.Mist
@@ -47,33 +39,29 @@ import com.zhuzi.app.ui.theme.Paper
 import com.zhuzi.app.ui.theme.Rule
 import com.zhuzi.app.ui.theme.TileShape
 
-/** Accueil : aujourd'hui (révision, progrès), reprendre, puis le parcours HSK 1. */
+/** Onglet Accueil : aujourd'hui, la leçon à reprendre, le mot du jour. */
 @Composable
-fun LessonListScreen(
-    bestScore: (Int, QuizMode) -> Int,
-    lessonKnown: (Lesson) -> Int,
-    onOpen: (Lesson) -> Unit,
+fun HomeScreen(
+    todayLabel: String,
+    streakDays: Int,
     dueWords: List<Word>,
     dueTomorrow: Int,
     knownCount: Int,
     masteredCount: Int,
+    total: Int,
+    next: Lesson,
+    nextKnown: Int,
+    wordOfDay: Word,
+    speak: (String) -> Unit,
     onReview: () -> Unit,
-    streakDays: Int,
-    todayLabel: String,
-    reminderOn: Boolean,
-    onEnableReminder: () -> Unit,
+    onOpen: (Lesson) -> Unit,
     contentPadding: PaddingValues,
 ) {
-    val total = hsk1Lessons.sumOf { it.words.size }
-    // Leçon à reprendre : la première pas encore entièrement découverte
-    val next = hsk1Lessons.firstOrNull { lessonKnown(it) < it.words.size } ?: hsk1Lessons.last()
-    val mastered: (Lesson) -> Boolean = { l -> QuizMode.entries.all { bestScore(l.id, it) >= 80 } }
-
     LazyColumn(
         contentPadding = PaddingValues(
             start = 20.dp, end = 20.dp,
             top = contentPadding.calculateTopPadding() + 12.dp,
-            bottom = contentPadding.calculateBottomPadding() + 32.dp,
+            bottom = contentPadding.calculateBottomPadding() + 24.dp,
         ),
     ) {
         // En-tête : marque, date, série
@@ -89,48 +77,13 @@ fun LessonListScreen(
                 if (streakDays > 0) StreakBadge(streakDays)
             }
         }
-
-        // Aujourd'hui
         item {
-            TodayPanel(
-                dueWords = dueWords, dueTomorrow = dueTomorrow, knownCount = knownCount,
-                masteredCount = masteredCount, total = total, next = next,
-                onReview = onReview, onOpen = onOpen,
-            )
+            TodayPanel(dueWords, dueTomorrow, knownCount, masteredCount, total, next, onReview, onOpen)
         }
-
-        // Reprendre (quand le bouton principal sert à réviser)
-        if (dueWords.isNotEmpty()) {
-            item { ContinueCard(next, lessonKnown(next), onOpen) }
+        if (dueWords.isNotEmpty() || knownCount > 0) {
+            item { ContinueCard(next, nextKnown, onOpen) }
         }
-
-        // Parcours
-        item {
-            Row(Modifier.padding(top = 32.dp, bottom = 4.dp), verticalAlignment = Alignment.Bottom) {
-                Text("Parcours HSK 1", style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.weight(1f))
-                Text("${hsk1Lessons.size} leçons · $total mots", style = MaterialTheme.typography.bodySmall,
-                    color = InkSoft)
-            }
-        }
-        items(hsk1Lessons, key = { it.id }) { lesson ->
-            LessonRow(lesson, lessonKnown(lesson), mastered(lesson), bestScore, onOpen)
-        }
-
-        // Rappel
-        item {
-            Box(Modifier.padding(top = 20.dp)) {
-                if (reminderOn) {
-                    Text("Rappel chaque soir vers ${Reminders.HOUR} h si tu n'as pas encore étudié.",
-                        style = MaterialTheme.typography.bodySmall, color = InkSoft)
-                } else {
-                    TextButton(onClick = onEnableReminder, contentPadding = PaddingValues(0.dp)) {
-                        Text("Activer le rappel quotidien", color = Ink, fontWeight = FontWeight.Bold,
-                            textDecoration = TextDecoration.Underline)
-                    }
-                }
-            }
-        }
+        item { WordOfDayCard(wordOfDay, speak) }
     }
 }
 
@@ -172,7 +125,6 @@ private fun TodayPanel(
                     }
                 }
             }
-            // Anneau : mots découverts sur le total
             Box(contentAlignment = Alignment.Center) {
                 ProgressRing(knownCount.toFloat() / total, 96.dp)
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -194,13 +146,11 @@ private fun TodayPanel(
                 }
             }
         }
-
         if (knownCount > 0) {
             Text("$knownCount découverts · $masteredCount bien retenus",
                 style = MaterialTheme.typography.bodySmall, color = InkSoft,
                 modifier = Modifier.padding(top = 14.dp))
         }
-
         Spacer(Modifier.height(16.dp))
         if (dueWords.isNotEmpty()) {
             InkButton("Réviser maintenant", onReview, Modifier.fillMaxWidth())
@@ -237,54 +187,19 @@ private fun ContinueCard(lesson: Lesson, known: Int, onOpen: (Lesson) -> Unit) {
     }
 }
 
+/** Un mot différent chaque jour, à découvrir en passant. */
 @Composable
-private fun LessonRow(
-    lesson: Lesson,
-    known: Int,
-    isMastered: Boolean,
-    bestScore: (Int, QuizMode) -> Int,
-    onOpen: (Lesson) -> Unit,
-) {
-    val interaction = remember { MutableInteractionSource() }
-    Column {
-        Row(
-            Modifier.fillMaxWidth()
-                .clickable(interactionSource = interaction, indication = null) { onOpen(lesson) }
-                .pressScale(interaction)
-                .padding(vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(lesson.id.toString().padStart(2, '0'), color = InkSoft, fontSize = 13.sp,
-                fontWeight = FontWeight.Bold, modifier = Modifier.width(26.dp))
-            CharGrid(lesson.symbol, 48.dp)
-            Spacer(Modifier.width(14.dp))
+private fun WordOfDayCard(word: Word, speak: (String) -> Unit) {
+    Column(Modifier.padding(top = 28.dp)) {
+        Text("MOT DU JOUR", style = Kicker)
+        Row(Modifier.padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.width(150.dp)) { WordGrids(word.hanzi, maxSize = 72.dp) }
+            Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
-                Text(lesson.title, fontWeight = FontWeight.Bold, fontSize = 15.sp, maxLines = 1)
-                Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    ProgressBar(known.toFloat() / lesson.words.size, Modifier.weight(1f), height = 4.dp)
-                    Spacer(Modifier.width(10.dp))
-                    Text("$known/${lesson.words.size}", fontSize = 12.sp, color = InkSoft)
-                }
-                // Les trois quiz : plein quand le score atteint 80 %
-                Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    QuizMode.entries.forEach { m ->
-                        val done = bestScore(lesson.id, m) >= 80
-                        Text(
-                            (if (done) "● " else "○ ") + m.label,
-                            fontSize = 11.sp,
-                            color = if (done) Ink else InkSoft,
-                            fontWeight = if (done) FontWeight.Bold else FontWeight.Normal,
-                        )
-                    }
-                }
-            }
-            Spacer(Modifier.width(12.dp))
-            if (isMastered) {
-                SealStamp("记", 30.dp, animate = false)
-            } else {
-                Text("›", fontSize = 24.sp, color = InkSoft)
+                Text(word.pinyin, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                Text(word.french, color = InkSoft, fontSize = 16.sp)
+                ListenLink { speak(word.hanzi) }
             }
         }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Rule))
     }
 }

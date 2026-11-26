@@ -1,29 +1,28 @@
 package com.zhuzi.app
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.Typeface
-import androidx.compose.ui.unit.sp
-import androidx.core.content.res.ResourcesCompat
-import com.zhuzi.app.ui.theme.Kai
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
+import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.github.takahirom.roborazzi.captureScreenRoboImage
 import com.zhuzi.app.data.QuizMode
+import com.zhuzi.app.data.Word
 import com.zhuzi.app.data.hsk1Lessons
-import com.zhuzi.app.ui.LessonListScreen
+import com.zhuzi.app.ui.CharactersScreen
+import com.zhuzi.app.ui.HomeScreen
 import com.zhuzi.app.ui.LessonScreen
+import com.zhuzi.app.ui.LessonsScreen
+import com.zhuzi.app.ui.MainFrame
+import com.zhuzi.app.ui.ProgressScreen
 import com.zhuzi.app.ui.ReviewScreen
+import com.zhuzi.app.ui.Tab
 import com.zhuzi.app.ui.theme.ZhuziTheme
 import org.junit.Rule
 import org.junit.Test
@@ -36,6 +35,7 @@ import org.robolectric.annotation.GraphicsMode
  * Photos des écrans principaux, avec des données d'exemple.
  * Lancé sur GitHub : les images sont publiées à côté de l'APK.
  */
+@OptIn(ExperimentalRoborazziApi::class)
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], qualifiers = "w393dp-h852dp-xxhdpi")
@@ -50,71 +50,93 @@ class ScreenshotTest {
         1 to mapOf(QuizMode.MEANING to 100, QuizMode.WRITING to 90, QuizMode.LISTENING to 85),
         2 to mapOf(QuizMode.MEANING to 80),
     )
-
-    private fun shot(name: String) = compose.onRoot().captureRoboImage("build/screens/$name.png")
-
-    private fun home(due: Int, knownTotal: Int, streak: Int, night: Boolean = false) {
-        compose.setContent {
-            ZhuziTheme(darkTheme = night) {
-                Surface {
-                    LessonListScreen(
-                        bestScore = { id, m -> scores[id]?.get(m) ?: -1 },
-                        lessonKnown = { l -> if (knownTotal > 0) known[l.id] ?: 0 else 0 },
-                        onOpen = {},
-                        dueWords = all.take(due),
-                        dueTomorrow = 5,
-                        knownCount = knownTotal,
-                        masteredCount = knownTotal / 3,
-                        onReview = {},
-                        streakDays = streak,
-                        todayLabel = "Mercredi 26 novembre",
-                        reminderOn = true,
-                        onEnableReminder = {},
-                        contentPadding = bars,
-                    )
-                }
-            }
+    private val boxes: (Word) -> Int = { w ->
+        val i = all.indexOf(w)
+        when {
+            i < 20 -> 4
+            i < 37 -> 2
+            else -> 0
         }
     }
 
+    private fun shot(name: String) = compose.onRoot().captureRoboImage("build/screens/$name.png")
+
+    /** Un onglet dans le cadre avec la barre du bas. */
+    private fun inTab(tab: Tab, night: Boolean = false, content: @Composable (PaddingValues) -> Unit) {
+        compose.setContent {
+            ZhuziTheme(darkTheme = night) { MainFrame(tab, {}) { content(it) } }
+        }
+    }
+
+    @Composable
+    private fun home(p: PaddingValues, due: Int = 8, knownTotal: Int = 37, streak: Int = 12) = HomeScreen(
+        todayLabel = "Mercredi 26 novembre",
+        streakDays = streak,
+        dueWords = all.take(due),
+        dueTomorrow = 5,
+        knownCount = knownTotal,
+        masteredCount = knownTotal / 3,
+        total = all.size,
+        next = hsk1Lessons[2],
+        nextKnown = if (knownTotal > 0) 9 else 0,
+        wordOfDay = all[40],
+        speak = {},
+        onReview = {},
+        onOpen = {},
+        contentPadding = p,
+    )
+
     @Test
     fun accueil() {
-        home(due = 8, knownTotal = 37, streak = 12)
+        inTab(Tab.HOME) { home(it) }
         shot("1-accueil")
     }
 
     @Test
+    fun accueilPremierLancement() {
+        inTab(Tab.HOME) { home(it, due = 0, knownTotal = 0, streak = 0) }
+        shot("2-accueil-vide")
+    }
+
+    @Test
     fun accueilNuit() {
-        home(due = 8, knownTotal = 37, streak = 12, night = true)
+        inTab(Tab.HOME, night = true) { home(it) }
         shot("9-accueil-nuit")
     }
 
-    /** Essai : la police pinceau chargée de trois façons, pour vérifier son affichage. */
     @Test
-    fun polices() {
-        compose.setContent {
-            val ctx = LocalContext.current
-            val tf = ResourcesCompat.getFont(ctx, R.font.wenkai)
-            ZhuziTheme {
-                Surface {
-                    Column(Modifier.padding(24.dp)) {
-                        Text("Compose Font(R.font) :", fontSize = 14.sp)
-                        Text("你好谢谢竹子", fontFamily = Kai, fontSize = 44.sp)
-                        Text("ResourcesCompat (${if (tf == null) "null" else "ok"}) :", fontSize = 14.sp)
-                        if (tf != null) Text("你好谢谢竹子", fontFamily = FontFamily(Typeface(tf)), fontSize = 44.sp)
-                        Text("Police par défaut :", fontSize = 14.sp)
-                        Text("你好谢谢竹子", fontSize = 44.sp)
-                    }
-                }
-            }
+    fun lecons() {
+        inTab(Tab.LESSONS) {
+            LessonsScreen(
+                bestScore = { id, m -> scores[id]?.get(m) ?: -1 },
+                lessonKnown = { l -> known[l.id] ?: 0 },
+                onOpen = {},
+                contentPadding = it,
+            )
         }
-        shot("0-polices")
+        shot("10-lecons")
     }
 
     @Test
-    fun accueilPremierLancement() {
-        home(due = 0, knownTotal = 0, streak = 0)
-        shot("2-accueil-vide")
+    fun caracteres() {
+        inTab(Tab.CHARS) { CharactersScreen(boxOf = boxes, speak = {}, contentPadding = it) }
+        shot("11-caracteres")
+        compose.onNodeWithText(all[1].pinyin).performClick()
+        compose.waitForIdle()
+        // La fiche s'ouvre dans un panneau à part : on photographie tout l'écran
+        captureScreenRoboImage("build/screens/12-fiche-mot.png")
+    }
+
+    @Test
+    fun progres() {
+        inTab(Tab.PROGRESS) {
+            ProgressScreen(
+                streakDays = 12, knownCount = 37, masteredCount = 20, total = all.size, dueTomorrow = 5,
+                lessonsMastered = 1, lessonsTotal = hsk1Lessons.size, reminderOn = true,
+                onReminderChange = {}, versionName = "0.7.0", contentPadding = it,
+            )
+        }
+        shot("13-progres")
     }
 
     private fun lesson(tab: Int) {

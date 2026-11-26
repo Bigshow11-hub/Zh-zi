@@ -60,4 +60,7 @@ class Srs(context: Context) {
 
     /** Mots en boîte 4 ou plus : considérés comme bien retenus. */
     fun masteredCount(all: List<Word>): Int = all.count { (read(it)?.first ?: 0) >= 4 }
+
+    /** Boîte du mot : 0 = pas encore découvert, 1 à 6 sinon (4 et plus = bien retenu). */
+    fun boxOf(word: Word): Int = read(word)?.first ?: 0
 }

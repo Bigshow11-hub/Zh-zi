@@ -47,7 +47,17 @@ object Reminders {
         ) == PackageManager.PERMISSION_GRANTED
 
     /** Texte du rappel, ou null s'il n'y a rien à rappeler. */
+    /** Le rappel peut être coupé dans l'onglet Progrès (réglage gardé sur le téléphone). */
+    fun isEnabled(context: Context): Boolean =
+        context.getSharedPreferences("settings", Context.MODE_PRIVATE).getBoolean("reminder_enabled", true)
+
+    fun setEnabled(context: Context, enabled: Boolean) {
+        context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit()
+            .putBoolean("reminder_enabled", enabled).apply()
+    }
+
     fun message(context: Context): String? {
+        if (!isEnabled(context)) return null
         val streak = Streak(context)
         if (streak.activeToday()) return null
         val srs = Srs(context)

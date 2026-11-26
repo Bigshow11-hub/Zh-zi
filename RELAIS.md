@@ -21,6 +21,7 @@
 - Refero : skill installé, mais l'abonnement Refero (MCP) est inactif : recherche faite sur le web à la place.
 - Mode nuit (0.6.1) : l'appli suit le réglage du téléphone (`DayColors` / `NightColors` dans `ui/theme/Theme.kt`, logo de nuit dans `drawable-night/`). Boutons d'action fixés en bas de l'écran (sous le pouce) dans les cartes et la révision.
 - Réseau de l'environnement cloud « Default » : sites de design ouverts le 26/11/2026 (muz.li, m3.material.io, blog/design.duolingo.com, apps.apple.com, androidauthority, uxdesign.cc, tech.yahoo.com). L'outil de lecture de pages ne les voit pas : les lire avec `curl` dans la session.
+- Barre de navigation en bas (0.7.0, `ui/Navigation.kt`) : 4 onglets dont l'icône est un caractère — 家 Accueil (aujourd'hui, leçon à reprendre, mot du jour), 学 Leçons (parcours HSK 1), 字 Caractères (tous les mots, recherche sans accents ni tons, filtres Tous/Vus/Retenus/Nouveaux, fiche en panneau du bas), 记 Progrès (série, chiffres clés, interrupteur du rappel du soir, à propos). Leçons et révision s'ouvrent en plein écran, sans la barre.
 - Higgsfield (génération d'images) : connecté, mais l'offre gratuite ne permet aucune génération (abonnement Basic requis).
 - Lien de téléchargement fixe : https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
 - Construction automatique de l'APK par GitHub Actions.
