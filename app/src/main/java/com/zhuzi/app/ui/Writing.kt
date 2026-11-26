@@ -151,6 +151,7 @@ fun WritingPad(char: String, color: Color, size: Dp, onDone: (mistakes: Int) -> 
     val ghost = GridLine
     val paper = Paper
     val accent = Accent
+    val wrong = Wrong
 
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Canvas(
@@ -226,7 +227,7 @@ fun WritingPad(char: String, color: Color, size: Dp, onDone: (mistakes: Int) -> 
             // Le trait raté, qui s'efface en rouge
             if (wrongPath.size > 1 && wrongAlpha.value > 0f) {
                 val p = Path().apply { moveTo(wrongPath[0].x, wrongPath[0].y); wrongPath.drop(1).forEach { lineTo(it.x, it.y) } }
-                drawPath(p, Wrong.copy(alpha = wrongAlpha.value), style = Stroke(9.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+                drawPath(p, wrong.copy(alpha = wrongAlpha.value), style = Stroke(9.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
             }
             // Le trait en cours
             if (drawing.size > 1) {
