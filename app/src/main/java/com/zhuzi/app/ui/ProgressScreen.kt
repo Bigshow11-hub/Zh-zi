@@ -250,7 +250,7 @@ private fun WeekChart(days: List<Pair<java.time.LocalDate, Int>>, modifier: Modi
             style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 4.dp),
         )
         Row(
-            Modifier.fillMaxWidth().height(130.dp).padding(top = 12.dp),
+            Modifier.fillMaxWidth().height(150.dp).padding(top = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom,
         ) {
@@ -264,10 +264,11 @@ private fun WeekChart(days: List<Pair<java.time.LocalDate, Int>>, modifier: Modi
                         stiffness = androidx.compose.animation.core.Spring.StiffnessLow))
                 }
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (n > 0) Text("$n", fontSize = 10.sp, color = InkSoft, fontWeight = FontWeight.Bold)
+                    // Place toujours réservée au chiffre, pour que toutes les barres partent du même niveau
+                    Text(if (n > 0) "$n" else " ", fontSize = 10.sp, color = InkSoft, fontWeight = FontWeight.Bold)
                     Box(
                         Modifier.padding(top = 4.dp).width(22.dp)
-                            .height(androidx.compose.ui.unit.max(6.dp, 80.dp * anim.value))
+                            .height(androidx.compose.ui.unit.max(6.dp, 72.dp * anim.value))
                             .clip(RoundedCornerShape(8.dp))
                             .background(
                                 if (isToday) androidx.compose.ui.graphics.Brush.verticalGradient(listOf(b, a))
