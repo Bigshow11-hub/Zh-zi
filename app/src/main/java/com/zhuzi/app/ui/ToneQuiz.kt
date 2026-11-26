@@ -128,20 +128,20 @@ fun ToneQuiz(
             }
 
             StepProgress(index + (if (answered) 1 else 0), words.size)
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(14.dp))
 
             // Le mot : caractères sans couleur de ton (sinon ce serait la réponse), syllabes à deviner
             Column(
-                Modifier.fillMaxWidth().softCard().padding(vertical = 20.dp, horizontal = 16.dp),
+                Modifier.fillMaxWidth().softCard().padding(top = 18.dp, bottom = 6.dp, start = 16.dp, end = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 WordGrids(
-                    word.hanzi, maxSize = 104.dp, diagonals = true,
+                    word.hanzi, maxSize = 88.dp, diagonals = true,
                     modifier = Modifier.clickable(
                         interactionSource = remember { MutableInteractionSource() }, indication = null,
                     ) { speak(word.hanzi) },
                 )
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     syllables.forEachIndexed { i, (syl, tone) ->
                         SyllableChip(
@@ -156,12 +156,11 @@ fun ToneQuiz(
                     }
                 }
                 Text(word.meaning(currentLang()), color = InkSoft, fontSize = 15.sp, textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 10.dp))
-                InkOutlinedButton(tr("Réécouter", "Listen again", "Ещё раз"), { speak(word.hanzi) },
-                    Modifier.padding(top = 12.dp))
+                    modifier = Modifier.padding(top = 8.dp))
+                ListenLink { speak(word.hanzi) }
             }
 
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(14.dp))
             val current = syllables.getOrNull(answers.size)
             Text(
                 if (current != null) tr("Quel ton pour « ${Tones.plain(current.first)} » ?",
