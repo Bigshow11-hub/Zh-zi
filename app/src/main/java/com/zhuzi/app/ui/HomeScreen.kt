@@ -23,7 +23,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -84,9 +86,17 @@ fun HomeScreen(
     look: com.zhuzi.app.data.AvatarLook,
     onAvatar: () -> Unit,
     contentPadding: PaddingValues,
+    activeToday: Boolean = false,
+    reminderOn: Boolean = true,
+    hour: Int = java.time.LocalTime.now().hour,
+    startWithNotes: Boolean = false,
 ) {
     val lang = currentLang()
     val seen = remember { mutableSetOf<Any>() }
+    var showNotes by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(startWithNotes) }
+    val notes = dayNotes(activeToday, streakDays, dueWords.size, dueTomorrow, reminderOn, hour, next, nextKnown, wordOfDay,
+        onReview, onOpen, onReminder, speak)
+    if (showNotes) NotificationsSheet(notes, todayLabel) { showNotes = false }
     LazyColumn(
         contentPadding = PaddingValues(
             start = 20.dp, end = 20.dp,
@@ -100,7 +110,7 @@ fun HomeScreen(
                 Text(todayLabel, style = MaterialTheme.typography.bodySmall, color = InkSoft, modifier = Modifier.weight(1f))
                 RoundIcon(tr("Rechercher", "Search", "Поиск"), onSearch) { c -> SearchGlyph(c) }
                 Spacer(Modifier.width(10.dp))
-                RoundIcon(tr("Rappel", "Reminder", "Напоминание"), onReminder) { c -> BellGlyph(c) }
+                BellButton(notes.count { it.pending }) { showNotes = true }
             }
         }
         // Salut + avatar
@@ -198,22 +208,6 @@ private fun SearchGlyph(c: Color) {
         val w = size.width
         drawCircle(c, radius = w * 0.32f, center = Offset(w * 0.42f, w * 0.42f), style = Stroke(w * 0.11f))
         drawLine(c, Offset(w * 0.66f, w * 0.66f), Offset(w * 0.92f, w * 0.92f), w * 0.12f, cap = StrokeCap.Round)
-    }
-}
-
-@Composable
-private fun BellGlyph(c: Color) {
-    Canvas(Modifier.size(20.dp)) {
-        val w = size.width
-        val p = androidx.compose.ui.graphics.Path().apply {
-            moveTo(w * 0.18f, w * 0.74f)
-            cubicTo(w * 0.26f, w * 0.62f, w * 0.24f, w * 0.52f, w * 0.26f, w * 0.40f)
-            cubicTo(w * 0.30f, w * 0.18f, w * 0.70f, w * 0.18f, w * 0.74f, w * 0.40f)
-            cubicTo(w * 0.76f, w * 0.52f, w * 0.74f, w * 0.62f, w * 0.82f, w * 0.74f)
-            close()
-        }
-        drawPath(p, c, style = Stroke(w * 0.10f))
-        drawLine(c, Offset(w * 0.42f, w * 0.88f), Offset(w * 0.58f, w * 0.88f), w * 0.10f, cap = StrokeCap.Round)
     }
 }
 
@@ -322,8 +316,10 @@ private fun TaskRow(done: Boolean, title: String, subtitle: String, onClick: () 
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
             Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp, maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 color = if (done) InkSoft else Ink)
             Text(subtitle, fontSize = 13.sp, color = InkSoft, maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 fontFamily = com.zhuzi.app.ui.theme.PinyinFont)
         }
         Text("›", fontSize = 22.sp, color = InkSoft)

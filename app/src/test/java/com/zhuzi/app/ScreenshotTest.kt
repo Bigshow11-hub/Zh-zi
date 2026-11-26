@@ -6,6 +6,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
@@ -241,7 +242,7 @@ class ScreenshotTest {
 
     @Test
     fun tons() {
-        lesson(2, QuizMode.TONES)
+        lesson(3, QuizMode.TONES)
         shot("20-tons-question")
         // Répond « 1er ton » à chaque syllabe : on voit les justes et les fausses
         repeat(3) {
@@ -253,6 +254,45 @@ class ScreenshotTest {
     }
 
     @Test
+    fun grammaire() {
+        lesson(2)
+        shot("22-lecon-grammaire")
+    }
+
+    @Test
+    fun notifications() {
+        inTab(Tab.HOME) {
+            HomeScreen(
+                todayLabel = "Mercredi 26 novembre",
+                greeting = com.zhuzi.app.data.greetingNow(java.time.LocalTime.of(20, 0)),
+                proverb = com.zhuzi.app.data.proverbs[2], streakDays = 12, dueWords = all.take(8), dueTomorrow = 5,
+                knownCount = 37, masteredCount = 12, total = all.size, next = hsk1Lessons[2], nextKnown = 9,
+                wordOfDay = all[40], wordOfDayKnown = true, speak = {}, onReview = {}, onOpen = {}, onSearch = {},
+                onReminder = {}, onSeeAll = {}, look = com.zhuzi.app.data.AvatarLook(0, com.zhuzi.app.data.Accessory.SCARF, 0),
+                onAvatar = {}, contentPadding = it, activeToday = false, reminderOn = true, hour = 20,
+            )
+        }
+        compose.onNodeWithContentDescription("Notifications").performClick()
+        compose.waitForIdle()
+        captureScreenRoboImage("build/screens/23-notifications.png")
+    }
+
+    @Test
+    fun caracteresSeuls() {
+        inTab(Tab.CHARS) { CharactersScreen(boxOf = boxes, speak = {}, contentPadding = it, startSection = 1) }
+        shot("24-caracteres-seuls")
+        compose.onAllNodesWithText("hǎo")[0].performClick()
+        compose.waitForIdle()
+        captureScreenRoboImage("build/screens/25-fiche-caractere.png")
+    }
+
+    @Test
+    fun grammaireListe() {
+        inTab(Tab.CHARS) { CharactersScreen(boxOf = boxes, speak = {}, contentPadding = it, startSection = 2) }
+        shot("26-grammaire")
+    }
+
+    @Test
     fun ecrire() {
         lesson(1)
         shot("19-ecrire")
@@ -260,7 +300,7 @@ class ScreenshotTest {
 
     @Test
     fun quiz() {
-        lesson(2)
+        lesson(3)
         shot("5-quiz-question")
         // Clique la première réponse proposée qu'on trouve à l'écran
         val choice = hsk1Lessons[0].words.first {

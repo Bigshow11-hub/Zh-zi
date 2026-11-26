@@ -1,0 +1,82 @@
+# Clés (radicaux) des caractères de l'appli : clé|fr|en|ru
+亻|personne|person|человек
+女|femme|woman|женщина
+讠|parole|speech|речь
+一|un|one|один
+宀|toit|roof|крыша
+气|air|air|воздух
+寸|pouce, main|inch, hand|вершок, рука
+走|marcher|walk|идти
+氵|eau|water|вода
+丷|huit (haut)|eight (top)|восемь (верх)
+糸|soie, fil|silk, thread|шёлк, нить
+冂|enclos|enclosure|ограда
+见|voir|see|видеть
+口|bouche|mouth|рот
+高|haut|tall|высокий
+八|huit, partager|eight, divide|восемь, делить
+子|enfant|child|ребёнок
+戈|hallebarde|halberd|алебарда
+人|personne|person|человек
+儿|jambes, enfant|legs, child|ноги, ребёнок
+生|vie|life|жизнь
+小|petit|small|маленький
+老|vieux|old|старый
+巾|tissu|cloth|ткань
+月|lune, chair|moon, flesh|луна, плоть
+又|main|hand|рука
+匸|boîte|box|ящик
+父|père|father|отец
+犭|animal|animal|зверь
+爫|griffe, main|claw, hand|коготь, рука
+欠|bâiller, bouche ouverte|yawn, open mouth|зевать, открытый рот
+木|arbre, bois|tree, wood|дерево
+西|ouest|west|запад
+二|deux|two|два
+囗|enceinte|enclosure|ограда
+乙|second, crochet|second, hook|второй, крюк
+十|dix|ten|десять
+几|petite table|small table|столик
+夕|soir|evening|вечер
+山|montagne|mountain|гора
+丨|trait vertical|vertical stroke|вертикальная черта
+土|terre|earth|земля
+大|grand|big|большой
+日|soleil, jour|sun, day|солнце, день
+干|bouclier, sec|shield, dry|щит, сухой
+王|roi, jade|king, jade|царь, нефрит
+灬|feu|fire|огонь
+刀|couteau|knife|нож
+钅|métal|metal|металл
+艹|herbe, plante|grass, plant|трава, растение
+水|eau|water|вода
+米|riz|rice|рис
+饣|nourriture|food|еда
+广|abri|shelter|навес
+目|œil|eye|глаз
+冖|couvercle|cover|крышка
+工|travail|work|работа
+冫|glace|ice|лёд
+扌|main|hand|рука
+曰|dire|say|говорить
+廾|deux mains|two hands|две руки
+厶|privé|private|частный
+匕|cuillère|spoon|ложка
+亠|couvercle, toit|lid, roof|крышка
+阝|ville, colline|town, hill|город, холм
+辶|marcher|walk|идти
+里|village|village|деревня
+刂|couteau|knife|нож
+面|visage|face|лицо
+彳|pas|step|шаг
+雨|pluie|rain|дождь
+丿|trait tombant|falling stroke|откидная черта
+心|cœur|heart|сердце
+白|blanc|white|белый
+亅|crochet|hook|крюк
+衣|vêtement|clothes|одежда
+彡|poils, rayons|hair, rays|волосы, лучи
+飞|voler|fly|летать
+凵|récipient|container|сосуд
+禾|céréale|grain|злак
+车|véhicule|vehicle|повозка

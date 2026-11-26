@@ -20,7 +20,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -64,18 +65,23 @@ import java.text.Normalizer
 private fun plain(s: String): String =
     Normalizer.normalize(s, Normalizer.Form.NFD).replace(Regex("\\p{M}"), "").lowercase().trim()
 
-/** Onglet Caractères : tous les mots, avec recherche, filtres et fiche détaillée. */
+/** Onglet Caractères : les mots, les caractères un par un et la grammaire, avec recherche et fiches. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CharactersScreen(
     boxOf: (Word) -> Int,
     speak: (String) -> Unit,
     contentPadding: PaddingValues,
+    startSection: Int = 0,
 ) {
     val entries = remember { hsk1Lessons.flatMap { l -> l.words.map { it to l } } }
+    var section by rememberSaveable { mutableIntStateOf(startSection) }
     var query by rememberSaveable { mutableStateOf("") }
     var filter by rememberSaveable { mutableIntStateOf(0) }
     var selected by remember { mutableStateOf<Pair<Word, Lesson>?>(null) }
+    var selectedChar by remember { mutableStateOf<com.zhuzi.app.data.CharInfo?>(null) }
+    var selectedPoint by remember { mutableStateOf<com.zhuzi.app.data.GrammarPoint?>(null) }
+    val seen = remember { mutableSetOf<Any>() }
 
     val lang = currentLang()
     val q = plain(query)
@@ -90,10 +96,17 @@ fun CharactersScreen(
         keep && (q.isEmpty() || plain(w.pinyin).contains(q) || plain(w.meaning(lang)).contains(q) ||
             w.hanzi.contains(query.trim()))
     }
+    val chars = com.zhuzi.app.data.charInfos.values.filter { c ->
+        q.isEmpty() || plain(c.pinyin).contains(q) || plain(c.meaning.get(lang)).contains(q) || query.trim().contains(c.char)
+    }
+    val points = com.zhuzi.app.data.grammarPoints.filter { p ->
+        q.isEmpty() || plain(p.title.get(lang)).contains(q) || plain(p.pattern.get(lang)).contains(q) || p.key.contains(query.trim())
+    }
     val known = entries.count { boxOf(it.first) > 0 }
 
+    // 6 colonnes : les mots en prennent 3 (2 par ligne), les caractères 2 (3 par ligne), la grammaire 6
     LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
+        columns = GridCells.Fixed(6),
         contentPadding = PaddingValues(
             start = 20.dp, end = 20.dp,
             top = contentPadding.calculateTopPadding() + 16.dp,
@@ -102,32 +115,57 @@ fun CharactersScreen(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        item(span = { GridItemSpan(maxLineSpan) }) {
+        item(span = { GridItemSpan(maxLineSpan) }, key = "header") {
             Column {
                 ScreenTitle(
                     tr("Caractères", "Characters", "Иероглифы"),
-                    tr("$known découverts sur ${entries.size} · touche un mot pour sa fiche",
-                        "$known of ${entries.size} discovered · tap a word for details",
-                        "Открыто $known из ${entries.size} · нажми на слово"),
+                    when (section) {
+                        0 -> tr("$known mots découverts sur ${entries.size} · touche un mot pour sa fiche",
+                            "$known of ${entries.size} words discovered · tap one for details",
+                            "Открыто $known из ${entries.size} слов · нажми на слово")
+                        1 -> tr("${com.zhuzi.app.data.charInfos.size} caractères : sens, clé et astuce pour les retenir",
+                            "${com.zhuzi.app.data.charInfos.size} characters: meaning, radical and a tip to remember them",
+                            "${com.zhuzi.app.data.charInfos.size} иероглифа: смысл, ключ и подсказка")
+                        else -> tr("${com.zhuzi.app.data.grammarPoints.size} règles du HSK 1, avec des exemples à écouter",
+                            "${com.zhuzi.app.data.grammarPoints.size} HSK 1 rules, with examples to listen to",
+                            "${com.zhuzi.app.data.grammarPoints.size} правила HSK 1 с примерами")
+                    },
                 )
-                Spacer(Modifier.height(8.dp))
+                Segmented(listOf(tr("Mots", "Words", "Слова"), tr("Caractères", "Characters", "Знаки"),
+                    tr("Grammaire", "Grammar", "Грамматика")), section, { section = it; filter = 0 })
+                Spacer(Modifier.height(12.dp))
                 SearchField(query) { query = it }
-                Spacer(Modifier.height(12.dp))
-                Segmented(listOf(tr("Tous", "All", "Все"), tr("Vus", "Seen", "Видел"), tr("Retenus", "Learned", "Выучено"),
-                    tr("Nouveaux", "New", "Новые")), filter, { filter = it })
-                Spacer(Modifier.height(12.dp))
-                ToneLegend()
+                if (section == 0) {
+                    Spacer(Modifier.height(12.dp))
+                    Segmented(listOf(tr("Tous", "All", "Все"), tr("Vus", "Seen", "Видел"), tr("Retenus", "Learned", "Выучено"),
+                        tr("Nouveaux", "New", "Новые")), filter, { filter = it })
+                    Spacer(Modifier.height(12.dp))
+                    ToneLegend()
+                }
+                if (section == 1) {
+                    Spacer(Modifier.height(12.dp))
+                    ToneLegend()
+                }
                 Spacer(Modifier.height(4.dp))
             }
         }
-        if (shown.isEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Text(tr("Aucun mot trouvé.", "No word found.", "Ничего не найдено."), color = InkSoft, textAlign = TextAlign.Center,
+        val empty = when (section) { 0 -> shown.isEmpty(); 1 -> chars.isEmpty(); else -> points.isEmpty() }
+        if (empty) {
+            item(span = { GridItemSpan(maxLineSpan) }, key = "empty") {
+                Text(tr("Rien trouvé.", "Nothing found.", "Ничего не найдено."), color = InkSoft, textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth().padding(top = 40.dp))
             }
         }
-        items(shown, key = { it.first.hanzi }) { (w, l) ->
-            CharCell(w, boxOf(w)) { selected = w to l }
+        when (section) {
+            0 -> itemsIndexed(shown, key = { _, it -> "w" + it.first.hanzi }, span = { _, _ -> GridItemSpan(3) }) { i, (w, l) ->
+                WordCard(w, l, boxOf(w), Modifier.animateItem().staggerIn("w" + w.hanzi, i, seen)) { selected = w to l }
+            }
+            1 -> itemsIndexed(chars, key = { _, it -> "c" + it.char }, span = { _, _ -> GridItemSpan(2) }) { i, c ->
+                CharCard(c, Modifier.animateItem().staggerIn("c" + c.char, i, seen)) { selectedChar = c }
+            }
+            else -> itemsIndexed(points, key = { _, it -> "g" + it.id }, span = { _, _ -> GridItemSpan(6) }) { i, p ->
+                GrammarCard(p, Modifier.animateItem().staggerIn("g" + p.id, i, seen)) { selectedPoint = p }
+            }
         }
     }
 
@@ -135,6 +173,12 @@ fun CharactersScreen(
         ModalBottomSheet(onDismissRequest = { selected = null }, containerColor = Paper) {
             WordDetail(w, l, boxOf(w), speak)
         }
+    }
+    selectedChar?.let { c ->
+        ModalBottomSheet(onDismissRequest = { selectedChar = null }, containerColor = Paper) { CharDetail(c, speak) }
+    }
+    selectedPoint?.let { p ->
+        ModalBottomSheet(onDismissRequest = { selectedPoint = null }, containerColor = Paper) { GrammarSheetContent(p, speak) }
     }
 }
 
@@ -158,28 +202,33 @@ private fun SearchField(value: String, onChange: (String) -> Unit) {
 }
 
 @Composable
-private fun CharCell(word: Word, box: Int, onClick: () -> Unit) {
+private fun WordCard(word: Word, lesson: Lesson, box: Int, modifier: Modifier, onClick: () -> Unit) {
     val interaction = remember { MutableInteractionSource() }
     Column(
-        Modifier.fillMaxWidth().pressScale(interaction)
-            .softCard(androidx.compose.foundation.shape.RoundedCornerShape(20.dp))
+        modifier.fillMaxWidth().pressScale(interaction)
+            .softCard(RoundedCornerShape(22.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
-            .padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .padding(10.dp),
     ) {
         // Le mot posé sur un fond doux, comme une feuille sur le bureau
         Box(
-            Modifier.fillMaxWidth().height(68.dp).clip(RoundedCornerShape(10.dp)).background(Mist)
+            Modifier.fillMaxWidth().height(78.dp).clip(RoundedCornerShape(14.dp)).background(Mist)
                 .padding(horizontal = 6.dp),
             contentAlignment = Alignment.Center,
         ) {
-            WordGrids(word.hanzi, maxSize = 44.dp, pinyin = word.pinyin)
+            WordGrids(word.hanzi, maxSize = 50.dp, pinyin = word.pinyin)
         }
         Spacer(Modifier.height(8.dp))
-        PinyinText(word.pinyin, 14.sp)
-        Text(word.meaning(currentLang()), fontSize = 11.sp, color = InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Spacer(Modifier.height(6.dp))
-        StatusTag(box)
+        PinyinText(word.pinyin, 16.sp, modifier = Modifier.padding(horizontal = 2.dp))
+        Text(word.meaning(currentLang()), fontSize = 13.sp, color = InkSoft, maxLines = 2, minLines = 2,
+            overflow = TextOverflow.Ellipsis, lineHeight = 17.sp, modifier = Modifier.padding(horizontal = 2.dp))
+        Row(Modifier.padding(top = 6.dp, start = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("L" + lesson.id, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = lessonTint(lesson.id),
+                modifier = Modifier.clip(PillShape).background(lessonTint(lesson.id).copy(alpha = 0.12f))
+                    .padding(horizontal = 7.dp, vertical = 2.dp))
+            Spacer(Modifier.width(8.dp))
+            StatusTag(box)
+        }
     }
 }
 
@@ -232,6 +281,8 @@ private fun WordDetail(word: Word, lesson: Lesson, box: Int, speak: (String) -> 
         InkButton(tr("Écouter", "Listen", "Слушать"), { speak(word.hanzi) }, Modifier.fillMaxWidth())
         Spacer(Modifier.height(16.dp))
         ExampleBlock(word, speak)
+        Spacer(Modifier.height(18.dp))
+        CharBreakdown(word)
         Spacer(Modifier.height(28.dp))
         StrokePanel(word)
     }

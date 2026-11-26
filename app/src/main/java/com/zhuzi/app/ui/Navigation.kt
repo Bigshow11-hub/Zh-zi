@@ -139,7 +139,9 @@ private fun TabItem(t: Tab, on: Boolean, modifier: Modifier, onClick: () -> Unit
         Spacer(Modifier.height(3.dp))
         Text(
             t.label(currentLang()),
-            fontSize = 11.sp,
+            fontSize = if (currentLang() == com.zhuzi.app.data.Lang.RU) 10.sp else 11.sp,
+            letterSpacing = if (currentLang() == com.zhuzi.app.data.Lang.RU) (-0.2).sp else 0.sp,
+            softWrap = false,
             fontWeight = if (on) FontWeight.Bold else FontWeight.Medium,
             color = if (on) accent else InkSoft,
             maxLines = 1,

@@ -5,9 +5,11 @@ from fontTools.merge import Merger
 src, kt, out = sys.argv[1], sys.argv[2], sys.argv[3]
 # kt : un fichier .kt, ou un dossier (tous ses .kt : mots, exemples, proverbes…)
 files = [kt] if kt.endswith('.kt') else sorted(glob.glob(kt + '/*.kt'))
+# … et les écrans (caractères affichés dans l'interface : sceaux, pastilles)
+files += sorted(glob.glob('app/src/main/java/com/zhuzi/app/ui/*.kt'))
 text = ''.join(open(f, encoding='utf-8').read() for f in files)
 # Caractères chinois + ponctuation chinoise, et ceux de l'interface (onglets, sceaux)
-chars = set(c for c in text if '一' <= c <= '鿿' or '　' <= c <= '〿' or '＀' <= c <= '￯')
+chars = set(c for c in text if '一' <= c <= '鿿' or '　' <= c <= '〿' or '＀' <= c <= '￯' or '⺀' <= c <= '⿟')
 chars |= set('竹子记家学字好')
 print(len(chars), 'caractères')
 need = {}

@@ -47,6 +47,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
@@ -97,13 +99,15 @@ fun LessonScreen(
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp))
         }
         // Choix Cartes / Quiz en pilules
-        Segmented(listOf(tr("Cartes", "Cards", "Карточки"), tr("Écrire", "Write", "Писать"), tr("Quiz", "Quiz", "Тест")),
+        Segmented(listOf(tr("Cartes", "Cards", "Карточки"), tr("Écrire", "Write", "Писать"),
+            tr("Grammaire", "Grammar", "Грамматика"), tr("Quiz", "Quiz", "Тест")),
             tab, { tab = it },
             Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp))
         Box(Modifier.weight(1f)) {
             when (tab) {
                 0 -> Flashcards(lesson.words, speak, onSeen, contentPadding)
                 1 -> WritingTab(lesson.words, speak, onSeen, contentPadding)
+                2 -> GrammarTab(lesson, speak, contentPadding)
                 else -> Quiz(lesson, speak, onQuizDone, onQuizAnswer, onBack, contentPadding, startQuizMode)
             }
         }
@@ -134,7 +138,11 @@ fun Segmented(labels: List<String>, selected: Int, onSelect: (Int) -> Unit, modi
                 Modifier.weight(1f).clip(PillShape).background(if (on) com.zhuzi.app.ui.theme.Accent else Mist)
                     .clickable { onSelect(i) }.padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center,
-            ) { Text(label, color = if (on) androidx.compose.ui.graphics.Color.White else Ink, fontWeight = FontWeight.Bold, fontSize = 14.sp) }
+            ) {
+                Text(label, color = if (on) androidx.compose.ui.graphics.Color.White else Ink, fontWeight = FontWeight.Bold,
+                    fontSize = if (labels.size >= 4) 13.sp else 14.sp, maxLines = 1, softWrap = false,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            }
         }
     }
 }
@@ -216,6 +224,22 @@ fun FlipCard(
                 PinyinText(word.pinyin, 32.sp)
                 Text(word.meaning(currentLang()), fontSize = 19.sp, color = InkSoft, textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 4.dp))
+                // Le sens de chaque caractère, en petites pastilles
+                val parts = word.hanzi.mapNotNull { com.zhuzi.app.data.charInfos[it] }
+                if (parts.size > 1) {
+                    Row(Modifier.padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        parts.forEach { c ->
+                            Row(
+                                Modifier.clip(PillShape).background(Mist).padding(horizontal = 10.dp, vertical = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(c.char.toString(), fontFamily = Kai, fontSize = 17.sp, color = Ink)
+                                Text(" " + c.meaning.get(currentLang()).substringBefore(","), fontSize = 12.sp, color = InkSoft,
+                                    maxLines = 1)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -263,6 +287,26 @@ private fun WritingTab(
     }
 }
 
+/** Grammaire de la leçon : la note de culture, puis chaque règle en entier. */
+@Composable
+private fun GrammarTab(lesson: Lesson, speak: (String) -> Unit, contentPadding: PaddingValues) {
+    val points = com.zhuzi.app.data.grammarPoints.filter { it.lesson == lesson.id }
+    val seen = remember { mutableSetOf<Any>() }
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+            .padding(start = 20.dp, end = 20.dp, top = 18.dp, bottom = contentPadding.calculateBottomPadding() + 24.dp),
+    ) {
+        com.zhuzi.app.data.lessonCulture[lesson.id]?.let { CultureCard(it, Modifier.staggerIn("culture", 0, seen)) }
+        points.forEachIndexed { i, p ->
+            GrammarDetail(
+                p, speak,
+                Modifier.padding(top = 14.dp).staggerIn("g${p.id}", i + 1, seen)
+                    .softCard().padding(18.dp),
+            )
+        }
+    }
+}
+
 /** Cartes : on retourne la carte pour voir le pinyin et la traduction. */
 @Composable
 private fun Flashcards(
@@ -285,13 +329,57 @@ private fun Flashcards(
         ) {
             StepProgress(index + 1, words.size)
             Spacer(Modifier.height(18.dp))
-            // Une carte neuve par mot : elle arrive toujours face caractères
-            key(index) {
-                FlipCard(word, revealed, {
-                    revealed = !revealed
-                    if (revealed) { onSeen(word); speak(word.hanzi) }
-                })
+            // Pile de cartes : on glisse la carte du dessus à gauche (suivante) ou à droite (précédente)
+            val drag = remember { Animatable(0f) }
+            val scope = rememberCoroutineScope()
+            val go: (Int) -> Unit = { d -> index = (index + d + words.size) % words.size; revealed = false }
+            Box(Modifier.fillMaxWidth().height(380.dp), contentAlignment = Alignment.TopCenter) {
+                val lift = (kotlin.math.abs(drag.value) / 600f).coerceIn(0f, 1f)
+                Box(Modifier.padding(top = 20.dp).fillMaxWidth(0.84f + 0.04f * lift).height(360.dp).softCard()
+                    .graphicsLayer { alpha = 0.55f })
+                Box(Modifier.padding(top = 10.dp).fillMaxWidth(0.92f + 0.04f * lift).height(360.dp).softCard()
+                    .graphicsLayer { alpha = 0.8f })
+                key(index) {
+                    val enter = remember { Animatable(0.94f) }
+                    LaunchedEffect(Unit) { enter.animateTo(1f, spring(dampingRatio = 0.7f, stiffness = Spring.StiffnessMediumLow)) }
+                    FlipCard(
+                        word, revealed,
+                        {
+                            revealed = !revealed
+                            if (revealed) { onSeen(word); speak(word.hanzi) }
+                        },
+                        Modifier
+                            .graphicsLayer {
+                                translationX = drag.value
+                                rotationZ = drag.value / 45f
+                                scaleX = enter.value; scaleY = enter.value
+                            }
+                            .pointerInput(index) {
+                                detectHorizontalDragGestures(
+                                    onDragEnd = {
+                                        val v = drag.value
+                                        scope.launch {
+                                            if (kotlin.math.abs(v) > size.width * 0.28f) {
+                                                drag.animateTo(if (v < 0) -size.width * 1.4f else size.width * 1.4f,
+                                                    androidx.compose.animation.core.tween(220))
+                                                go(if (v < 0) 1 else -1)
+                                                drag.snapTo(0f)
+                                            } else {
+                                                drag.animateTo(0f, spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessMedium))
+                                            }
+                                        }
+                                    },
+                                    onDragCancel = { scope.launch { drag.animateTo(0f, spring()) } },
+                                ) { change, amount ->
+                                    change.consume()
+                                    scope.launch { drag.snapTo(drag.value + amount) }
+                                }
+                            },
+                    )
+                }
             }
+            Text(tr("Glisse la carte pour passer à la suivante", "Swipe the card to move on", "Смахни карточку, чтобы перейти дальше"),
+                fontSize = 12.sp, color = InkSoft, modifier = Modifier.padding(top = 4.dp))
             Row {
                 ListenLink { speak(word.hanzi) }
                 StrokeLink { strokesFor = word }

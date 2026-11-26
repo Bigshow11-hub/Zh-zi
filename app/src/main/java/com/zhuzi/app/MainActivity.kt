@@ -240,6 +240,8 @@ class MainActivity : ComponentActivity() {
                                             look = look,
                                             onAvatar = { overlay = AVATAR },
                                             contentPadding = padding,
+                                            activeToday = streak.activeToday(),
+                                            reminderOn = reminderOn,
                                         )
                                     }
                                     Tab.LESSONS -> LessonsScreen(bestScore, lessonKnown, openLesson, padding)

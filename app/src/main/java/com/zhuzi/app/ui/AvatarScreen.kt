@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -109,12 +110,13 @@ fun AvatarScreen(
         Section(tr("ACCESSOIRE", "ACCESSORY", "АКСЕССУАР"))
         Column(Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Accessory.entries.chunked(2).forEach { row ->
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(Modifier.height(androidx.compose.foundation.layout.IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     row.forEach { acc ->
                         val open = acc.unlocked(stats)
                         val on = acc == look.accessory
                         Row(
-                            Modifier.weight(1f).softCard(RoundedCornerShape(20.dp))
+                            Modifier.weight(1f).fillMaxHeight().softCard(RoundedCornerShape(20.dp))
                                 .then(if (on) Modifier.border(2.dp, Accent, RoundedCornerShape(20.dp)) else Modifier)
                                 .clickable(enabled = open) { onChange(look.copy(accessory = acc)) }
                                 .padding(10.dp)
@@ -124,10 +126,11 @@ fun AvatarScreen(
                             PandaAvatar(look.copy(accessory = acc), level.number, Modifier.size(48.dp))
                             Spacer(Modifier.width(8.dp))
                             Column(Modifier.weight(1f)) {
-                                Text(acc.label.get(lang), fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 2)
+                                Text(acc.label.get(lang), fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 2,
+                                    lineHeight = 16.sp)
                                 if (!open) {
                                     Text(tr("À débloquer : ", "Unlock: ", "Открыть: ") + acc.condition.get(lang), fontSize = 11.sp,
-                                        color = InkSoft, maxLines = 2)
+                                        color = InkSoft, maxLines = 3, lineHeight = 14.sp)
                                 } else if (on) {
                                     Text(tr("Porté", "Wearing", "Надето"), fontSize = 11.sp, color = Accent,
                                         fontWeight = FontWeight.Bold)
