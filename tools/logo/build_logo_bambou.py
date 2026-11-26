@@ -1,4 +1,7 @@
-"""Logo de Zhúzi : deux tiges de bambou modelées (cylindre ombré, nœuds, feuilles) sur un fond encre,
+"""ANCIEN LOGO (version 1.8, remplacé par le panda 3D en 1.8.2 : voir tools/logo/panda3d). Ne plus lancer :
+il réécrirait les icônes vectorielles à la place du panda.
+
+Logo de Zhúzi : deux tiges de bambou modelées (cylindre ombré, nœuds, feuilles) sur un fond encre,
 signées d'un petit sceau rouge 子. Produit les icônes Android (vecteurs) et un aperçu SVG.
 
 Usage, depuis la racine du dépôt : python3 tools/logo/build_logo.py [dossier d'aperçu]

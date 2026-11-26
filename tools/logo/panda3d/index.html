@@ -1,0 +1,123 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:transparent}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const S = 1024;
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+renderer.setSize(S, S);
+renderer.setClearColor(0x000000, 0);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.toneMappingExposure = 0.95;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+// Matières « jouet » : vernis brillant (clearcoat) sur un fond doux
+const toy = (color, rough = 0.42, coat = 0.8) => new THREE.MeshPhysicalMaterial({ color, roughness: rough, clearcoat: coat, clearcoatRoughness: 0.18, sheen: 0.2 });
+const white = toy(0xf6f6fb, 0.5, 0.7);
+const black = toy(0x1b1c27, 0.38, 0.9);
+const indigo = toy(0x4142e0, 0.45, 0.75);
+const indigoDark = toy(0x2f30b0, 0.5, 0.6);
+const green = toy(0x139a52, 0.35, 0.9);
+const greenDark = toy(0x0b6338, 0.4, 0.8);
+const pink = new THREE.MeshPhysicalMaterial({ color: 0xff8fa6, roughness: 0.7, transparent: true, opacity: 0.55 });
+const shine = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+const g = new THREE.Group();
+scene.add(g);
+function ball(mat, r, x, y, z, sx = 1, sy = 1, sz = 1, seg = 64) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, seg, seg), mat);
+  m.position.set(x, y, z); m.scale.set(sx, sy, sz);
+  m.castShadow = true; m.receiveShadow = true;
+  g.add(m); return m;
+}
+
+// Corps : sweat indigo, bras, poche, cordons
+ball(indigo, 1, 0, -1.42, 0, 1.08, 0.82, 0.9);
+ball(indigoDark, 0.5, 0, -1.62, 0.62, 0.9, 0.42, 0.5);           // poche
+for (const sx of [-1, 1]) {
+  const c = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.42, 16), white);
+  c.position.set(sx * 0.2, -0.95, 0.83); c.rotation.x = 0.35; c.castShadow = true; g.add(c);
+  ball(white, 0.06, sx * 0.2, -1.15, 0.9);
+}
+ball(indigo, 0.34, -0.9, -1.3, 0.3, 0.9, 1.15, 0.9);           // bras gauche
+ball(indigo, 0.34, 1.0, -1.18, 0.38, 0.9, 1.15, 0.9);             // bras droit
+ball(black, 0.2, 0.98, -0.98, 0.62);                              // patte qui tient le bambou
+
+// Bambou : tige, nœuds, feuilles
+const stalk = new THREE.Group(); g.add(stalk);
+stalk.position.set(1.12, -0.7, 0.62); stalk.rotation.z = -0.12;
+const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.12, 2.4, 32), green);
+stem.castShadow = true; stalk.add(stem);
+for (const y of [-0.55, 0.25, 0.95]) {
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.03, 16, 32), greenDark);
+  ring.rotation.x = Math.PI / 2; ring.position.y = y; stalk.add(ring);
+}
+function leaf(len, wid, rotZ, rotY) {
+  const shape = new THREE.Shape();
+  shape.moveTo(0, 0);
+  shape.quadraticCurveTo(wid, len * 0.4, 0, len);
+  shape.quadraticCurveTo(-wid * 0.7, len * 0.45, 0, 0);
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.02, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelSegments: 2, curveSegments: 24 });
+  const m = new THREE.Mesh(geo, green);
+  m.position.set(0, 1.15, 0); m.rotation.set(0.2, rotY, rotZ); m.castShadow = true;
+  stalk.add(m);
+}
+leaf(0.85, 0.22, -0.9, 0.3);
+leaf(0.75, 0.2, 0.55, -0.4);
+leaf(0.6, 0.17, -0.25, 0.9);
+
+// Tête
+const head = new THREE.Group(); g.add(head);
+head.position.set(0, 0.25, 0.1);
+const hb = (mat, r, x, y, z, sx, sy, sz) => { const m = ball(mat, r, x, y, z, sx, sy, sz); g.remove(m); head.add(m); return m; };
+hb(white, 1, 0, 0, 0, 1.05, 0.94, 0.98);
+hb(black, 0.36, -0.74, 0.76, -0.08, 1, 1, 0.62);
+hb(black, 0.36, 0.74, 0.76, -0.08, 1, 1, 0.62);
+for (const sx of [-1, 1]) {
+  const p = hb(black, 0.27, sx * 0.38, 0.02, 0.8, 0.95, 1.3, 0.5);
+  p.rotation.z = sx * -0.55;
+  hb(white, 0.13, sx * 0.36, 0.06, 0.95, 1, 1, 0.6);
+  hb(black, 0.085, sx * 0.34, 0.04, 1.02, 1, 1, 0.6);
+  const s = new THREE.Mesh(new THREE.SphereGeometry(0.028, 16, 16), shine); s.position.set(sx * 0.34 + 0.03, 0.08, 1.06); head.add(s);
+  const b = new THREE.Mesh(new THREE.SphereGeometry(0.15, 32, 32), pink); b.position.set(sx * 0.64, -0.3, 0.72); b.scale.set(1.2, 0.7, 0.3);
+  b.lookAt(sx * 1.6, -0.6, 2.2); head.add(b);
+}
+hb(black, 0.1, 0, -0.24, 0.97, 1.35, 0.95, 0.8);                  // nez
+const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.02, 12, 32, Math.PI), black);
+mouth.position.set(0, -0.34, 0.95); mouth.rotation.set(0.2, 0, Math.PI); head.add(mouth);
+head.rotation.set(0.06, -0.12, 0.04);
+
+// Ombre portée douce sur un sol invisible
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.ShadowMaterial({ opacity: 0.16 }));
+ground.rotation.x = -Math.PI / 2; ground.position.y = -2.18; ground.receiveShadow = true; scene.add(ground);
+
+// Lumières : principale chaude en haut à gauche, contre-jour bleuté, débouchage doux
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
+key.position.set(-3, 5, 4); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 8;
+Object.assign(key.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4 });
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xb8b9ff, 1.4); rim.position.set(4, 2, -3); scene.add(rim);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8bd8, 0.5));
+
+const cam = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
+cam.position.set(0.25, 0.35, 9.2);
+cam.lookAt(0.05, -0.5, 0);
+const params = new URLSearchParams(location.search);
+if (params.get('zoom')) { cam.zoom = parseFloat(params.get('zoom')); cam.updateProjectionMatrix(); }
+renderer.render(scene, cam);
+window.done = true;
+</script>
+</body></html>
