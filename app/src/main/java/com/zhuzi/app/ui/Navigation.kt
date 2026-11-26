@@ -51,7 +51,7 @@ enum class Tab(private val fr: String, private val en: String, private val ru: S
     HOME("Accueil", "Home", "Главная", "家"),
     LESSONS("Leçons", "Lessons", "Уроки", "学"),
     CHARS("Caractères", "Characters", "Иероглифы", "字"),
-    PROGRESS("Progrès", "Progress", "Прогресс", "记");
+    PROGRESS("Progrès", "Progress", "Успехи", "记");
 
     fun label(lang: com.zhuzi.app.data.Lang) = tr(lang, fr, en, ru)
 }
