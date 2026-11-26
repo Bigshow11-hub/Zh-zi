@@ -401,6 +401,7 @@ private fun Quiz(
                     textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 28.dp))
                 QuizMode.LISTENING -> InkOutlinedButton(tr("Réécouter", "Listen again", "Ещё раз"), { speak(q.word.hanzi) },
                     Modifier.padding(vertical = 24.dp))
+                QuizMode.TONES -> Unit // géré par ToneQuiz
             }
             Spacer(Modifier.height(14.dp))
             Text(
