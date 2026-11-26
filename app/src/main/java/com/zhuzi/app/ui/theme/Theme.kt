@@ -24,7 +24,8 @@ import com.zhuzi.app.R
  * Zhúzi : papier, encre et sceau. Deux papiers : jour (blanc) et nuit (encre bleutée).
  * - paper / mist : le papier et les panneaux de l'appli.
  * - ink : texte et boutons principaux (s'inverse la nuit).
- * - Grid : SEULEMENT les lignes des cases d'écriture (décor), identique jour et nuit.
+ * - gridLine : les guides gris discrets des cases d'écriture.
+ * - tones : la couleur de chaque ton (caractères et pinyin) : 1 rouge, 2 ambre, 3 sarcelle, 4 bleu, neutre gris.
  * - Seal : SEULEMENT ce qui est « validé » (sceau de fin, série, leçon maîtrisée), texte blanc.
  * - right / wrong : SEULEMENT le retour des réponses.
  * Les cases d'écriture restent à angles nets (le papier) ; l'interface autour est arrondie.
@@ -40,9 +41,21 @@ data class ZhuziColors(
     val rightBg: Color,
     val wrong: Color,
     val wrongBg: Color,
+    /** Lignes des cases d'écriture : gris doux, pour laisser la vedette au caractère. */
+    val gridLine: Color,
+    /** Couleurs des tons (1 à 4, puis neutre) : elles diffèrent aussi par la clarté (daltonisme). */
+    val tones: List<Color>,
 )
 
 val DayColors = ZhuziColors(
+    gridLine = Color(0xFFC3CAD4),
+    tones = listOf(
+        Color(0xFFC62828), // 1er ton : rouge
+        Color(0xFFB45309), // 2e ton : ambre
+        Color(0xFF0F766E), // 3e ton : sarcelle
+        Color(0xFF1D4ED8), // 4e ton : bleu
+        Color(0xFF5B6472), // neutre : gris
+    ),
     paper = Color(0xFFFFFFFF),
     mist = Color(0xFFF4F5F7),
     ink = Color(0xFF16202C),
@@ -55,6 +68,14 @@ val DayColors = ZhuziColors(
 )
 
 val NightColors = ZhuziColors(
+    gridLine = Color(0xFF3D4757),
+    tones = listOf(
+        Color(0xFFFF8A80),
+        Color(0xFFFDBA74),
+        Color(0xFF5EEAD4),
+        Color(0xFF93C5FD),
+        Color(0xFFA3ADBB),
+    ),
     paper = Color(0xFF11161D),
     mist = Color(0xFF1B222C),
     ink = Color(0xFFECEFF3),
@@ -77,9 +98,14 @@ val Right: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.curren
 val RightBg: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.rightBg
 val Wrong: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.wrong
 val WrongBg: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.wrongBg
+val GridLine: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.gridLine
+
+/** Couleur d'un ton : 1 à 4, 5 = neutre. */
+@Composable
+@ReadOnlyComposable
+fun toneColor(tone: Int): Color = LocalZhuziColors.current.tones[(tone.coerceIn(1, 5)) - 1]
 
 /** Identiques jour et nuit. */
-val Grid = Color(0xFFE04A3A)
 val Seal = Color(0xFFC8321E)
 val OnSeal = Color(0xFFFFFFFF)
 

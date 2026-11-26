@@ -34,19 +34,29 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
-import com.zhuzi.app.ui.theme.Grid
+import com.zhuzi.app.data.Tones
+import com.zhuzi.app.ui.theme.GridLine
 import com.zhuzi.app.ui.theme.Ink
+import com.zhuzi.app.ui.theme.InkSoft
+import com.zhuzi.app.ui.theme.toneColor
 import com.zhuzi.app.ui.theme.Kai
 import com.zhuzi.app.ui.theme.OnSeal
 import com.zhuzi.app.ui.theme.Paper
@@ -61,50 +71,122 @@ val SquareShape = RoundedCornerShape(2.dp)
 fun <T> zhuziSpring() = spring<T>(dampingRatio = 0.72f, stiffness = Spring.StiffnessMediumLow)
 
 /**
- * Une case d'écriture : 田字格 (croix au centre) ou 米字格 (croix + diagonales),
- * avec un caractère au pinceau dedans.
+ * Cases d'écriture d'un mot : un seul cadre aux coins doux, une case par caractère,
+ * guides 田字格 (croix) ou 米字格 (croix + diagonales) en tirets gris discrets.
+ * Le caractère, au pinceau, porte la couleur de son ton.
  */
 @Composable
-fun CharGrid(char: String, size: Dp, modifier: Modifier = Modifier, diagonals: Boolean = false) {
+private fun GridRow(
+    chars: List<String>,
+    cell: Dp,
+    colors: List<Color>,
+    diagonals: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val density = LocalDensity.current
-    val borderDp = if (size >= 120.dp) 2.dp else 1.5.dp
-    Box(modifier.size(size).background(Paper), contentAlignment = Alignment.Center) {
+    val guide = GridLine
+    val frame = Ink.copy(alpha = 0.28f)
+    val paper = Paper
+    val n = chars.size
+    Box(modifier.size(cell * n, cell)) {
         Canvas(Modifier.fillMaxSize()) {
-            val border = borderDp.toPx()
-            val thin = 1.dp.toPx()
-            val dash = PathEffect.dashPathEffect(floatArrayOf(6f, 5f))
-            val w = this.size.width
-            val h = this.size.height
-            if (diagonals) {
-                drawLine(Grid.copy(alpha = 0.3f), Offset(0f, 0f), Offset(w, h), thin, pathEffect = dash)
-                drawLine(Grid.copy(alpha = 0.3f), Offset(w, 0f), Offset(0f, h), thin, pathEffect = dash)
+            val c = this.size.height
+            val border = (if (cell >= 100.dp) 1.6.dp else 1.2.dp).toPx()
+            val thin = 0.9.dp.toPx()
+            val dash = PathEffect.dashPathEffect(floatArrayOf(5f, 4f))
+            val r = CornerRadius(4.dp.toPx(), 4.dp.toPx())
+            drawRoundRect(paper, cornerRadius = r)
+            for (i in 0 until n) {
+                val x0 = i * c
+                if (diagonals) {
+                    drawLine(guide.copy(alpha = 0.6f), Offset(x0, 0f), Offset(x0 + c, c), thin, pathEffect = dash)
+                    drawLine(guide.copy(alpha = 0.6f), Offset(x0 + c, 0f), Offset(x0, c), thin, pathEffect = dash)
+                }
+                drawLine(guide, Offset(x0 + c / 2, 0f), Offset(x0 + c / 2, c), thin, pathEffect = dash)
+                drawLine(guide, Offset(x0, c / 2), Offset(x0 + c, c / 2), thin, pathEffect = dash)
+                if (i > 0) drawLine(frame, Offset(x0, 0f), Offset(x0, c), border * 0.8f)
             }
-            drawLine(Grid.copy(alpha = 0.55f), Offset(w / 2, 0f), Offset(w / 2, h), thin, pathEffect = dash)
-            drawLine(Grid.copy(alpha = 0.55f), Offset(0f, h / 2), Offset(w, h / 2), thin, pathEffect = dash)
-            drawRect(Grid, style = Stroke(border), topLeft = Offset(border / 2, border / 2),
-                size = this.size.copy(w - border, h - border))
+            drawRoundRect(
+                frame, topLeft = Offset(border / 2, border / 2),
+                size = Size(this.size.width - border, this.size.height - border),
+                cornerRadius = r, style = Stroke(border),
+            )
         }
-        Text(
-            char,
-            fontFamily = Kai,
-            color = Ink,
-            fontSize = with(density) { (size * 0.78f).toSp() },
-            // La police pinceau est un peu basse : on remonte légèrement le caractère
-            modifier = Modifier.offset(y = -size * 0.02f),
-        )
+        Row {
+            chars.forEachIndexed { i, ch ->
+                Box(Modifier.size(cell), contentAlignment = Alignment.Center) {
+                    Text(
+                        ch,
+                        fontFamily = Kai,
+                        color = colors[i],
+                        fontSize = with(density) { (cell * 0.76f).toSp() },
+                        // La police pinceau est un peu basse : on remonte légèrement le caractère
+                        modifier = Modifier.offset(y = -cell * 0.02f),
+                    )
+                }
+            }
+        }
     }
 }
 
-/** Un mot entier : une case par caractère, côte à côte (cases jointives). */
+/** Une seule case d'écriture (symbole de leçon, aperçu). */
 @Composable
-fun WordGrids(word: String, maxSize: Dp, modifier: Modifier = Modifier, diagonals: Boolean = false) {
+fun CharGrid(
+    char: String,
+    size: Dp,
+    modifier: Modifier = Modifier,
+    diagonals: Boolean = false,
+    color: Color = Ink,
+) = GridRow(listOf(char), size, listOf(color), diagonals, modifier)
+
+/** Un mot entier dans ses cases ; avec le pinyin, chaque caractère prend la couleur de son ton. */
+@Composable
+fun WordGrids(
+    word: String,
+    maxSize: Dp,
+    modifier: Modifier = Modifier,
+    diagonals: Boolean = false,
+    pinyin: String? = null,
+) {
     val chars = word.map { it.toString() }
+    val colors = if (pinyin != null) {
+        Tones.forWord(word, pinyin).map { toneColor(it) }
+    } else {
+        chars.map { Ink }
+    }
     BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         val cell = min(maxSize, maxWidth / chars.size)
-        Row {
-            chars.forEachIndexed { i, c ->
-                CharGrid(c, cell, Modifier.offset(x = -(1.5.dp * i)), diagonals)
-            }
+        GridRow(chars, cell, colors, diagonals)
+    }
+}
+
+/** Le pinyin, chaque syllabe à la couleur de son ton. */
+@Composable
+fun PinyinText(
+    pinyin: String,
+    fontSize: TextUnit,
+    modifier: Modifier = Modifier,
+    fontWeight: FontWeight = FontWeight.Bold,
+    textAlign: TextAlign? = null,
+) {
+    val pieces = Tones.pieces(pinyin)
+    val colors = pieces.map { (_, t) -> if (t == null) Ink else toneColor(t) }
+    val text = buildAnnotatedString {
+        pieces.forEachIndexed { i, (s, _) -> withStyle(SpanStyle(color = colors[i])) { append(s) } }
+    }
+    Text(text, modifier = modifier, fontSize = fontSize, fontWeight = fontWeight, textAlign = textAlign,
+        maxLines = 1, overflow = TextOverflow.Ellipsis)
+}
+
+/** Légende des couleurs de tons. */
+@Composable
+fun ToneLegend(modifier: Modifier = Modifier) {
+    val items = listOf("ā 1er" to 1, "á 2e" to 2, "ǎ 3e" to 3, "à 4e" to 4, "a neutre" to 5)
+    Row(modifier, horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically) {
+        Text("Tons", fontSize = 12.sp, color = InkSoft, fontWeight = FontWeight.Bold)
+        items.forEach { (label, t) ->
+            Text(label, fontSize = 12.sp, color = toneColor(t), fontWeight = FontWeight.Bold)
         }
     }
 }

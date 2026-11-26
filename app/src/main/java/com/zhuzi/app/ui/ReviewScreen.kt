@@ -45,6 +45,8 @@ fun ReviewScreen(
     var done by remember { mutableIntStateOf(0) }
     val total = dueWords.size
     val haptic = LocalHapticFeedback.current
+    var strokesFor by remember { mutableStateOf<Word?>(null) }
+    StrokeSheet(strokesFor) { strokesFor = null }
 
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         TopBar("Accueil", "Révision du jour", onBack)
@@ -80,7 +82,10 @@ fun ReviewScreen(
                     if (!revealed) { revealed = true; speak(w.hanzi) }
                 }, frontHint = "Tu t'en souviens ? Touche pour vérifier")
             }
-            ListenLink { speak(word.hanzi) }
+            Row {
+                ListenLink { speak(word.hanzi) }
+                StrokeLink { strokesFor = word }
+            }
         }
 
         // Actions en bas, sous le pouce

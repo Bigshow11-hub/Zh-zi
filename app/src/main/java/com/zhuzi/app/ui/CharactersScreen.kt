@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -105,7 +108,9 @@ fun CharactersScreen(
                 SearchField(query) { query = it }
                 Spacer(Modifier.height(12.dp))
                 Segmented(listOf("Tous", "Vus", "Retenus", "Nouveaux"), filter, { filter = it })
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(12.dp))
+                ToneLegend()
+                Spacer(Modifier.height(4.dp))
             }
         }
         if (shown.isEmpty()) {
@@ -148,28 +153,46 @@ private fun SearchField(value: String, onChange: (String) -> Unit) {
 @Composable
 private fun CharCell(word: Word, box: Int, onClick: () -> Unit) {
     val interaction = remember { MutableInteractionSource() }
-    Box(
+    Column(
         Modifier.fillMaxWidth().pressScale(interaction)
-            .clip(TileShape).border(1.dp, Rule, TileShape)
+            .clip(TileShape).background(Paper).border(1.dp, Rule, TileShape)
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
-            .padding(10.dp),
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Box(Modifier.fillMaxWidth().height(52.dp), contentAlignment = Alignment.Center) {
-                WordGrids(word.hanzi, maxSize = 44.dp)
-            }
-            Spacer(Modifier.height(8.dp))
-            Text(word.pinyin, fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1,
-                overflow = TextOverflow.Ellipsis)
-            Text(word.french, fontSize = 11.sp, color = InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        // Le mot posé sur un fond doux, comme une feuille sur le bureau
+        Box(
+            Modifier.fillMaxWidth().height(68.dp).clip(RoundedCornerShape(10.dp)).background(Mist)
+                .padding(horizontal = 6.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            WordGrids(word.hanzi, maxSize = 44.dp, pinyin = word.pinyin)
         }
-        // Repère : point d'encre = découvert, petit sceau rouge = bien retenu
+        Spacer(Modifier.height(8.dp))
+        PinyinText(word.pinyin, 14.sp)
+        Text(word.french, fontSize = 11.sp, color = InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Spacer(Modifier.height(6.dp))
+        StatusTag(box)
+    }
+}
+
+/** Statut du mot : petit sceau « Retenu », point « Vu », ou rien (hauteur gardée). */
+@Composable
+private fun StatusTag(box: Int) {
+    Row(Modifier.height(16.dp), verticalAlignment = Alignment.CenterVertically) {
         when {
-            box >= 4 -> Box(
-                Modifier.align(Alignment.TopEnd).size(10.dp).graphicsLayer { rotationZ = -6f }
-                    .clip(RoundedCornerShape(1.5.dp)).background(Seal),
-            )
-            box > 0 -> Box(Modifier.align(Alignment.TopEnd).size(7.dp).clip(CircleShape).background(Ink))
+            box >= 4 -> {
+                Box(
+                    Modifier.size(9.dp).graphicsLayer { rotationZ = -6f }
+                        .clip(RoundedCornerShape(1.5.dp)).background(Seal),
+                )
+                Text("  Retenu", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Seal)
+            }
+            box > 0 -> {
+                Box(Modifier.size(6.dp).clip(CircleShape).background(InkSoft))
+                Text("  Vu", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = InkSoft)
+            }
+            else -> Text("Nouveau", fontSize = 10.sp, color = InkSoft)
         }
     }
 }
@@ -177,12 +200,13 @@ private fun CharCell(word: Word, box: Int, onClick: () -> Unit) {
 @Composable
 private fun WordDetail(word: Word, lesson: Lesson, box: Int, speak: (String) -> Unit) {
     Column(
-        Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
+        Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
+            .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        WordGrids(word.hanzi, maxSize = 120.dp, diagonals = true)
+        WordGrids(word.hanzi, maxSize = 120.dp, diagonals = true, pinyin = word.pinyin)
         Spacer(Modifier.height(18.dp))
-        Text(word.pinyin, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+        PinyinText(word.pinyin, 30.sp)
         Text(word.french, fontSize = 18.sp, color = InkSoft, textAlign = TextAlign.Center)
         Spacer(Modifier.height(14.dp))
         Text("LEÇON ${lesson.id} · ${lesson.short.uppercase()}", style = Kicker)
@@ -195,7 +219,11 @@ private fun WordDetail(word: Word, lesson: Lesson, box: Int, speak: (String) -> 
             style = MaterialTheme.typography.bodyMedium, color = Ink,
             modifier = Modifier.padding(top = 4.dp),
         )
+        Spacer(Modifier.height(14.dp))
+        ToneLegend()
         Spacer(Modifier.height(20.dp))
         InkButton("Écouter", { speak(word.hanzi) }, Modifier.fillMaxWidth())
+        Spacer(Modifier.height(28.dp))
+        StrokePanel(word)
     }
 }

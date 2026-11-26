@@ -205,9 +205,9 @@ fun FlipCard(
                 Modifier.graphicsLayer { rotationY = 180f },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                WordGrids(word.hanzi, maxSize = 110.dp)
+                WordGrids(word.hanzi, maxSize = 110.dp, pinyin = word.pinyin)
                 Spacer(Modifier.height(20.dp))
-                Text(word.pinyin, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                PinyinText(word.pinyin, 32.sp)
                 Text(word.french, fontSize = 19.sp, color = InkSoft, textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 4.dp))
             }
@@ -225,8 +225,10 @@ private fun Flashcards(
 ) {
     var index by rememberSaveable { mutableIntStateOf(0) }
     var revealed by rememberSaveable { mutableStateOf(false) }
+    var strokesFor by remember { mutableStateOf<Word?>(null) }
     val word = words[index]
 
+    StrokeSheet(strokesFor) { strokesFor = null }
     Column(Modifier.fillMaxSize()) {
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState())
@@ -242,7 +244,10 @@ private fun Flashcards(
                     if (revealed) { onSeen(word); speak(word.hanzi) }
                 })
             }
-            ListenLink { speak(word.hanzi) }
+            Row {
+                ListenLink { speak(word.hanzi) }
+                StrokeLink { strokesFor = word }
+            }
         }
         // Actions en bas, sous le pouce
         BottomActions(contentPadding) {
@@ -444,10 +449,10 @@ private fun FeedbackPanel(ok: Boolean, word: Word, last: Boolean, onNext: () -> 
         Text(if (ok) "Bien joué !" else "Pas tout à fait",
             color = if (ok) Right else Wrong, fontWeight = FontWeight.Black, fontSize = 22.sp)
         Row(Modifier.padding(top = 8.dp, bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(word.hanzi, fontFamily = Kai, fontSize = 30.sp, color = Ink)
+            HanziText(word, 30.sp)
             Spacer(Modifier.width(12.dp))
             Column {
-                Text(word.pinyin, fontWeight = FontWeight.Bold, color = Ink)
+                PinyinText(word.pinyin, 16.sp)
                 Text(word.french, color = InkSoft)
             }
         }

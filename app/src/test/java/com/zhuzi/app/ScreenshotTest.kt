@@ -1,6 +1,7 @@
 package com.zhuzi.app
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -137,6 +138,23 @@ class ScreenshotTest {
             )
         }
         shot("13-progres")
+    }
+
+    @Test
+    fun traits() {
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            ZhuziTheme {
+                Surface {
+                    androidx.compose.foundation.layout.Column(
+                        androidx.compose.ui.Modifier.padding(PaddingValues(24.dp)),
+                    ) { com.zhuzi.app.ui.StrokePanel(all[0]) }
+                }
+            }
+        }
+        // Au milieu de l'animation : quelques traits finis, un en cours
+        compose.mainClock.advanceTimeBy(1500)
+        shot("14-ordre-traits")
     }
 
     private fun lesson(tab: Int) {

@@ -30,7 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zhuzi.app.R
 import com.zhuzi.app.data.Lesson
+import com.zhuzi.app.data.Tones
 import com.zhuzi.app.data.Word
+import com.zhuzi.app.ui.theme.toneColor
 import com.zhuzi.app.ui.theme.InkSoft
 import com.zhuzi.app.ui.theme.Kicker
 import com.zhuzi.app.ui.theme.Mist
@@ -138,7 +140,8 @@ private fun TodayPanel(
             Row(Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 val shown = dueWords.take(6)
                 shown.forEachIndexed { i, w ->
-                    CharGrid(w.hanzi.take(1), 40.dp, Modifier.offset(x = -(1.5.dp * i)))
+                    CharGrid(w.hanzi.take(1), 40.dp, Modifier.padding(end = 4.dp),
+                        color = toneColor(Tones.forWord(w.hanzi, w.pinyin).first()))
                 }
                 if (dueWords.size > shown.size) {
                     Text("+${dueWords.size - shown.size}", color = InkSoft, fontWeight = FontWeight.Bold,
@@ -193,10 +196,10 @@ private fun WordOfDayCard(word: Word, speak: (String) -> Unit) {
     Column(Modifier.padding(top = 28.dp)) {
         Text("MOT DU JOUR", style = Kicker)
         Row(Modifier.padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.width(150.dp)) { WordGrids(word.hanzi, maxSize = 72.dp) }
+            Box(Modifier.width(150.dp)) { WordGrids(word.hanzi, maxSize = 72.dp, pinyin = word.pinyin) }
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
-                Text(word.pinyin, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                PinyinText(word.pinyin, 22.sp)
                 Text(word.french, color = InkSoft, fontSize = 16.sp)
                 ListenLink { speak(word.hanzi) }
             }
