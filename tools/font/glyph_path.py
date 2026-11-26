@@ -13,7 +13,7 @@ class P(BasePen):
 def n(v): return ('%.2f'%v).rstrip('0').rstrip('.')
 from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.boundsPen import BoundsPen
-f = TTFont('wenkai.ttf'); gs = f.getGlyphSet(); name = f.getBestCmap()[ord(sys.argv[1])]
+f = TTFont(sys.argv[5] if len(sys.argv) > 5 else 'wenkai.ttf'); gs = f.getGlyphSet(); name = f.getBestCmap()[ord(sys.argv[1])]
 bp = BoundsPen(gs); gs[name].draw(bp); x0, y0, x1, y1 = bp.bounds
 cx, cy, size = float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4])  # centre et taille cible
 s = size / max(x1 - x0, y1 - y0)
