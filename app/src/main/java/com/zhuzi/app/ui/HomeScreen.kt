@@ -110,7 +110,7 @@ fun HomeScreen(
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(greeting.hanzi, fontFamily = Kai, fontSize = 38.sp, color = Ink)
                         Text("  " + greeting.pinyin, fontSize = 14.sp, color = InkSoft,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
+                            fontFamily = com.zhuzi.app.ui.theme.PinyinFont,
                             modifier = Modifier.padding(bottom = 8.dp))
                     }
                     Text(tr("Un peu de chinois aujourd'hui ?", "A little Chinese today?", "Немного китайского сегодня?"),
@@ -323,7 +323,7 @@ private fun TaskRow(done: Boolean, title: String, subtitle: String, onClick: () 
             Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp, maxLines = 1,
                 color = if (done) InkSoft else Ink)
             Text(subtitle, fontSize = 13.sp, color = InkSoft, maxLines = 1,
-                fontFamily = androidx.compose.ui.text.font.FontFamily.Default)
+                fontFamily = com.zhuzi.app.ui.theme.PinyinFont)
         }
         Text("›", fontSize = 22.sp, color = InkSoft)
     }

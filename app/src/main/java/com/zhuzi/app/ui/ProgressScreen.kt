@@ -61,6 +61,8 @@ fun ProgressScreen(
     onLangChange: (Lang) -> Unit,
     look: com.zhuzi.app.data.AvatarLook,
     onAvatar: () -> Unit,
+    themeMode: Int = 0,
+    onThemeChange: (Int) -> Unit = {},
     contentPadding: PaddingValues,
 ) {
     Column(
@@ -126,6 +128,15 @@ fun ProgressScreen(
             StatTile(tr("À REVOIR DEMAIN", "DUE TOMORROW", "ПОВТОРИТЬ ЗАВТРА"), "$dueTomorrow",
                 wordsCount(lang, dueTomorrow).substringAfter(' '), null, Modifier.weight(1f))
         }
+
+        // Apparence : automatique, clair, sombre
+        SectionLabel(tr("APPARENCE", "APPEARANCE", "ОФОРМЛЕНИЕ"))
+        Segmented(
+            listOf(tr("Automatique", "Automatic", "Авто"), tr("Clair", "Light", "Светлая"), tr("Sombre", "Dark", "Тёмная")),
+            themeMode, onThemeChange,
+        )
+        Text(tr("« Automatique » suit le réglage de ton téléphone.", "\"Automatic\" follows your phone's setting.",
+            "«Авто» следует настройке телефона."), color = InkSoft, fontSize = 12.sp, modifier = Modifier.padding(top = 6.dp))
 
         // Langue
         SectionLabel(tr("LANGUE", "LANGUAGE", "ЯЗЫК"))

@@ -181,7 +181,7 @@ fun PinyinText(
     }
     // Police du téléphone : elle a toutes les voyelles à tons (ǎ, ǐ, ǒ…), que Manrope n'a pas
     Text(text, modifier = modifier, fontSize = fontSize, fontWeight = fontWeight, textAlign = textAlign,
-        fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
+        fontFamily = com.zhuzi.app.ui.theme.PinyinFont,
         maxLines = maxLines, overflow = TextOverflow.Ellipsis)
 }
 
@@ -438,7 +438,7 @@ fun ExampleBlock(word: com.zhuzi.app.data.Word, speak: (String) -> Unit, modifie
     ) {
         Text(tr("EXEMPLE", "EXAMPLE", "ПРИМЕР"), style = com.zhuzi.app.ui.theme.Kicker)
         Text(sentence, fontFamily = Kai, fontSize = 26.sp, modifier = Modifier.padding(top = 8.dp))
-        Text(ex.pinyin, fontFamily = androidx.compose.ui.text.font.FontFamily.Default, fontSize = 14.sp,
+        Text(ex.pinyin, fontFamily = com.zhuzi.app.ui.theme.PinyinFont, fontSize = 14.sp,
             color = InkSoft, modifier = Modifier.padding(top = 2.dp))
         Text(ex.meaning(currentLang()), fontSize = 15.sp, color = Ink, fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(top = 6.dp))

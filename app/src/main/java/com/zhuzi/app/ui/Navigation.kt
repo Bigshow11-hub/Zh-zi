@@ -85,8 +85,15 @@ fun MainFrame(
 @Composable
 fun ZhuziBottomBar(selected: Tab, onSelect: (Tab) -> Unit, onCenter: () -> Unit = {}) {
     val haptic = LocalHapticFeedback.current
+    val bg = com.zhuzi.app.ui.theme.BgBottom
     Box(
-        Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 16.dp, end = 16.dp, bottom = 10.dp),
+        Modifier.fillMaxWidth()
+            // Fond sous la barre : le contenu ne défile plus jusqu'aux boutons du téléphone
+            .background(androidx.compose.ui.graphics.Brush.verticalGradient(
+                0f to Color.Transparent, 0.45f to bg.copy(alpha = 0.92f), 1f to bg,
+            ))
+            .navigationBarsPadding()
+            .padding(start = 16.dp, end = 16.dp, top = 22.dp, bottom = 10.dp),
         contentAlignment = Alignment.BottomCenter,
     ) {
         Row(

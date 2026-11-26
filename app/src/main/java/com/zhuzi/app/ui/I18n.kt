@@ -117,3 +117,13 @@ fun Flag(lang: Lang, modifier: Modifier = Modifier, width: Dp = 30.dp) {
         drawRect(outline, style = Stroke(1.dp.toPx()))
     }
 }
+
+/** Apparence : 0 = automatique (suit le téléphone), 1 = clair, 2 = sombre. */
+object ThemePref {
+    fun get(context: Context): Int =
+        context.getSharedPreferences("settings", Context.MODE_PRIVATE).getInt("theme", 0).coerceIn(0, 2)
+
+    fun set(context: Context, mode: Int) {
+        context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit().putInt("theme", mode).apply()
+    }
+}

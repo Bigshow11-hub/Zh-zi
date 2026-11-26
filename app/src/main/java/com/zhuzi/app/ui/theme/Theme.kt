@@ -145,6 +145,13 @@ val Manrope = FontFamily(
     Font(R.font.manrope_800, FontWeight.Black),
 )
 
+/** Police du pinyin : Noto Sans (toutes les voyelles à tons : ǎ ǐ ǒ ǔ ǚ). Jamais la police du téléphone. */
+val PinyinFont = FontFamily(
+    Font(R.font.pinyin_400, FontWeight.Normal),
+    Font(R.font.pinyin_500, FontWeight.Medium),
+    Font(R.font.pinyin_700, FontWeight.Bold),
+)
+
 /** Formes : panneaux doux, boutons en pilule, cases d'écriture nettes. */
 val PanelShape = RoundedCornerShape(24.dp)
 val TileShape = RoundedCornerShape(16.dp)

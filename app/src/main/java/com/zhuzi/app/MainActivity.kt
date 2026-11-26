@@ -87,8 +87,22 @@ class MainActivity : ComponentActivity() {
             val setLook: (com.zhuzi.app.data.AvatarLook) -> Unit = { l ->
                 com.zhuzi.app.data.AvatarPrefs.set(this@MainActivity, l); look = l
             }
+            // Apparence choisie : automatique, clair ou sombre
+            var themeMode by remember { mutableIntStateOf(com.zhuzi.app.ui.ThemePref.get(this@MainActivity)) }
+            val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
+            val dark = when (themeMode) {
+                1 -> false
+                2 -> true
+                else -> systemDark
+            }
+            // Icônes de la barre d'état du téléphone : sombres sur clair, claires sur sombre
+            LaunchedEffect(dark) {
+                val style = if (dark) SystemBarStyle.dark(Color.TRANSPARENT)
+                else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
+            }
             CompositionLocalProvider(LocalLang provides lang) {
-            ZhuziTheme {
+            ZhuziTheme(darkTheme = dark) {
                 var tab by rememberSaveable { mutableStateOf(Tab.HOME) }
                 var overlay by rememberSaveable { mutableIntStateOf(NONE) }
                 // Change à chaque progrès pour rafraîchir les onglets
@@ -260,6 +274,11 @@ class MainActivity : ComponentActivity() {
                                         lang = lang,
                                         look = look,
                                         onAvatar = { overlay = AVATAR },
+                                        themeMode = themeMode,
+                                        onThemeChange = { m ->
+                                            com.zhuzi.app.ui.ThemePref.set(this@MainActivity, m)
+                                            themeMode = m
+                                        },
                                         onLangChange = { l ->
                                             LangPref.set(this@MainActivity, l)
                                             lang = l
