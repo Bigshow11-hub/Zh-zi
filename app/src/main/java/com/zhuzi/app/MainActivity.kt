@@ -31,6 +31,9 @@ import com.zhuzi.app.ui.LessonScreen
 import com.zhuzi.app.ui.ReviewScreen
 import com.zhuzi.app.ui.Speaker
 import com.zhuzi.app.ui.theme.ZhuziTheme
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /** Écran affiché : la liste des leçons, la révision du jour, ou une leçon (son numéro). */
 private const val HOME = 0
@@ -92,7 +95,7 @@ class MainActivity : ComponentActivity() {
                             BackHandler(onBack = goHome)
                             ReviewScreen(
                                 dueWords = srs.dueWords(allWords),
-                                speaker = speaker,
+                                speak = speaker::speak,
                                 onAnswer = { word, knew ->
                                     srs.answer(word, knew)
                                     streak.markActive()
@@ -105,7 +108,7 @@ class MainActivity : ComponentActivity() {
                             BackHandler(onBack = goHome)
                             LessonScreen(
                                 lesson = lesson,
-                                speaker = speaker,
+                                speak = speaker::speak,
                                 onBack = goHome,
                                 onQuizDone = { mode, percent ->
                                     progress.saveScore(lesson.id, mode, percent)
@@ -126,7 +129,9 @@ class MainActivity : ComponentActivity() {
                             val v = version
                             LessonListScreen(
                                 bestScore = { id, mode -> if (v >= 0) progress.bestScore(id, mode) else -1 },
+                                lessonKnown = { l -> srs.knownCount(l.words) },
                                 onOpen = { screen = it.id },
+                                todayLabel = todayLabel(),
                                 dueWords = srs.dueWords(allWords),
                                 dueTomorrow = srs.dueTomorrow(allWords),
                                 knownCount = srs.knownCount(allWords),
@@ -152,3 +157,8 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
     }
 }
+
+/** « Mercredi 26 novembre » */
+private fun todayLabel(): String =
+    LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.FRENCH))
+        .replaceFirstChar { it.titlecase(Locale.FRENCH) }

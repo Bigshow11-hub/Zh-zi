@@ -24,6 +24,17 @@ jobs:
         with:
           name: zhuzi-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+      # Photos des écrans (ne bloque jamais la publication de l'APK)
+      - name: Photographier les écrans
+        continue-on-error: true
+        run: ./gradlew testDebugUnitTest --tests '*ScreenshotTest*' --no-daemon
+      - name: Mettre les photos à disposition
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zhuzi-ecrans
+          path: app/build/screens/*.png
+          if-no-files-found: ignore
       # Sur main : remplace le fichier du lien fixe
       # https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
       - name: Publier la dernière version
@@ -37,3 +48,7 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "Zhúzi – dernière version" \
             --notes "Version construite automatiquement le $(date -u '+%d/%m/%Y à %H:%M') (UTC)."
+          # Les photos d'écran, à côté de l'APK
+          if ls app/build/screens/*.png >/dev/null 2>&1; then
+            gh release upload derniere-version app/build/screens/*.png --clobber
+          fi

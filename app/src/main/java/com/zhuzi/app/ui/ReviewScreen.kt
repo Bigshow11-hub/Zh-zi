@@ -1,7 +1,9 @@
 package com.zhuzi.app.ui
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,12 +12,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -25,17 +24,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.zhuzi.app.data.Word
-import com.zhuzi.app.ui.theme.InkSoft
 
-/** Révision du jour : le mot dans ses cases, on réfléchit, on vérifie, on dit si on savait. */
+/** Révision du jour : la carte, on se souvient, on la retourne, on dit si on savait. */
 @Composable
 fun ReviewScreen(
     dueWords: List<Word>,
-    speaker: Speaker,
+    speak: (String) -> Unit,
     onAnswer: (Word, Boolean) -> Unit,
     onBack: () -> Unit,
     contentPadding: PaddingValues,
@@ -46,63 +44,52 @@ fun ReviewScreen(
     var revealed by remember { mutableStateOf(false) }
     var done by remember { mutableIntStateOf(0) }
     val total = dueWords.size
+    val haptic = LocalHapticFeedback.current
 
-    Column(Modifier.fillMaxSize().padding(contentPadding)) {
-        TopBar("← Révision", if (queue.isEmpty()) "" else "${done + 1} / $total", onBack)
+    Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
+        TopBar("Accueil", "Révision du jour", onBack)
         Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                .padding(start = 20.dp, end = 20.dp, top = 8.dp,
+                    bottom = contentPadding.calculateBottomPadding() + 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             if (queue.isEmpty()) {
-                Spacer(Modifier.height(60.dp))
-                CharGrid("记", 120.dp)
-                Spacer(Modifier.height(20.dp))
-                Text("Révision terminée", style = MaterialTheme.typography.headlineMedium)
-                Text("$total mot${if (total > 1) "s" else ""} revu${if (total > 1) "s" else ""}. " +
-                    "Reviens demain pour la suite.", color = InkSoft, textAlign = TextAlign.Center)
-                Spacer(Modifier.height(24.dp))
-                InkButton("Retour aux leçons", onBack, Modifier.fillMaxWidth())
+                Spacer(Modifier.height(80.dp))
+                DoneBlock(
+                    "记", "Révision terminée",
+                    "$total mot${if (total > 1) "s" else ""} revu${if (total > 1) "s" else ""}. " +
+                        "Les prochains reviendront au bon moment.",
+                )
+                Spacer(Modifier.height(32.dp))
+                InkButton("Retour à l'accueil", onBack, Modifier.fillMaxWidth())
                 return@Column
             }
 
+            StepProgress(done, total)
+            Spacer(Modifier.height(18.dp))
             val word = queue.first()
-            val reveal = {
-                if (!revealed) { revealed = true; speaker.speak(word.hanzi) }
+            // Changement de carte en fondu
+            AnimatedContent(word, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "card") { w ->
+                FlipCard(w, revealed, {
+                    if (!revealed) { revealed = true; speak(w.hanzi) }
+                }, frontHint = "Tu t'en souviens ? Touche pour vérifier")
             }
-            Spacer(Modifier.height(12.dp))
-            WordGrids(
-                word.hanzi, maxSize = 240.dp, diagonals = true,
-                modifier = Modifier.clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = reveal,
-                ),
-            )
-            Spacer(Modifier.height(20.dp))
-            Column(Modifier.heightIn(min = 72.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                if (revealed) {
-                    Text(word.pinyin, fontSize = 28.sp)
-                    Text("${word.hanzi} · ${word.french}", fontSize = 18.sp, color = InkSoft,
-                        textAlign = TextAlign.Center)
-                } else {
-                    Text("Tu t'en souviens ? Touche la case pour vérifier.", color = InkSoft,
-                        textAlign = TextAlign.Center)
-                }
-            }
-            ListenLink { speaker.speak(word.hanzi) }
-            Spacer(Modifier.height(16.dp))
+            ListenLink { speak(word.hanzi) }
 
             if (!revealed) {
-                InkButton("Voir la réponse", reveal, Modifier.fillMaxWidth())
+                InkButton("Voir la réponse", { revealed = true; speak(word.hanzi) }, Modifier.fillMaxWidth())
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     InkOutlinedButton("Oublié", {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         failed.add(word)
                         onAnswer(word, false)
                         queue.removeAt(0); queue.add(word)
                         revealed = false
                     }, Modifier.weight(1f))
                     InkButton("Je savais", {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         // Un mot raté pendant la séance reste en boîte 1 (à revoir demain).
                         if (word !in failed) onAnswer(word, true)
                         queue.removeAt(0)
