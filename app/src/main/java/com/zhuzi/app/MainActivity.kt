@@ -151,7 +151,7 @@ class MainActivity : ComponentActivity() {
                                 known = known,
                                 streak = streak.current(),
                                 lessonsMastered = hsk1Lessons.count { l ->
-                                    QuizMode.entries.all { progress.bestScore(l.id, it) >= 80 }
+                                    QuizMode.core.all { progress.bestScore(l.id, it) >= 80 }
                                 },
                                 listeningPassed = hsk1Lessons.any { progress.bestScore(it.id, QuizMode.LISTENING) >= 80 },
                             ),
@@ -255,7 +255,7 @@ class MainActivity : ComponentActivity() {
                                         total = total,
                                         dueTomorrow = srs.dueTomorrow(allWords),
                                         lessonsMastered = hsk1Lessons.count { l ->
-                                            QuizMode.entries.all { bestScore(l.id, it) >= 80 }
+                                            QuizMode.core.all { bestScore(l.id, it) >= 80 }
                                         },
                                         lessonsTotal = hsk1Lessons.size,
                                         reminderOn = reminderOn,

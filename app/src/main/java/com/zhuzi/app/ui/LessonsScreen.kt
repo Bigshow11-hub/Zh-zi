@@ -59,7 +59,7 @@ fun LessonsScreen(
     val lang = currentLang()
     val total = hsk1Lessons.sumOf { it.words.size }
     val known = hsk1Lessons.sumOf { lessonKnown(it) }
-    val mastered: (Lesson) -> Boolean = { l -> QuizMode.entries.all { bestScore(l.id, it) >= 80 } }
+    val mastered: (Lesson) -> Boolean = { l -> QuizMode.core.all { bestScore(l.id, it) >= 80 } }
     val masteredCount = hsk1Lessons.count(mastered)
     val current = hsk1Lessons.firstOrNull { lessonKnown(it) < it.words.size }
     val seen = remember { mutableSetOf<Any>() }
@@ -121,6 +121,7 @@ fun ScreenTitle(title: String, subtitle: String) {
     }
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun LessonCard(
     lesson: Lesson,
@@ -178,8 +179,12 @@ private fun LessonCard(
             ProgressBar(known.toFloat() / lesson.words.size, Modifier.weight(1f), color = tint, height = 6.dp)
             Text("  $known/${lesson.words.size}", fontSize = 12.sp, color = InkSoft, fontWeight = FontWeight.Bold)
         }
-        // Les trois quiz, en pilules : pleines quand le score atteint 80 %
-        Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        // Les quiz, en pilules : pleines quand le score atteint 80 % (passent à la ligne si besoin)
+        androidx.compose.foundation.layout.FlowRow(
+            Modifier.padding(top = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
             QuizMode.entries.forEach { m ->
                 val done = bestScore(lesson.id, m) >= 80
                 Box(

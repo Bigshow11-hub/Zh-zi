@@ -216,13 +216,14 @@ class ScreenshotTest {
         shot("18-avatar")
     }
 
-    private fun lesson(tab: Int) {
+    private fun lesson(tab: Int, mode: QuizMode = QuizMode.MEANING) {
         compose.setContent {
             ZhuziTheme {
                 Surface {
                     LessonScreen(
                         lesson = hsk1Lessons[0], speak = {}, onBack = {}, onQuizDone = { _, _ -> },
                         onSeen = {}, onQuizAnswer = { _, _ -> }, contentPadding = bars, startTab = tab,
+                        startQuizMode = mode,
                     )
                 }
             }
@@ -236,6 +237,19 @@ class ScreenshotTest {
         compose.onNodeWithText("Touche la carte pour la retourner").performClick()
         compose.waitForIdle()
         shot("4-carte-verso")
+    }
+
+    @Test
+    fun tons() {
+        lesson(2, QuizMode.TONES)
+        shot("20-tons-question")
+        // Répond « 1er ton » à chaque syllabe : on voit les justes et les fausses
+        repeat(3) {
+            val nodes = compose.onAllNodesWithText("ā")
+            if (nodes.fetchSemanticsNodes().isNotEmpty()) nodes[0].performClick()
+            compose.waitForIdle()
+        }
+        shot("21-tons-reponse")
     }
 
     @Test

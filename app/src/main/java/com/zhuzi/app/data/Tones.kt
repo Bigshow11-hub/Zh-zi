@@ -73,6 +73,17 @@ object Tones {
         return result
     }
 
+    /** La syllabe sans signe de ton (le tréma de ü reste) : « nǚ » → « nü ». */
+    fun plain(syllable: String): String = nfc(
+        Normalizer.normalize(syllable, Normalizer.Form.NFD).filter {
+            Character.getType(it) != Character.NON_SPACING_MARK.toInt() || it == '\u0308'
+        },
+    )
+
+    /** Les syllabes d'un mot avec leur ton (1 à 4, 5 = neutre). */
+    fun syllables(pinyin: String): List<Pair<String, Int>> =
+        pieces(pinyin).mapNotNull { (s, t) -> t?.let { s to it } }
+
     private fun nfc(s: String) = Normalizer.normalize(s, Normalizer.Form.NFC)
 
     /** Un ton par caractère du mot (儿 fondu dans la syllabe d'avant compte comme neutre). */

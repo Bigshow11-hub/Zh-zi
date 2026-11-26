@@ -84,6 +84,7 @@ fun LessonScreen(
     onQuizAnswer: (Word, Boolean) -> Unit,
     contentPadding: PaddingValues,
     startTab: Int = 0,
+    startQuizMode: QuizMode = QuizMode.MEANING,
 ) {
     var tab by rememberSaveable { mutableIntStateOf(startTab) }
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
@@ -103,7 +104,7 @@ fun LessonScreen(
             when (tab) {
                 0 -> Flashcards(lesson.words, speak, onSeen, contentPadding)
                 1 -> WritingTab(lesson.words, speak, onSeen, contentPadding)
-                else -> Quiz(lesson, speak, onQuizDone, onQuizAnswer, onBack, contentPadding)
+                else -> Quiz(lesson, speak, onQuizDone, onQuizAnswer, onBack, contentPadding, startQuizMode)
             }
         }
     }
@@ -333,9 +334,19 @@ private fun Quiz(
     onAnswer: (Word, Boolean) -> Unit,
     onBack: () -> Unit,
     contentPadding: PaddingValues,
+    startMode: QuizMode = QuizMode.MEANING,
 ) {
     val lang = currentLang()
-    var mode by rememberSaveable { mutableStateOf(QuizMode.MEANING) }
+    var mode by rememberSaveable { mutableStateOf(startMode) }
+    val modeSelector: @Composable () -> Unit = {
+        Segmented(QuizMode.entries.map { it.label(lang) }, mode.ordinal,
+            { mode = QuizMode.entries[it] })
+    }
+    // Le quiz des tons a son propre déroulé
+    if (mode == QuizMode.TONES) {
+        ToneQuiz(lesson, speak, onDone, onAnswer, onBack, contentPadding, modeSelector)
+        return
+    }
     var round by remember { mutableIntStateOf(0) }
     val questions = remember(round, mode) { buildQuiz(lesson.words) }
     var index by remember(round, mode) { mutableIntStateOf(0) }
@@ -351,8 +362,7 @@ private fun Quiz(
                 .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = bottom + 220.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Segmented(QuizMode.entries.map { it.label(lang) }, mode.ordinal,
-                { mode = QuizMode.entries[it] })
+            modeSelector()
             Spacer(Modifier.height(18.dp))
 
             if (finished) {
@@ -494,7 +504,7 @@ private fun ChoiceTile(choice: Word, asHanzi: Boolean, state: Int, enabled: Bool
 
 /** Panneau du bas après une réponse : verdict, la bonne réponse et « Continuer ». */
 @Composable
-private fun FeedbackPanel(ok: Boolean, word: Word, last: Boolean, seed: Int, onNext: () -> Unit) {
+internal fun FeedbackPanel(ok: Boolean, word: Word, last: Boolean, seed: Int, onNext: () -> Unit) {
     val lang = currentLang()
     val cheer = com.zhuzi.app.data.cheers[seed % com.zhuzi.app.data.cheers.size]
     val nudge = com.zhuzi.app.data.nudges[seed % com.zhuzi.app.data.nudges.size]

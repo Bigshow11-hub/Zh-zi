@@ -31,16 +31,16 @@
 - Tracé des caractères (1.3.0, `ui/Writing.kt`) : onglet « Écrire » dans chaque leçon (Cartes / Écrire / Quiz). On trace chaque trait au doigt ; `StrokeJudge` compare au tracé médian (départ, arrivée, sens, distance moyenne < 115, longueur 0,4–2,6×, points espacés ≥ 20 pour ignorer les tremblements). Testé sur les 1 179 traits : 99 % des traits tremblés/décalés acceptés, 0 % des traits à l'envers, 0,1 % des mauvais traits. Indice après 2 erreurs, interrupteur « Modèle », sceau 好 à la fin du mot ; le mot compte comme découvert.
 - 1.4.0 : fond dégradé sous la barre du bas (le contenu ne déborde plus jusqu'aux boutons du téléphone) ; pinyin en police Noto Sans intégrée (`res/font/pinyin_*.ttf`, `PinyinFont`) — **jamais `FontFamily.Default`** : sur le téléphone du propriétaire la police système est décorative ; choix Apparence Automatique / Clair / Sombre dans Progrès (`ThemePref`, clé `theme`) ; onglet Leçons refait (carte de synthèse en dégradé, cartes de leçon avec pastille colorée, accroche, pilules de quiz, statut, leçon en cours liserée). Constaté sur le téléphone : la police pinceau s'affiche bien (seul l'outil de photo ne l'affiche pas).
 - 1.5.0 « animations » : barres de progression vivantes (remplissage depuis zéro, dégradé, reflet périodique) et anneaux animés (`ui/Components.kt`) ; chiffres qui comptent (`CountUpText`) ; entrée en cascade des éléments de l'accueil et des leçons, jouée une seule fois (`staggerIn`, `staggerItem`) ; anneau de progression autour de chaque leçon ; graphique « Ta semaine » dans Progrès (activité par jour enregistrée dans `Streak`, préférences `activity`, clé `d<jour>`).
+- 1.6.0 « quiz des tons » (`ui/ToneQuiz.kt`) : 4e quiz « Tons » dans chaque leçon (`QuizMode.TONES`, clé `_tones`). On entend le mot, on voit les caractères sans couleur et le pinyin sans accents, on choisit le ton de chaque syllabe (boutons avec la courbe de hauteur 55/35/214/51 + neutre). On répond avec le ton écrit du dictionnaire. Le score compte dans la révision espacée mais pas pour « leçon maîtrisée » (`QuizMode.core` = sens, écrit, écoute).
 - Higgsfield (génération d'images) : connecté, mais l'offre gratuite ne permet aucune génération (abonnement Basic requis).
 - Lien de téléchargement fixe : https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
 - Construction automatique de l'APK par GitHub Actions.
 
 ## Idées de suite
 
-1. Quiz des tons.
-3. Phrases d'exemple pour chaque mot.
-4. HSK 2.
-5. Choisir l'heure du rappel.
+1. Fêter les étapes (7/30/100 jours, niveau supérieur, animation du panda).
+2. HSK 2.
+3. Choisir l'heure du rappel.
 
 ## Décisions
 
