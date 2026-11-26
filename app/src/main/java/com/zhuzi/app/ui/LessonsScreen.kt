@@ -50,7 +50,12 @@ fun LessonsScreen(
         ),
     ) {
         item {
-            ScreenTitle("Leçons", "HSK 1 · ${hsk1Lessons.size} leçons · $total mots · $masteredCount maîtrisée${if (masteredCount > 1) "s" else ""}")
+            ScreenTitle(
+                tr("Leçons", "Lessons", "Уроки"),
+                "HSK 1 · " + lessonsCount(currentLang(), hsk1Lessons.size) + " · " + wordsCount(currentLang(), total) +
+                    " · $masteredCount " + tr(if (masteredCount > 1) "maîtrisées" else "maîtrisée", "mastered",
+                        ruPlural(masteredCount, "освоен", "освоено", "освоено")),
+            )
         }
         items(hsk1Lessons, key = { it.id }) { lesson ->
             LessonRow(lesson, lessonKnown(lesson), mastered(lesson), bestScore, onOpen)
@@ -90,7 +95,7 @@ private fun LessonRow(
             CharGrid(lesson.symbol, 48.dp)
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                Text(lesson.title, fontWeight = FontWeight.Bold, fontSize = 15.sp, maxLines = 1)
+                Text(lesson.title(currentLang()), fontWeight = FontWeight.Bold, fontSize = 15.sp, maxLines = 1)
                 Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                     ProgressBar(known.toFloat() / lesson.words.size, Modifier.weight(1f), height = 4.dp)
                     Spacer(Modifier.width(10.dp))
@@ -101,7 +106,7 @@ private fun LessonRow(
                     QuizMode.entries.forEach { m ->
                         val done = bestScore(lesson.id, m) >= 80
                         Text(
-                            (if (done) "● " else "○ ") + m.label,
+                            (if (done) "● " else "○ ") + m.label(currentLang()),
                             fontSize = 11.sp,
                             color = if (done) Ink else InkSoft,
                             fontWeight = if (done) FontWeight.Bold else FontWeight.Normal,

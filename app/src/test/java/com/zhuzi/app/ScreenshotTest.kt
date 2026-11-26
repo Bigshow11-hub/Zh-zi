@@ -13,7 +13,10 @@ import androidx.compose.ui.unit.dp
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.github.takahirom.roborazzi.captureScreenRoboImage
+import androidx.compose.runtime.CompositionLocalProvider
+import com.zhuzi.app.data.Lang
 import com.zhuzi.app.data.QuizMode
+import com.zhuzi.app.ui.LocalLang
 import com.zhuzi.app.data.Word
 import com.zhuzi.app.data.hsk1Lessons
 import com.zhuzi.app.ui.CharactersScreen
@@ -63,10 +66,29 @@ class ScreenshotTest {
     private fun shot(name: String) = compose.onRoot().captureRoboImage("build/screens/$name.png")
 
     /** Un onglet dans le cadre avec la barre du bas. */
-    private fun inTab(tab: Tab, night: Boolean = false, content: @Composable (PaddingValues) -> Unit) {
+    private fun inTab(
+        tab: Tab,
+        night: Boolean = false,
+        lang: Lang = Lang.FR,
+        content: @Composable (PaddingValues) -> Unit,
+    ) {
         compose.setContent {
-            ZhuziTheme(darkTheme = night) { MainFrame(tab, {}) { content(it) } }
+            CompositionLocalProvider(LocalLang provides lang) {
+                ZhuziTheme(darkTheme = night) { MainFrame(tab, {}) { content(it) } }
+            }
         }
+    }
+
+    @Test
+    fun accueilAnglais() {
+        inTab(Tab.HOME, lang = Lang.EN) { home(it) }
+        shot("15-accueil-anglais")
+    }
+
+    @Test
+    fun caracteresRusse() {
+        inTab(Tab.CHARS, lang = Lang.RU) { CharactersScreen(boxOf = boxes, speak = {}, contentPadding = it) }
+        shot("16-caracteres-russe")
     }
 
     @Composable
@@ -134,7 +156,8 @@ class ScreenshotTest {
             ProgressScreen(
                 streakDays = 12, knownCount = 37, masteredCount = 20, total = all.size, dueTomorrow = 5,
                 lessonsMastered = 1, lessonsTotal = hsk1Lessons.size, reminderOn = true,
-                onReminderChange = {}, versionName = "0.7.0", contentPadding = it,
+                onReminderChange = {}, versionName = "0.9.0", lang = Lang.FR, onLangChange = {},
+                contentPadding = it,
             )
         }
         shot("13-progres")

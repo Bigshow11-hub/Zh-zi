@@ -77,6 +77,7 @@ fun CharactersScreen(
     var filter by rememberSaveable { mutableIntStateOf(0) }
     var selected by remember { mutableStateOf<Pair<Word, Lesson>?>(null) }
 
+    val lang = currentLang()
     val q = plain(query)
     val shown = entries.filter { (w, _) ->
         val box = boxOf(w)
@@ -86,7 +87,7 @@ fun CharactersScreen(
             3 -> box == 0
             else -> true
         }
-        keep && (q.isEmpty() || plain(w.pinyin).contains(q) || plain(w.french).contains(q) ||
+        keep && (q.isEmpty() || plain(w.pinyin).contains(q) || plain(w.meaning(lang)).contains(q) ||
             w.hanzi.contains(query.trim()))
     }
     val known = entries.count { boxOf(it.first) > 0 }
@@ -103,11 +104,17 @@ fun CharactersScreen(
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             Column {
-                ScreenTitle("Caractères", "$known découverts sur ${entries.size} · touche un mot pour sa fiche")
+                ScreenTitle(
+                    tr("Caractères", "Characters", "Иероглифы"),
+                    tr("$known découverts sur ${entries.size} · touche un mot pour sa fiche",
+                        "$known of ${entries.size} discovered · tap a word for details",
+                        "Открыто $known из ${entries.size} · нажми на слово"),
+                )
                 Spacer(Modifier.height(8.dp))
                 SearchField(query) { query = it }
                 Spacer(Modifier.height(12.dp))
-                Segmented(listOf("Tous", "Vus", "Retenus", "Nouveaux"), filter, { filter = it })
+                Segmented(listOf(tr("Tous", "All", "Все"), tr("Vus", "Seen", "Видел"), tr("Retenus", "Learned", "Выучено"),
+                    tr("Nouveaux", "New", "Новые")), filter, { filter = it })
                 Spacer(Modifier.height(12.dp))
                 ToneLegend()
                 Spacer(Modifier.height(4.dp))
@@ -115,7 +122,7 @@ fun CharactersScreen(
         }
         if (shown.isEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Text("Aucun mot trouvé.", color = InkSoft, textAlign = TextAlign.Center,
+                Text(tr("Aucun mot trouvé.", "No word found.", "Ничего не найдено."), color = InkSoft, textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth().padding(top = 40.dp))
             }
         }
@@ -143,7 +150,7 @@ private fun SearchField(value: String, onChange: (String) -> Unit) {
             .padding(horizontal = 20.dp, vertical = 15.dp),
         decorationBox = { inner ->
             Box {
-                if (value.isEmpty()) Text("Chercher : ni hao, merci, 你…", color = InkSoft, fontSize = 16.sp)
+                if (value.isEmpty()) Text(tr("Chercher : ni hao, merci, 你…", "Search: ni hao, thanks, 你…", "Поиск: ni hao, спасибо, 你…"), color = InkSoft, fontSize = 16.sp)
                 inner()
             }
         },
@@ -170,7 +177,7 @@ private fun CharCell(word: Word, box: Int, onClick: () -> Unit) {
         }
         Spacer(Modifier.height(8.dp))
         PinyinText(word.pinyin, 14.sp)
-        Text(word.french, fontSize = 11.sp, color = InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(word.meaning(currentLang()), fontSize = 11.sp, color = InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(6.dp))
         StatusTag(box)
     }
@@ -186,13 +193,13 @@ private fun StatusTag(box: Int) {
                     Modifier.size(9.dp).graphicsLayer { rotationZ = -6f }
                         .clip(RoundedCornerShape(1.5.dp)).background(Seal),
                 )
-                Text("  Retenu", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Seal)
+                Text("  " + tr("Retenu", "Learned", "Выучено"), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Seal)
             }
             box > 0 -> {
                 Box(Modifier.size(6.dp).clip(CircleShape).background(InkSoft))
-                Text("  Vu", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = InkSoft)
+                Text("  " + tr("Vu", "Seen", "Видел"), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = InkSoft)
             }
-            else -> Text("Nouveau", fontSize = 10.sp, color = InkSoft)
+            else -> Text(tr("Nouveau", "New", "Новое"), fontSize = 10.sp, color = InkSoft)
         }
     }
 }
@@ -207,14 +214,14 @@ private fun WordDetail(word: Word, lesson: Lesson, box: Int, speak: (String) -> 
         WordGrids(word.hanzi, maxSize = 120.dp, diagonals = true, pinyin = word.pinyin)
         Spacer(Modifier.height(18.dp))
         PinyinText(word.pinyin, 30.sp)
-        Text(word.french, fontSize = 18.sp, color = InkSoft, textAlign = TextAlign.Center)
+        Text(word.meaning(currentLang()), fontSize = 18.sp, color = InkSoft, textAlign = TextAlign.Center)
         Spacer(Modifier.height(14.dp))
-        Text("LEÇON ${lesson.id} · ${lesson.short.uppercase()}", style = Kicker)
+        Text(tr("LEÇON ", "LESSON ", "УРОК ") + "${lesson.id} · ${lesson.short(currentLang()).uppercase()}", style = Kicker)
         Text(
             when {
-                box >= 4 -> "Bien retenu"
-                box > 0 -> "Découvert · en révision"
-                else -> "Pas encore découvert"
+                box >= 4 -> tr("Bien retenu", "Well learned", "Хорошо выучено")
+                box > 0 -> tr("Découvert · en révision", "Discovered · in review", "Открыто · на повторении")
+                else -> tr("Pas encore découvert", "Not discovered yet", "Ещё не открыто")
             },
             style = MaterialTheme.typography.bodyMedium, color = Ink,
             modifier = Modifier.padding(top = 4.dp),
@@ -222,7 +229,7 @@ private fun WordDetail(word: Word, lesson: Lesson, box: Int, speak: (String) -> 
         Spacer(Modifier.height(14.dp))
         ToneLegend()
         Spacer(Modifier.height(20.dp))
-        InkButton("Écouter", { speak(word.hanzi) }, Modifier.fillMaxWidth())
+        InkButton(tr("Écouter", "Listen", "Слушать"), { speak(word.hanzi) }, Modifier.fillMaxWidth())
         Spacer(Modifier.height(28.dp))
         StrokePanel(word)
     }

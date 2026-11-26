@@ -20,6 +20,10 @@ import com.zhuzi.app.R
 import com.zhuzi.app.data.Srs
 import com.zhuzi.app.data.Streak
 import com.zhuzi.app.data.hsk1Lessons
+import com.zhuzi.app.ui.LangPref
+import com.zhuzi.app.ui.daysCount
+import com.zhuzi.app.ui.tr
+import com.zhuzi.app.ui.wordsCount
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
@@ -64,11 +68,21 @@ object Reminders {
         val all = hsk1Lessons.flatMap { it.words }
         val due = srs.dueWords(all).size
         val days = streak.current()
-        val keep = if (days > 0) " Garde ta série de $days jour${if (days > 1) "s" else ""} d'affilée." else ""
+        val lang = LangPref.get(context)
+        val keep = if (days > 0) {
+            " " + tr(lang, "Garde ta série de ${daysCount(lang, days)} d'affilée.",
+                "Keep your ${daysCount(lang, days)} streak going.",
+                "Сохрани серию: ${daysCount(lang, days)} подряд.")
+        } else {
+            ""
+        }
         return when {
-            due > 0 -> "$due mot${if (due > 1) "s" else ""} à revoir aujourd'hui.$keep"
-            days > 0 -> "Un petit quiz pour continuer ?$keep"
-            srs.knownCount(all) == 0 -> "Tes premiers mots de chinois t'attendent."
+            due > 0 -> tr(lang, "À revoir aujourd'hui : ", "To review today: ", "Повторить сегодня: ") +
+                wordsCount(lang, due) + "." + keep
+            days > 0 -> tr(lang, "Un petit quiz pour continuer ?", "A quick quiz to keep going?",
+                "Небольшой тест, чтобы продолжить?") + keep
+            srs.knownCount(all) == 0 -> tr(lang, "Tes premiers mots de chinois t'attendent.",
+                "Your first Chinese words are waiting.", "Твои первые китайские слова ждут тебя.")
             else -> null
         }
     }
@@ -77,7 +91,11 @@ object Reminders {
         if (!canNotify(context)) return
         val manager = context.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(
-            NotificationChannel(CHANNEL, "Rappel quotidien", NotificationManager.IMPORTANCE_DEFAULT),
+            NotificationChannel(
+                CHANNEL,
+                tr(LangPref.get(context), "Rappel quotidien", "Daily reminder", "Ежедневное напоминание"),
+                NotificationManager.IMPORTANCE_DEFAULT,
+            ),
         )
         val open = PendingIntent.getActivity(
             context, 0,

@@ -38,11 +38,13 @@ import com.zhuzi.app.ui.theme.PillShape
 import com.zhuzi.app.ui.theme.Rule
 
 /** Les onglets du bas. Chaque icône est un caractère : 家 maison, 学 apprendre, 字 caractère, 记 retenir. */
-enum class Tab(val label: String, val glyph: String) {
-    HOME("Accueil", "家"),
-    LESSONS("Leçons", "学"),
-    CHARS("Caractères", "字"),
-    PROGRESS("Progrès", "记"),
+enum class Tab(private val fr: String, private val en: String, private val ru: String, val glyph: String) {
+    HOME("Accueil", "Home", "Главная", "家"),
+    LESSONS("Leçons", "Lessons", "Уроки", "学"),
+    CHARS("Caractères", "Characters", "Иероглифы", "字"),
+    PROGRESS("Progrès", "Progress", "Прогресс", "记");
+
+    fun label(lang: com.zhuzi.app.data.Lang) = tr(lang, fr, en, ru)
 }
 
 /** Cadre principal : le contenu de l'onglet, et la barre de navigation en bas. */
@@ -90,7 +92,7 @@ fun ZhuziBottomBar(selected: Tab, onSelect: (Tab) -> Unit) {
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        t.label,
+                        t.label(currentLang()),
                         fontSize = 12.sp,
                         fontWeight = if (on) FontWeight.Bold else FontWeight.Medium,
                         color = if (on) Ink else InkSoft,

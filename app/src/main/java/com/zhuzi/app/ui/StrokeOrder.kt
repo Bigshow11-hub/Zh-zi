@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -170,16 +170,17 @@ fun StrokeOrderView(char: String, size: Dp, modifier: Modifier = Modifier) {
         }
         Spacer(Modifier.height(12.dp))
         Text(
-            if (done >= n) "$n trait${if (n > 1) "s" else ""}" else "Trait ${done + 1} sur $n",
+            if (done >= n) countOf(currentLang(), n, "trait" to "traits", "stroke" to "strokes", Triple("черта", "черты", "черт"))
+            else tr("Trait ${done + 1} sur $n", "Stroke ${done + 1} of $n", "Черта ${done + 1} из $n"),
             fontSize = 13.sp, fontWeight = FontWeight.Bold, color = InkSoft,
         )
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SmallPill("‹ Trait") {
+            SmallPill("‹ " + tr("Trait", "Stroke", "Черта")) {
                 run = 0; done = (done - 1).coerceAtLeast(0)
             }
-            SmallPill("Rejouer", filled = true) { run = if (run > 0) run + 1 else 1 }
-            SmallPill("Trait ›") {
+            SmallPill(tr("Rejouer", "Replay", "Повтор"), filled = true) { run = if (run > 0) run + 1 else 1 }
+            SmallPill(tr("Trait", "Stroke", "Черта") + " ›") {
                 run = 0; done = (done + 1).coerceAtMost(n)
             }
         }
@@ -202,7 +203,7 @@ private fun SmallPill(label: String, filled: Boolean = false, onClick: () -> Uni
 @Composable
 fun StrokeLink(onClick: () -> Unit) {
     androidx.compose.material3.TextButton(onClick = onClick) {
-        Text("Ordre des traits", color = Ink, fontWeight = FontWeight.Bold,
+        Text(tr("Ordre des traits", "Stroke order", "Порядок черт"), color = Ink, fontWeight = FontWeight.Bold,
             textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
     }
 }
@@ -214,7 +215,7 @@ fun StrokeSheet(word: Word?, onDismiss: () -> Unit) {
     if (word == null) return
     androidx.compose.material3.ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Paper) {
         Column(
-            Modifier.fillMaxWidth().androidxNavPadding().padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
+            Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             WordGrids(word.hanzi, maxSize = 56.dp, pinyin = word.pinyin)
@@ -225,10 +226,6 @@ fun StrokeSheet(word: Word?, onDismiss: () -> Unit) {
         }
     }
 }
-
-private fun Modifier.androidxNavPadding() = this.then(
-    Modifier.windowInsetsPadding(androidx.compose.foundation.layout.WindowInsets.navigationBars),
-)
 
 /** Les caractères d'un mot au pinceau, chacun à la couleur de son ton. */
 @Composable
@@ -249,7 +246,7 @@ fun StrokePanel(word: Word, modifier: Modifier = Modifier, size: Dp = 220.dp) {
     val chars = word.hanzi.map { it.toString() }
     val tones = Tones.forWord(word.hanzi, word.pinyin)
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("ORDRE DES TRAITS", style = Kicker)
+        Text(tr("ORDRE DES TRAITS", "STROKE ORDER", "ПОРЯДОК ЧЕРТ"), style = Kicker)
         if (chars.size > 1) {
             Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 chars.forEachIndexed { i, c ->

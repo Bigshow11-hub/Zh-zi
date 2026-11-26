@@ -181,10 +181,16 @@ fun PinyinText(
 /** Légende des couleurs de tons. */
 @Composable
 fun ToneLegend(modifier: Modifier = Modifier) {
-    val items = listOf("ā 1er" to 1, "á 2e" to 2, "ǎ 3e" to 3, "à 4e" to 4, "a neutre" to 5)
+    val items = listOf(
+        "ā " + tr("1er", "1st", "1-й") to 1,
+        "á " + tr("2e", "2nd", "2-й") to 2,
+        "ǎ " + tr("3e", "3rd", "3-й") to 3,
+        "à " + tr("4e", "4th", "4-й") to 4,
+        "a " + tr("neutre", "neutral", "нейтр.") to 5,
+    )
     Row(modifier, horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically) {
-        Text("Tons", fontSize = 12.sp, color = InkSoft, fontWeight = FontWeight.Bold)
+        Text(tr("Tons", "Tones", "Тоны"), fontSize = 12.sp, color = InkSoft, fontWeight = FontWeight.Bold)
         items.forEach { (label, t) ->
             Text(label, fontSize = 12.sp, color = toneColor(t), fontWeight = FontWeight.Bold)
         }
@@ -316,7 +322,8 @@ fun StreakBadge(days: Int, modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(3.dp)).background(Seal),
             contentAlignment = Alignment.Center,
         ) { Text("$days", color = OnSeal, fontWeight = FontWeight.Black, fontSize = 14.sp) }
-        Text(if (days > 1) "  jours d'affilée" else "  jour", color = Ink,
+        Text("  " + tr(if (days > 1) "jours d'affilée" else "jour", if (days == 1) "day streak" else "day streak",
+            ruPlural(days, "день подряд", "дня подряд", "дней подряд")), color = Ink,
             fontWeight = FontWeight.Bold, fontSize = 14.sp)
     }
 }

@@ -28,6 +28,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.CompositionLocalProvider
+import com.zhuzi.app.data.Lang
 import com.zhuzi.app.data.Progress
 import com.zhuzi.app.data.QuizMode
 import com.zhuzi.app.data.Srs
@@ -36,6 +38,8 @@ import com.zhuzi.app.data.hsk1Lessons
 import com.zhuzi.app.reminder.Reminders
 import com.zhuzi.app.ui.CharactersScreen
 import com.zhuzi.app.ui.HomeScreen
+import com.zhuzi.app.ui.LangPref
+import com.zhuzi.app.ui.LocalLang
 import com.zhuzi.app.ui.LessonScreen
 import com.zhuzi.app.ui.LessonsScreen
 import com.zhuzi.app.ui.MainFrame
@@ -74,6 +78,9 @@ class MainActivity : ComponentActivity() {
         Reminders.schedule(this)
 
         setContent {
+            // Langue choisie (français, anglais, russe), gardée sur le téléphone
+            var lang by remember { mutableStateOf(LangPref.get(this@MainActivity)) }
+            CompositionLocalProvider(LocalLang provides lang) {
             ZhuziTheme {
                 var tab by rememberSaveable { mutableStateOf(Tab.HOME) }
                 var overlay by rememberSaveable { mutableIntStateOf(NONE) }
@@ -161,7 +168,7 @@ class MainActivity : ComponentActivity() {
                                         val next = hsk1Lessons.firstOrNull { lessonKnown(it) < it.words.size }
                                             ?: hsk1Lessons.last()
                                         HomeScreen(
-                                            todayLabel = todayLabel(),
+                                            todayLabel = todayLabel(lang),
                                             streakDays = streak.current(),
                                             dueWords = srs.dueWords(allWords),
                                             dueTomorrow = srs.dueTomorrow(allWords),
@@ -206,6 +213,11 @@ class MainActivity : ComponentActivity() {
                                             }
                                         },
                                         versionName = versionName,
+                                        lang = lang,
+                                        onLangChange = { l ->
+                                            LangPref.set(this@MainActivity, l)
+                                            lang = l
+                                        },
                                         contentPadding = padding,
                                     )
                                 }
@@ -213,6 +225,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+            }
             }
         }
     }
@@ -223,7 +236,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** « Mercredi 26 novembre » */
-private fun todayLabel(): String =
-    LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.FRENCH))
-        .replaceFirstChar { it.titlecase(Locale.FRENCH) }
+/** « Mercredi 26 novembre », « Wednesday 26 November », « Среда, 26 ноября » */
+private fun todayLabel(lang: Lang): String {
+    val locale = when (lang) {
+        Lang.FR -> Locale.FRENCH
+        Lang.EN -> Locale.ENGLISH
+        Lang.RU -> Locale.forLanguageTag("ru")
+    }
+    val pattern = if (lang == Lang.RU) "EEEE, d MMMM" else "EEEE d MMMM"
+    return LocalDate.now().format(DateTimeFormatter.ofPattern(pattern, locale)).replaceFirstChar { it.titlecase(locale) }
+}

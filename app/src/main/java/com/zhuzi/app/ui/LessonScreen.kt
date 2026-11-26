@@ -87,11 +87,11 @@ fun LessonScreen(
 ) {
     var tab by rememberSaveable { mutableIntStateOf(startTab) }
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
-        TopBar("Leçons", "Leçon ${lesson.id}", onBack)
-        Text(lesson.title, style = MaterialTheme.typography.headlineMedium,
+        TopBar(tr("Leçons", "Lessons", "Уроки"), tr("Leçon ", "Lesson ", "Урок ") + lesson.id, onBack)
+        Text(lesson.title(currentLang()), style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(horizontal = 20.dp))
         // Choix Cartes / Quiz en pilules
-        Segmented(listOf("Cartes", "Quiz"), tab, { tab = it },
+        Segmented(listOf(tr("Cartes", "Cards", "Карточки"), tr("Quiz", "Quiz", "Тест")), tab, { tab = it },
             Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp))
         Box(Modifier.weight(1f)) {
             if (tab == 0) {
@@ -136,7 +136,7 @@ fun Segmented(labels: List<String>, selected: Int, onSelect: (Int) -> Unit, modi
 @Composable
 fun ListenLink(onClick: () -> Unit) {
     TextButton(onClick = onClick) {
-        Text("Écouter", color = Ink, fontWeight = FontWeight.Bold,
+        Text(tr("Écouter", "Listen", "Слушать"), color = Ink, fontWeight = FontWeight.Bold,
             textDecoration = TextDecoration.Underline)
     }
 }
@@ -172,7 +172,7 @@ fun FlipCard(
     flipped: Boolean,
     onFlip: () -> Unit,
     modifier: Modifier = Modifier,
-    frontHint: String = "Touche la carte pour la retourner",
+    frontHint: String = tr("Touche la carte pour la retourner", "Tap the card to flip it", "Нажми на карточку, чтобы перевернуть"),
 ) {
     val rotation by animateFloatAsState(
         if (flipped) 180f else 0f,
@@ -208,7 +208,7 @@ fun FlipCard(
                 WordGrids(word.hanzi, maxSize = 110.dp, pinyin = word.pinyin)
                 Spacer(Modifier.height(20.dp))
                 PinyinText(word.pinyin, 32.sp)
-                Text(word.french, fontSize = 19.sp, color = InkSoft, textAlign = TextAlign.Center,
+                Text(word.meaning(currentLang()), fontSize = 19.sp, color = InkSoft, textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 4.dp))
             }
         }
@@ -251,10 +251,10 @@ private fun Flashcards(
         }
         // Actions en bas, sous le pouce
         BottomActions(contentPadding) {
-            InkOutlinedButton("Précédent", {
+            InkOutlinedButton(tr("Précédent", "Previous", "Назад"), {
                 index = (index - 1 + words.size) % words.size; revealed = false
             }, Modifier.weight(1f))
-            InkButton("Suivant", {
+            InkButton(tr("Suivant", "Next", "Далее"), {
                 index = (index + 1) % words.size; revealed = false
             }, Modifier.weight(1f))
         }
@@ -279,6 +279,7 @@ private fun Quiz(
     onBack: () -> Unit,
     contentPadding: PaddingValues,
 ) {
+    val lang = currentLang()
     var mode by rememberSaveable { mutableStateOf(QuizMode.MEANING) }
     var round by remember { mutableIntStateOf(0) }
     val questions = remember(round, mode) { buildQuiz(lesson.words) }
@@ -295,7 +296,7 @@ private fun Quiz(
                 .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = bottom + 220.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Segmented(QuizMode.entries.map { it.label }, mode.ordinal,
+            Segmented(QuizMode.entries.map { it.label(lang) }, mode.ordinal,
                 { mode = QuizMode.entries[it] })
             Spacer(Modifier.height(18.dp))
 
@@ -304,16 +305,16 @@ private fun Quiz(
                 Spacer(Modifier.height(32.dp))
                 SealStamp(if (percent == 100) "好" else "记", 120.dp)
                 Spacer(Modifier.height(28.dp))
-                Text(if (percent == 100) "Parfait !" else "Quiz terminé",
+                Text(if (percent == 100) tr("Parfait !", "Perfect!", "Отлично!") else tr("Quiz terminé", "Quiz complete", "Тест завершён"),
                     style = MaterialTheme.typography.headlineMedium)
-                Text("$score / ${questions.size} bonnes réponses", fontSize = 17.sp, color = InkSoft,
+                Text("$score / ${questions.size} " + tr("bonnes réponses", "correct answers", "правильных ответов"), fontSize = 17.sp, color = InkSoft,
                     modifier = Modifier.padding(top = 4.dp))
                 Text("$percent %", style = MaterialTheme.typography.displaySmall,
                     modifier = Modifier.padding(top = 12.dp))
                 Spacer(Modifier.height(28.dp))
-                InkButton("Recommencer", { round++ }, Modifier.fillMaxWidth())
+                InkButton(tr("Recommencer", "Try again", "Ещё раз"), { round++ }, Modifier.fillMaxWidth())
                 Spacer(Modifier.height(10.dp))
-                InkOutlinedButton("Retour aux leçons", onBack, Modifier.fillMaxWidth())
+                InkOutlinedButton(tr("Retour aux leçons", "Back to lessons", "К урокам"), onBack, Modifier.fillMaxWidth())
                 return@Column
             }
 
@@ -331,17 +332,17 @@ private fun Quiz(
                         interactionSource = remember { MutableInteractionSource() }, indication = null,
                     ) { speak(q.word.hanzi) },
                 )
-                QuizMode.WRITING -> Text(q.word.french, style = MaterialTheme.typography.headlineMedium,
+                QuizMode.WRITING -> Text(q.word.meaning(lang), style = MaterialTheme.typography.headlineMedium,
                     textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 28.dp))
-                QuizMode.LISTENING -> InkOutlinedButton("Réécouter", { speak(q.word.hanzi) },
+                QuizMode.LISTENING -> InkOutlinedButton(tr("Réécouter", "Listen again", "Ещё раз"), { speak(q.word.hanzi) },
                     Modifier.padding(vertical = 24.dp))
             }
             Spacer(Modifier.height(14.dp))
             Text(
                 when (mode) {
-                    QuizMode.WRITING -> "Quel mot veut dire ça ?"
-                    QuizMode.LISTENING -> "Qu'as-tu entendu ?"
-                    else -> "Que veut dire ce mot ?"
+                    QuizMode.WRITING -> tr("Quel mot veut dire ça ?", "Which word means this?", "Какое слово это значит?")
+                    QuizMode.LISTENING -> tr("Qu'as-tu entendu ?", "What did you hear?", "Что ты услышал?")
+                    else -> tr("Que veut dire ce mot ?", "What does this word mean?", "Что значит это слово?")
                 },
                 color = InkSoft,
             )
@@ -431,7 +432,7 @@ private fun ChoiceTile(choice: Word, asHanzi: Boolean, state: Int, enabled: Bool
         if (asHanzi) {
             Text(choice.hanzi, fontFamily = Kai, fontSize = 32.sp, color = Ink)
         } else {
-            Text(choice.french, fontSize = 17.sp, color = Ink, fontWeight = FontWeight.Medium)
+            Text(choice.meaning(currentLang()), fontSize = 17.sp, color = Ink, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -446,17 +447,17 @@ private fun FeedbackPanel(ok: Boolean, word: Word, last: Boolean, onNext: () -> 
             .navigationBarsPadding()
             .padding(start = 24.dp, end = 24.dp, top = 22.dp, bottom = 20.dp),
     ) {
-        Text(if (ok) "Bien joué !" else "Pas tout à fait",
+        Text(if (ok) tr("Bien joué !", "Well done!", "Молодец!") else tr("Pas tout à fait", "Not quite", "Не совсем"),
             color = if (ok) Right else Wrong, fontWeight = FontWeight.Black, fontSize = 22.sp)
         Row(Modifier.padding(top = 8.dp, bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
             HanziText(word, 30.sp)
             Spacer(Modifier.width(12.dp))
             Column {
                 PinyinText(word.pinyin, 16.sp)
-                Text(word.french, color = InkSoft)
+                Text(word.meaning(currentLang()), color = InkSoft)
             }
         }
-        InkButton(if (last) "Voir le résultat" else "Continuer", onNext, Modifier.fillMaxWidth())
+        InkButton(if (last) tr("Voir le résultat", "See result", "Результат") else tr("Continuer", "Continue", "Продолжить"), onNext, Modifier.fillMaxWidth())
     }
 }
 

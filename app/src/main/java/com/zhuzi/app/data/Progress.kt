@@ -3,10 +3,16 @@ package com.zhuzi.app.data
 import android.content.Context
 
 /** Les trois sortes de quiz. */
-enum class QuizMode(val label: String, val key: String) {
-    MEANING("Sens", ""),
-    WRITING("Écrit", "_writing"),
-    LISTENING("Écoute", "_listening"),
+enum class QuizMode(private val fr: String, private val en: String, private val ru: String, val key: String) {
+    MEANING("Sens", "Meaning", "Смысл", ""),
+    WRITING("Écrit", "Writing", "Письмо", "_writing"),
+    LISTENING("Écoute", "Listening", "Аудирование", "_listening");
+
+    fun label(lang: Lang): String = when (lang) {
+        Lang.FR -> fr
+        Lang.EN -> en
+        Lang.RU -> ru
+    }
 }
 
 /** Garde sur le téléphone le meilleur score (en %) de chaque leçon, pour chaque quiz. */

@@ -49,7 +49,7 @@ fun ReviewScreen(
     StrokeSheet(strokesFor) { strokesFor = null }
 
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
-        TopBar("Accueil", "Révision du jour", onBack)
+        TopBar(tr("Accueil", "Home", "Главная"), tr("Révision du jour", "Today's review", "Повторение дня"), onBack)
         if (queue.isEmpty()) {
             Column(
                 Modifier.weight(1f).fillMaxWidth().padding(horizontal = 20.dp),
@@ -57,13 +57,14 @@ fun ReviewScreen(
                 verticalArrangement = Arrangement.Center,
             ) {
                 DoneBlock(
-                    "记", "Révision terminée",
-                    "$total mot${if (total > 1) "s" else ""} revu${if (total > 1) "s" else ""}. " +
-                        "Les prochains reviendront au bon moment.",
+                    "记", tr("Révision terminée", "Review complete", "Повторение завершено"),
+                    tr("Mots revus : ", "Words reviewed: ", "Повторено слов: ") + total + ". " +
+                        tr("Les prochains reviendront au bon moment.", "The next ones will come back at the right time.",
+                            "Следующие вернутся в нужный момент."),
                 )
             }
             BottomActions(contentPadding) {
-                InkButton("Retour à l'accueil", onBack, Modifier.weight(1f))
+                InkButton(tr("Retour à l'accueil", "Back to home", "На главную"), onBack, Modifier.weight(1f))
             }
             return@Column
         }
@@ -80,7 +81,7 @@ fun ReviewScreen(
             AnimatedContent(word, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "card") { w ->
                 FlipCard(w, revealed, {
                     if (!revealed) { revealed = true; speak(w.hanzi) }
-                }, frontHint = "Tu t'en souviens ? Touche pour vérifier")
+                }, frontHint = tr("Tu t'en souviens ? Touche pour vérifier", "Do you remember? Tap to check", "Помнишь? Нажми, чтобы проверить"))
             }
             Row {
                 ListenLink { speak(word.hanzi) }
@@ -91,17 +92,17 @@ fun ReviewScreen(
         // Actions en bas, sous le pouce
         BottomActions(contentPadding) {
             if (!revealed) {
-                InkButton("Voir la réponse", { revealed = true; speak(word.hanzi) }, Modifier.weight(1f))
+                InkButton(tr("Voir la réponse", "Show answer", "Показать ответ"), { revealed = true; speak(word.hanzi) }, Modifier.weight(1f))
             } else {
                 run {
-                    InkOutlinedButton("Oublié", {
+                    InkOutlinedButton(tr("Oublié", "Forgot", "Забыл"), {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         failed.add(word)
                         onAnswer(word, false)
                         queue.removeAt(0); queue.add(word)
                         revealed = false
                     }, Modifier.weight(1f))
-                    InkButton("Je savais", {
+                    InkButton(tr("Je savais", "I knew it", "Знал"), {
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         // Un mot raté pendant la séance reste en boîte 1 (à revoir demain).
                         if (word !in failed) onAnswer(word, true)

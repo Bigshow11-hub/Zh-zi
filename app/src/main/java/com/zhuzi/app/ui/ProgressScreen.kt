@@ -28,6 +28,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.Role
+import com.zhuzi.app.data.Lang
 import com.zhuzi.app.reminder.Reminders
 import com.zhuzi.app.ui.theme.Ink
 import com.zhuzi.app.ui.theme.InkSoft
@@ -53,6 +56,8 @@ fun ProgressScreen(
     reminderOn: Boolean,
     onReminderChange: (Boolean) -> Unit,
     versionName: String,
+    lang: Lang,
+    onLangChange: (Lang) -> Unit,
     contentPadding: PaddingValues,
 ) {
     Column(
@@ -61,7 +66,8 @@ fun ProgressScreen(
                 top = contentPadding.calculateTopPadding() + 16.dp,
                 bottom = contentPadding.calculateBottomPadding() + 24.dp),
     ) {
-        ScreenTitle("Progrès", "Ta régularité et ce que tu as retenu")
+        ScreenTitle(tr("Progrès", "Progress", "Прогресс"),
+            tr("Ta régularité et ce que tu as retenu", "Your consistency and what you've learned", "Твоя регулярность и что ты выучил"))
 
         // Série de jours : un grand sceau rouge avec le nombre
         Row(
@@ -76,16 +82,15 @@ fun ProgressScreen(
             Spacer(Modifier.width(18.dp))
             Column {
                 Text(
-                    when {
-                        streakDays == 0 -> "Pas encore de série"
-                        streakDays == 1 -> "1 jour d'affilée"
-                        else -> "$streakDays jours d'affilée"
-                    },
+                    if (streakDays == 0) tr("Pas encore de série", "No streak yet", "Серии пока нет")
+                    else daysCount(lang, streakDays) + tr(" d'affilée", " in a row", " подряд"),
                     style = MaterialTheme.typography.titleLarge,
                 )
                 Text(
-                    if (streakDays == 0) "Étudie un mot aujourd'hui pour la commencer."
-                    else "Un peu chaque jour : c'est ainsi que le bambou pousse.",
+                    if (streakDays == 0) tr("Étudie un mot aujourd'hui pour la commencer.",
+                        "Study one word today to start it.", "Выучи сегодня одно слово, чтобы начать.")
+                    else tr("Un peu chaque jour : c'est ainsi que le bambou pousse.",
+                        "A little every day: that's how bamboo grows.", "Понемногу каждый день: так растёт бамбук."),
                     color = InkSoft, modifier = Modifier.padding(top = 2.dp),
                 )
             }
@@ -93,21 +98,48 @@ fun ProgressScreen(
 
         // Chiffres clés
         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatTile("DÉCOUVERTS", "$knownCount", "sur $total mots", knownCount.toFloat() / total, Modifier.weight(1f))
-            StatTile("BIEN RETENUS", "$masteredCount", "sur $total mots", masteredCount.toFloat() / total, Modifier.weight(1f))
+            val ofWords = tr("sur ", "of ", "из ") + wordsCount(lang, total)
+            StatTile(tr("DÉCOUVERTS", "DISCOVERED", "ОТКРЫТО"), "$knownCount", ofWords, knownCount.toFloat() / total, Modifier.weight(1f))
+            StatTile(tr("BIEN RETENUS", "WELL LEARNED", "ВЫУЧЕНО"), "$masteredCount", ofWords, masteredCount.toFloat() / total, Modifier.weight(1f))
         }
         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatTile("LEÇONS MAÎTRISÉES", "$lessonsMastered", "sur $lessonsTotal", lessonsMastered.toFloat() / lessonsTotal,
+            StatTile(tr("LEÇONS MAÎTRISÉES", "LESSONS MASTERED", "УРОКОВ ОСВОЕНО"), "$lessonsMastered",
+                tr("sur ", "of ", "из ") + lessonsTotal, lessonsMastered.toFloat() / lessonsTotal,
                 Modifier.weight(1f))
-            StatTile("À REVOIR DEMAIN", "$dueTomorrow", if (dueTomorrow > 1) "mots" else "mot", null, Modifier.weight(1f))
+            StatTile(tr("À REVOIR DEMAIN", "DUE TOMORROW", "ПОВТОРИТЬ ЗАВТРА"), "$dueTomorrow",
+                wordsCount(lang, dueTomorrow).substringAfter(' '), null, Modifier.weight(1f))
         }
 
+        // Langue
+        SectionLabel(tr("LANGUE", "LANGUAGE", "ЯЗЫК"))
+        Lang.entries.forEach { l ->
+            val on = l == lang
+            Row(
+                Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(TileShape)
+                    .background(if (on) Mist else Paper)
+                    .selectable(selected = on, role = Role.RadioButton) { onLangChange(l) }
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Flag(l)
+                Spacer(Modifier.width(14.dp))
+                Text(l.nativeName, fontWeight = if (on) FontWeight.Bold else FontWeight.Medium, fontSize = 16.sp,
+                    modifier = Modifier.weight(1f))
+                if (on) Text("✓", fontWeight = FontWeight.Black, fontSize = 18.sp, color = Ink)
+            }
+        }
+        Text(tr("Traductions des mots et textes de l'appli.", "Word translations and app texts.",
+            "Переводы слов и тексты приложения."), color = InkSoft, fontSize = 12.sp,
+            modifier = Modifier.padding(top = 4.dp))
+
         // Rappel quotidien
-        SectionLabel("RAPPEL")
+        SectionLabel(tr("RAPPEL", "REMINDER", "НАПОМИНАНИЕ"))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Rappel du soir", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text("Vers ${Reminders.HOUR} h, seulement si tu n'as pas encore étudié ce jour-là.",
+                Text(tr("Rappel du soir", "Evening reminder", "Вечернее напоминание"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(tr("Vers ${Reminders.HOUR} h, seulement si tu n'as pas encore étudié ce jour-là.",
+                    "Around ${Reminders.HOUR}:00, only if you haven't studied yet that day.",
+                    "Около ${Reminders.HOUR}:00, только если ты ещё не занимался в этот день."),
                     color = InkSoft, fontSize = 13.sp)
             }
             Spacer(Modifier.width(12.dp))
@@ -122,10 +154,14 @@ fun ProgressScreen(
         }
 
         // À propos
-        SectionLabel("À PROPOS")
+        SectionLabel(tr("À PROPOS", "ABOUT", "О ПРИЛОЖЕНИИ"))
         Text("Zhúzi $versionName", fontWeight = FontWeight.Bold)
-        Text("Caractères au pinceau : police LXGW WenKai. Logo : police Ma Shan Zheng. " +
-            "Toutes deux sous licence libre SIL OFL.", color = InkSoft, fontSize = 13.sp,
+        Text(tr("Caractères au pinceau : police LXGW WenKai. Logo : police Ma Shan Zheng (licence SIL OFL). " +
+            "Ordre des traits : Make Me a Hanzi (licence Arphic).",
+            "Brush characters: LXGW WenKai font. Logo: Ma Shan Zheng font (SIL OFL license). " +
+            "Stroke order: Make Me a Hanzi (Arphic license).",
+            "Иероглифы: шрифт LXGW WenKai. Логотип: шрифт Ma Shan Zheng (лицензия SIL OFL). " +
+            "Порядок черт: Make Me a Hanzi (лицензия Arphic)."), color = InkSoft, fontSize = 13.sp,
             modifier = Modifier.padding(top = 2.dp))
     }
 }
