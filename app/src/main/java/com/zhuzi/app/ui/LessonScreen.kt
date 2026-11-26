@@ -129,10 +129,10 @@ fun Segmented(labels: List<String>, selected: Int, onSelect: (Int) -> Unit, modi
         labels.forEachIndexed { i, label ->
             val on = i == selected
             Box(
-                Modifier.weight(1f).clip(PillShape).background(if (on) Ink else Mist)
+                Modifier.weight(1f).clip(PillShape).background(if (on) com.zhuzi.app.ui.theme.Accent else Mist)
                     .clickable { onSelect(i) }.padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center,
-            ) { Text(label, color = if (on) Paper else Ink, fontWeight = FontWeight.Bold, fontSize = 14.sp) }
+            ) { Text(label, color = if (on) androidx.compose.ui.graphics.Color.White else Ink, fontWeight = FontWeight.Bold, fontSize = 14.sp) }
         }
     }
 }
@@ -192,8 +192,7 @@ fun FlipCard(
                 rotationY = rotation
                 cameraDistance = 14f * density
             }
-            .clip(PanelShape)
-            .background(Mist)
+            .softCard()
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null,
                 onClick = onFlip)
             .padding(20.dp),

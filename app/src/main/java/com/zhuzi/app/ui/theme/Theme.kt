@@ -45,10 +45,20 @@ data class ZhuziColors(
     val gridLine: Color,
     /** Couleurs des tons (1 à 4, puis neutre) : elles diffèrent aussi par la clarté (daltonisme). */
     val tones: List<Color>,
+    /** Accent indigo → violet : boutons, sélection, progression, carte objectif. */
+    val accent: Color,
+    val accent2: Color,
+    /** Fond de l'appli : dégradé lavande, du haut vers le bas. */
+    val bgTop: Color,
+    val bgBottom: Color,
 )
 
 val DayColors = ZhuziColors(
-    gridLine = Color(0xFFC3CAD4),
+    gridLine = Color(0xFFCBCBE3),
+    accent = Color(0xFF5B5CF0),
+    accent2 = Color(0xFF8B7BF7),
+    bgTop = Color(0xFFECEAFF),
+    bgBottom = Color(0xFFF8F8FC),
     tones = listOf(
         Color(0xFFC62828), // 1er ton : rouge
         Color(0xFFB45309), // 2e ton : ambre
@@ -57,10 +67,10 @@ val DayColors = ZhuziColors(
         Color(0xFF5B6472), // neutre : gris
     ),
     paper = Color(0xFFFFFFFF),
-    mist = Color(0xFFF4F5F7),
-    ink = Color(0xFF16202C),
-    inkSoft = Color(0xFF4B5768),
-    rule = Color(0xFFDCE1E8),
+    mist = Color(0xFFF1F0FB),
+    ink = Color(0xFF1C1D3B),
+    inkSoft = Color(0xFF6A6C8E),
+    rule = Color(0xFFE4E3F3),
     right = Color(0xFF2E7D4F),
     rightBg = Color(0xFFE7F3EC),
     wrong = Color(0xFFB3261E),
@@ -68,7 +78,11 @@ val DayColors = ZhuziColors(
 )
 
 val NightColors = ZhuziColors(
-    gridLine = Color(0xFF3D4757),
+    gridLine = Color(0xFF3F4166),
+    accent = Color(0xFF7C7DFF),
+    accent2 = Color(0xFFA497FF),
+    bgTop = Color(0xFF17183D),
+    bgBottom = Color(0xFF0E0F22),
     tones = listOf(
         Color(0xFFFF8A80),
         Color(0xFFFDBA74),
@@ -76,11 +90,11 @@ val NightColors = ZhuziColors(
         Color(0xFF93C5FD),
         Color(0xFFA3ADBB),
     ),
-    paper = Color(0xFF11161D),
-    mist = Color(0xFF1B222C),
-    ink = Color(0xFFECEFF3),
-    inkSoft = Color(0xFFA3ADBB),
-    rule = Color(0xFF2E3744),
+    paper = Color(0xFF1A1B35),
+    mist = Color(0xFF23244A),
+    ink = Color(0xFFEDEDFF),
+    inkSoft = Color(0xFFA6A8CC),
+    rule = Color(0xFF2D2E52),
     right = Color(0xFF7BD49F),
     rightBg = Color(0xFF16301F),
     wrong = Color(0xFFFF9A8F),
@@ -99,6 +113,10 @@ val RightBg: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.curr
 val Wrong: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.wrong
 val WrongBg: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.wrongBg
 val GridLine: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.gridLine
+val Accent: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.accent
+val Accent2: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.accent2
+val BgTop: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.bgTop
+val BgBottom: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.bgBottom
 
 /** Couleur d'un ton : 1 à 4, 5 = neutre. */
 @Composable
@@ -166,14 +184,14 @@ fun ZhuziTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable 
     val c = if (darkTheme) NightColors else DayColors
     val scheme = if (darkTheme) {
         darkColorScheme(
-            primary = c.ink, onPrimary = c.paper, secondary = c.inkSoft, onSecondary = c.paper,
-            background = c.paper, onBackground = c.ink, surface = c.paper, onSurface = c.ink,
+            primary = c.accent, onPrimary = Color.White, secondary = c.inkSoft, onSecondary = c.paper,
+            background = c.bgBottom, onBackground = c.ink, surface = c.bgBottom, onSurface = c.ink,
             surfaceVariant = c.mist, onSurfaceVariant = c.inkSoft, outline = c.rule, error = c.wrong,
         )
     } else {
         lightColorScheme(
-            primary = c.ink, onPrimary = c.paper, secondary = c.inkSoft, onSecondary = c.paper,
-            background = c.paper, onBackground = c.ink, surface = c.paper, onSurface = c.ink,
+            primary = c.accent, onPrimary = Color.White, secondary = c.inkSoft, onSecondary = c.paper,
+            background = c.bgBottom, onBackground = c.ink, surface = c.bgBottom, onSurface = c.ink,
             surfaceVariant = c.mist, onSurfaceVariant = c.inkSoft, outline = c.rule, error = c.wrong,
         )
     }

@@ -162,7 +162,7 @@ private fun CharCell(word: Word, box: Int, onClick: () -> Unit) {
     val interaction = remember { MutableInteractionSource() }
     Column(
         Modifier.fillMaxWidth().pressScale(interaction)
-            .clip(TileShape).background(Paper).border(1.dp, Rule, TileShape)
+            .softCard(androidx.compose.foundation.shape.RoundedCornerShape(20.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,

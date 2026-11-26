@@ -9,6 +9,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
@@ -33,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -214,14 +216,27 @@ fun Modifier.pressScale(interaction: MutableInteractionSource): Modifier {
 @Composable
 fun InkButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     val interaction = remember { MutableInteractionSource() }
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        shape = PillShape,
-        interactionSource = interaction,
-        colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Paper),
-        modifier = modifier.height(56.dp).pressScale(interaction),
-    ) { Text(text, style = androidx.compose.material3.MaterialTheme.typography.labelLarge) }
+    val a = com.zhuzi.app.ui.theme.Accent
+    val b = com.zhuzi.app.ui.theme.Accent2
+    // Pilule en dégradé indigo → violet, ombre teintée
+    Box(
+        modifier.height(56.dp).pressScale(interaction)
+            .shadow(14.dp, PillShape, ambientColor = a.copy(alpha = 0.35f), spotColor = a.copy(alpha = 0.45f))
+            .clip(PillShape)
+            .background(androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(a, b)))
+            .clickable(interactionSource = interaction, indication = null, enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text, color = Color.White, style = androidx.compose.material3.MaterialTheme.typography.labelLarge)
+    }
+}
+
+/** Carte blanche flottante : grands coins arrondis et ombre douce teintée d'indigo. */
+@Composable
+fun Modifier.softCard(shape: androidx.compose.ui.graphics.Shape = com.zhuzi.app.ui.theme.PanelShape): Modifier {
+    val a = com.zhuzi.app.ui.theme.Accent
+    return this.shadow(18.dp, shape, ambientColor = a.copy(alpha = 0.10f), spotColor = a.copy(alpha = 0.18f))
+        .clip(shape).background(Paper)
 }
 
 /** Bouton secondaire : contour encre, en pilule. */
@@ -243,7 +258,7 @@ fun InkOutlinedButton(text: String, onClick: () -> Unit, modifier: Modifier = Mo
 fun ProgressBar(
     progress: Float,
     modifier: Modifier = Modifier,
-    color: Color = Ink,
+    color: Color = com.zhuzi.app.ui.theme.Accent,
     track: Color = Rule,
     height: Dp = 8.dp,
 ) {
@@ -265,7 +280,7 @@ fun ProgressRing(
     size: Dp,
     modifier: Modifier = Modifier,
     stroke: Dp = 8.dp,
-    color: Color = Ink,
+    color: Color = com.zhuzi.app.ui.theme.Accent,
     trackColor: Color = Rule,
 ) {
     val p by animateFloatAsState(progress.coerceIn(0f, 1f), tween(900), label = "ring")

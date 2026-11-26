@@ -1,6 +1,6 @@
 <resources>
     <!-- Papier de nuit : même fond que l'appli en mode sombre -->
     <style name="Theme.Zhuzi" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">#FF11161D</item>
+        <item name="android:windowBackground">#FF0E0F22</item>
     </style>
 </resources>

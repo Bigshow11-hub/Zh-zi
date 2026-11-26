@@ -82,12 +82,13 @@ private fun LessonRow(
     onOpen: (Lesson) -> Unit,
 ) {
     val interaction = remember { MutableInteractionSource() }
-    Column {
+    Column(Modifier.padding(bottom = 10.dp)) {
         Row(
             Modifier.fillMaxWidth()
-                .clickable(interactionSource = interaction, indication = null) { onOpen(lesson) }
                 .pressScale(interaction)
-                .padding(vertical = 14.dp),
+                .softCard(androidx.compose.foundation.shape.RoundedCornerShape(22.dp))
+                .clickable(interactionSource = interaction, indication = null) { onOpen(lesson) }
+                .padding(horizontal = 14.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(lesson.id.toString().padStart(2, '0'), color = InkSoft, fontSize = 13.sp,
@@ -121,6 +122,5 @@ private fun LessonRow(
                 Text("›", fontSize = 24.sp, color = InkSoft)
             }
         }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Rule))
     }
 }

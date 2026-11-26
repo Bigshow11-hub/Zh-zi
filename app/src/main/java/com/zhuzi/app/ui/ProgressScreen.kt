@@ -71,7 +71,7 @@ fun ProgressScreen(
 
         // Série de jours : un grand sceau rouge avec le nombre
         Row(
-            Modifier.padding(top = 12.dp).fillMaxWidth().clip(PanelShape).background(Mist).padding(20.dp),
+            Modifier.padding(top = 12.dp).fillMaxWidth().softCard().padding(20.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
@@ -116,7 +116,7 @@ fun ProgressScreen(
             val on = l == lang
             Row(
                 Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(TileShape)
-                    .background(if (on) Mist else Paper)
+                    .background(if (on) com.zhuzi.app.ui.theme.Accent.copy(alpha = 0.12f) else Paper)
                     .selectable(selected = on, role = Role.RadioButton) { onLangChange(l) }
                     .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -147,7 +147,7 @@ fun ProgressScreen(
                 checked = reminderOn,
                 onCheckedChange = onReminderChange,
                 colors = SwitchDefaults.colors(
-                    checkedTrackColor = Ink, checkedThumbColor = Paper,
+                    checkedTrackColor = com.zhuzi.app.ui.theme.Accent, checkedThumbColor = androidx.compose.ui.graphics.Color.White,
                     uncheckedTrackColor = Mist, uncheckedThumbColor = InkSoft, uncheckedBorderColor = Rule,
                 ),
             )
@@ -176,7 +176,7 @@ private fun SectionLabel(text: String) {
 
 @Composable
 private fun StatTile(label: String, value: String, sub: String, progress: Float?, modifier: Modifier) {
-    Column(modifier.clip(TileShape).background(Mist).padding(16.dp)) {
+    Column(modifier.softCard(androidx.compose.foundation.shape.RoundedCornerShape(22.dp)).padding(16.dp)) {
         Text(label, style = Kicker)
         Text(value, style = MaterialTheme.typography.displaySmall, modifier = Modifier.padding(top = 4.dp))
         Text(sub, color = InkSoft, fontSize = 12.sp)

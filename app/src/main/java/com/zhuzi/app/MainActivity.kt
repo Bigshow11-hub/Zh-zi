@@ -73,6 +73,7 @@ class MainActivity : ComponentActivity() {
         val allWords = hsk1Lessons.flatMap { it.words }
         val total = allWords.size
         val settings = getSharedPreferences("settings", MODE_PRIVATE)
+        val wordOfDay = allWords[(LocalDate.now().toEpochDay() % total).toInt()]
         val versionName = runCatching { packageManager.getPackageInfo(packageName, 0).versionName }
             .getOrNull() ?: ""
         Reminders.schedule(this)
@@ -155,7 +156,17 @@ class MainActivity : ComponentActivity() {
                     // Les onglets, avec la barre du bas
                     else -> {
                         if (tab != Tab.HOME) BackHandler { tab = Tab.HOME }
-                        MainFrame(tab, { tab = it }) { padding ->
+                        // Bouton central : la révision s'il y a des mots à revoir, sinon la leçon à reprendre
+                        val startSession: () -> Unit = {
+                            if (srs.dueWords(allWords).isNotEmpty()) {
+                                overlay = REVIEW
+                            } else {
+                                val nextLesson = hsk1Lessons.firstOrNull { srs.knownCount(it.words) < it.words.size }
+                                    ?: hsk1Lessons.first()
+                                overlay = nextLesson.id
+                            }
+                        }
+                        MainFrame(tab, { tab = it }, startSession) { padding ->
                             // Lire « version » force le recalcul après chaque leçon ou révision
                             val v = version
                             val bestScore: (Int, QuizMode) -> Int =
@@ -179,10 +190,14 @@ class MainActivity : ComponentActivity() {
                                             total = total,
                                             next = next,
                                             nextKnown = lessonKnown(next),
-                                            wordOfDay = allWords[(LocalDate.now().toEpochDay() % total).toInt()],
+                                            wordOfDay = wordOfDay,
+                                            wordOfDayKnown = srs.boxOf(wordOfDay) > 0,
                                             speak = speaker::speak,
                                             onReview = { overlay = REVIEW },
                                             onOpen = openLesson,
+                                            onSearch = { tab = Tab.CHARS },
+                                            onReminder = { tab = Tab.PROGRESS },
+                                            onSeeAll = { tab = Tab.LESSONS },
                                             contentPadding = padding,
                                         )
                                     }

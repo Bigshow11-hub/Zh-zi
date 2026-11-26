@@ -1,5 +1,5 @@
 <resources>
     <style name="Theme.Zhuzi" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">#FFFFFFFF</item>
+        <item name="android:windowBackground">#FFF8F8FC</item>
     </style>
 </resources>

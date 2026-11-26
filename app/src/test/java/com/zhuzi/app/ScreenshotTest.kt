@@ -107,9 +107,13 @@ class ScreenshotTest {
         next = hsk1Lessons[2],
         nextKnown = if (knownTotal > 0) 9 else 0,
         wordOfDay = all[40],
+        wordOfDayKnown = knownTotal > 0,
         speak = {},
         onReview = {},
         onOpen = {},
+        onSearch = {},
+        onReminder = {},
+        onSeeAll = {},
         contentPadding = p,
     )
 
