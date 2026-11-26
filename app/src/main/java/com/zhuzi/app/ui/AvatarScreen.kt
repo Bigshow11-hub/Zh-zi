@@ -116,8 +116,8 @@ fun AvatarScreen(
                         val open = acc.unlocked(stats)
                         val on = acc == look.accessory
                         Row(
-                            Modifier.weight(1f).fillMaxHeight().softCard(RoundedCornerShape(20.dp))
-                                .then(if (on) Modifier.border(2.dp, Accent, RoundedCornerShape(20.dp)) else Modifier)
+                            Modifier.weight(1f).fillMaxHeight().softCard(RoundedCornerShape(16.dp))
+                                .then(if (on) Modifier.border(2.dp, Accent, RoundedCornerShape(16.dp)) else Modifier)
                                 .clickable(enabled = open) { onChange(look.copy(accessory = acc)) }
                                 .padding(10.dp)
                                 .alpha(if (open) 1f else 0.5f),

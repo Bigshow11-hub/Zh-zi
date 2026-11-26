@@ -93,14 +93,14 @@ fun CharCard(info: CharInfo, modifier: Modifier = Modifier, onClick: () -> Unit)
     val color = toneColor(info.tone())
     Column(
         modifier.fillMaxWidth().pressScale(interaction)
-            .softCard(RoundedCornerShape(20.dp))
+            .softCard(RoundedCornerShape(16.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
             Modifier.size(58.dp).clip(RoundedCornerShape(14.dp))
-                .background(Brush.linearGradient(listOf(color.copy(alpha = 0.12f), color.copy(alpha = 0.04f)))),
+                .background(Mist),
             contentAlignment = Alignment.Center,
         ) {
             Text(info.char.toString(), fontFamily = Kai, fontSize = 38.sp, color = color)
@@ -199,7 +199,7 @@ private fun ComponentTile(c: String, highlight: Boolean, color: Color = Ink) {
 /** Panneau à titre de section, sur fond lavande doux. */
 @Composable
 fun SectionCard(title: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Mist).padding(16.dp)) {
+    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Mist).padding(16.dp)) {
         Text(title, style = Kicker, modifier = Modifier.padding(bottom = 10.dp))
         content()
     }
@@ -210,8 +210,8 @@ fun SectionCard(title: String, modifier: Modifier = Modifier, content: @Composab
 fun MemoCard(memo: T3, modifier: Modifier = Modifier) {
     val a = Accent
     Row(
-        modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
-            .background(Brush.linearGradient(listOf(a.copy(alpha = 0.14f), Accent2.copy(alpha = 0.06f))))
+        modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+            .background(Mist)
             .padding(16.dp),
         verticalAlignment = Alignment.Top,
     ) {
@@ -284,28 +284,26 @@ fun CharBreakdown(word: Word, modifier: Modifier = Modifier) {
 fun GrammarCard(point: GrammarPoint, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val lang = currentLang()
     val interaction = remember { MutableInteractionSource() }
-    val tint = lessonTint(point.lesson)
+    val tint = Ink
     Row(
-        modifier.fillMaxWidth().pressScale(interaction).softCard(RoundedCornerShape(22.dp))
+        modifier.fillMaxWidth().pressScale(interaction).softCard(RoundedCornerShape(16.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             Modifier.size(52.dp).clip(RoundedCornerShape(16.dp))
-                .background(Brush.linearGradient(listOf(tint.copy(alpha = 0.18f), tint.copy(alpha = 0.06f)))),
+                .background(Mist),
             contentAlignment = Alignment.Center,
         ) {
             Text(point.key.take(2), fontFamily = Kai, fontSize = if (point.key.length > 1) 21.sp else 28.sp, color = tint)
         }
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
-            Text(tr("LEÇON ", "LESSON ", "УРОК ") + point.lesson, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 1.2.sp, color = tint)
-            Text(point.title.get(lang), fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = Ink,
+            Text(point.title.get(lang), fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Ink,
                 maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text(point.pattern.get(lang), fontSize = 12.sp, color = InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = 2.dp))
+            Text(point.pattern.get(lang) + "  ·  " + tr("leçon ", "lesson ", "урок ") + point.lesson, fontSize = 12.sp,
+                color = InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 2.dp))
         }
         Text("›", fontSize = 22.sp, color = InkSoft, modifier = Modifier.padding(start = 6.dp))
     }
@@ -378,7 +376,7 @@ fun GrammarSheetContent(point: GrammarPoint, speak: (String) -> Unit) {
 @Composable
 fun CultureCard(text: T3, modifier: Modifier = Modifier) {
     Row(
-        modifier.fillMaxWidth().heightIn(min = 60.dp).softCard(RoundedCornerShape(22.dp)).padding(16.dp),
+        modifier.fillMaxWidth().heightIn(min = 60.dp).softCard(RoundedCornerShape(16.dp)).padding(16.dp),
         verticalAlignment = Alignment.Top,
     ) {
         Box(Modifier.size(38.dp).clip(RoundedCornerShape(10.dp)).background(Seal), contentAlignment = Alignment.Center) {
@@ -392,11 +390,10 @@ fun CultureCard(text: T3, modifier: Modifier = Modifier) {
     }
 }
 
-/** Une couleur par leçon (même palette que la page Leçons). */
-fun lessonTint(id: Int): Color = listOf(
-    Color(0xFF5B5CF0), Color(0xFF2BB59A), Color(0xFFFF7A66), Color(0xFF4C8DF6),
-    Color(0xFFE0A21B), Color(0xFF8B7BF7), Color(0xFFE0567A),
-)[(id - 1) % 7]
+/** Couleur des repères de leçon : une seule, neutre (l'accent reste pour les actions). */
+@Composable
+@Suppress("UNUSED_PARAMETER")
+fun lessonTint(id: Int): Color = InkSoft
 
 /** Petit triangle « lecture », dessiné (pas de police). */
 @Composable

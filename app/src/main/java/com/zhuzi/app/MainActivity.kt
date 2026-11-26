@@ -56,6 +56,9 @@ import java.util.Locale
 private const val NONE = 0
 private const val REVIEW = -1
 private const val AVATAR = -2
+private const val MYWORDS = -3
+private const val PHOTO = -4
+private const val MYREVIEW = -5
 
 class MainActivity : ComponentActivity() {
     private lateinit var speaker: Speaker
@@ -71,6 +74,7 @@ class MainActivity : ComponentActivity() {
         val progress = Progress(this)
         val srs = Srs(this)
         val streak = Streak(this)
+        val myWords = com.zhuzi.app.data.MyWords(this)
         val allWords = hsk1Lessons.flatMap { it.words }
         val total = allWords.size
         val settings = getSharedPreferences("settings", MODE_PRIVATE)
@@ -136,6 +140,13 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                // Mes mots : relus après chaque ajout ou suppression
+                var mine by remember { mutableStateOf(myWords.all()) }
+                val reviewPool = allWords + mine.map { it.toWord() }
+                val addMine: (List<Triple<String, String, String>>, String) -> Unit = { items, source ->
+                    myWords.add(items, source).forEach { srs.learn(it.toWord()) }
+                    mine = myWords.all()
+                }
                 val lesson = hsk1Lessons.firstOrNull { it.id == overlay }
                 val bars = WindowInsets.systemBars.asPaddingValues()
 
@@ -160,10 +171,47 @@ class MainActivity : ComponentActivity() {
                             contentPadding = bars,
                         )
                     }
+                    overlay == MYWORDS -> Surface {
+                        BackHandler(onBack = close)
+                        com.zhuzi.app.ui.MyWordsScreen(
+                            words = mine,
+                            dueCount = srs.dueWords(mine.map { it.toWord() }).size,
+                            speak = speaker::speak,
+                            onAdd = addMine,
+                            onRemove = { w -> myWords.remove(w.id); mine = myWords.all() },
+                            onReview = { overlay = MYREVIEW },
+                            onPhoto = { overlay = PHOTO },
+                            onBack = close,
+                            contentPadding = bars,
+                        )
+                    }
+                    overlay == PHOTO -> Surface {
+                        BackHandler { overlay = MYWORDS }
+                        com.zhuzi.app.ui.PhotoImportScreen(
+                            onCreate = { items -> addMine(items, "photo"); overlay = MYWORDS },
+                            onBack = { overlay = MYWORDS },
+                            contentPadding = bars,
+                        )
+                    }
+                    overlay == MYREVIEW -> Surface {
+                        BackHandler { overlay = MYWORDS }
+                        // Les mots à revoir ; sinon tous, pour s'entraîner (liste figée pendant la séance)
+                        val session = remember { mine.map { it.toWord() }.let { w -> srs.dueWords(w).ifEmpty { w.shuffled() } } }
+                        ReviewScreen(
+                            dueWords = session,
+                            speak = speaker::speak,
+                            onAnswer = { word, knew ->
+                                srs.answer(word, knew)
+                                streak.markActive()
+                            },
+                            onBack = { overlay = MYWORDS },
+                            contentPadding = bars,
+                        )
+                    }
                     overlay == REVIEW -> Surface {
                         BackHandler(onBack = close)
                         ReviewScreen(
-                            dueWords = srs.dueWords(allWords),
+                            dueWords = srs.dueWords(reviewPool),
                             speak = speaker::speak,
                             onAnswer = { word, knew ->
                                 srs.answer(word, knew)
@@ -197,7 +245,7 @@ class MainActivity : ComponentActivity() {
                         if (tab != Tab.HOME) BackHandler { tab = Tab.HOME }
                         // Bouton central : la révision s'il y a des mots à revoir, sinon la leçon à reprendre
                         val startSession: () -> Unit = {
-                            if (srs.dueWords(allWords).isNotEmpty()) {
+                            if (srs.dueWords(reviewPool).isNotEmpty()) {
                                 overlay = REVIEW
                             } else {
                                 val nextLesson = hsk1Lessons.firstOrNull { srs.knownCount(it.words) < it.words.size }
@@ -222,7 +270,7 @@ class MainActivity : ComponentActivity() {
                                             greeting = com.zhuzi.app.data.greetingNow(),
                                             proverb = com.zhuzi.app.data.proverbOfDay(),
                                             streakDays = streak.current(),
-                                            dueWords = srs.dueWords(allWords),
+                                            dueWords = srs.dueWords(reviewPool),
                                             dueTomorrow = srs.dueTomorrow(allWords),
                                             knownCount = srs.knownCount(allWords),
                                             masteredCount = srs.masteredCount(allWords),
@@ -244,7 +292,8 @@ class MainActivity : ComponentActivity() {
                                             reminderOn = reminderOn,
                                         )
                                     }
-                                    Tab.LESSONS -> LessonsScreen(bestScore, lessonKnown, openLesson, padding)
+                                    Tab.LESSONS -> LessonsScreen(bestScore, lessonKnown, openLesson, padding,
+                                        myCount = mine.size, onMyWords = { overlay = MYWORDS })
                                     Tab.CHARS -> CharactersScreen(
                                         boxOf = { w -> if (v >= 0) srs.boxOf(w) else 0 },
                                         speak = speaker::speak,

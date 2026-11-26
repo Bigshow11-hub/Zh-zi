@@ -72,8 +72,11 @@ import com.zhuzi.app.ui.theme.Seal
 /** Coins presque droits, comme une feuille de cahier (cases d'écriture seulement). */
 val SquareShape = RoundedCornerShape(2.dp)
 
-/** Ressort commun : vif, à peine rebondi. */
-fun <T> zhuziSpring() = spring<T>(dampingRatio = 0.72f, stiffness = Spring.StiffnessMediumLow)
+/** Décélération exponentielle (ease-out-quart) : arrivée nette, sans rebond. */
+val EaseOutQuart = androidx.compose.animation.core.CubicBezierEasing(0.25f, 1f, 0.5f, 1f)
+
+/** Ressort commun : vif, sans rebond. */
+fun <T> zhuziSpring() = spring<T>(dampingRatio = 0.95f, stiffness = Spring.StiffnessMediumLow)
 
 /**
  * Cases d'écriture d'un mot : un seul cadre aux coins doux, une case par caractère,
@@ -218,13 +221,11 @@ fun Modifier.pressScale(interaction: MutableInteractionSource): Modifier {
 fun InkButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     val interaction = remember { MutableInteractionSource() }
     val a = com.zhuzi.app.ui.theme.Accent
-    val b = com.zhuzi.app.ui.theme.Accent2
-    // Pilule en dégradé indigo → violet, ombre teintée
+    // Pilule pleine, couleur d'accent unie : la seule action forte de l'écran
     Box(
         modifier.height(56.dp).pressScale(interaction)
-            .shadow(14.dp, PillShape, ambientColor = a.copy(alpha = 0.35f), spotColor = a.copy(alpha = 0.45f))
             .clip(PillShape)
-            .background(androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(a, b)))
+            .background(if (enabled) a else a.copy(alpha = 0.4f))
             .clickable(interactionSource = interaction, indication = null, enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
@@ -232,11 +233,11 @@ fun InkButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, 
     }
 }
 
-/** Carte blanche flottante : grands coins arrondis et ombre douce teintée d'indigo. */
+/** Carte blanche : coins arrondis, une seule ombre neutre et légère (pas de bordure en plus). */
 @Composable
 fun Modifier.softCard(shape: androidx.compose.ui.graphics.Shape = com.zhuzi.app.ui.theme.PanelShape): Modifier {
-    val a = com.zhuzi.app.ui.theme.Accent
-    return this.shadow(18.dp, shape, ambientColor = a.copy(alpha = 0.10f), spotColor = a.copy(alpha = 0.18f))
+    val shade = Color(0xFF14152B)
+    return this.shadow(6.dp, shape, ambientColor = shade.copy(alpha = 0.05f), spotColor = shade.copy(alpha = 0.10f))
         .clip(shape).background(Paper)
 }
 
@@ -268,35 +269,15 @@ fun ProgressBar(
 ) {
     val target = progress.coerceIn(0f, 1f)
     val anim = remember { Animatable(0f) }
-    LaunchedEffect(target) { anim.animateTo(target, spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessVeryLow)) }
-    val shine = androidx.compose.animation.core.rememberInfiniteTransition(label = "shine")
-    val shineX by shine.animateFloat(
-        initialValue = -0.4f, targetValue = 1.6f,
-        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-            tween(2200, delayMillis = 1800, easing = androidx.compose.animation.core.LinearEasing),
-        ),
-        label = "shineX",
-    )
-    val light = androidx.compose.ui.graphics.lerp(color, Color.White, 0.28f)
+    // Remplissage doux (décélération exponentielle), sans rebond ni reflet
+    LaunchedEffect(target) { anim.animateTo(target, tween(700, easing = EaseOutQuart)) }
     Canvas(modifier.fillMaxWidth().height(height)) {
         val r = CornerRadius(size.height / 2, size.height / 2)
         drawRoundRect(track, cornerRadius = r)
         val p = anim.value
         if (p > 0f) {
             val w = (size.width * p).coerceAtLeast(size.height)
-            drawRoundRect(
-                androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(light, color), startX = 0f, endX = w),
-                size = size.copy(width = w), cornerRadius = r,
-            )
-            // Reflet qui glisse le long de la partie remplie
-            val bandX = w * shineX
-            drawRoundRect(
-                androidx.compose.ui.graphics.Brush.horizontalGradient(
-                    listOf(Color.Transparent, Color.White.copy(alpha = 0.45f), Color.Transparent),
-                    startX = bandX - size.height * 3, endX = bandX + size.height * 3,
-                ),
-                size = size.copy(width = w), cornerRadius = r,
-            )
+            drawRoundRect(color, size = size.copy(width = w), cornerRadius = r)
         }
     }
 }
@@ -325,13 +306,13 @@ fun Modifier.staggerIn(key: Any, index: Int, seen: MutableSet<Any>): Modifier {
     LaunchedEffect(key) {
         if (first) {
             seen.add(key)
-            kotlinx.coroutines.delay((index.coerceAtMost(8) * 55).toLong())
-            anim.animateTo(1f, spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow))
+            kotlinx.coroutines.delay((index.coerceAtMost(6) * 35).toLong())
+            anim.animateTo(1f, tween(380, easing = EaseOutQuart))
         }
     }
     return this.graphicsLayer {
         alpha = anim.value
-        translationY = (1f - anim.value) * 28.dp.toPx()
+        translationY = (1f - anim.value) * 10.dp.toPx()
     }
 }
 

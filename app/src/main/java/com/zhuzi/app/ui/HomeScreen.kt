@@ -130,7 +130,7 @@ fun HomeScreen(
                 // Avatar : la mascotte dans un halo lavande ; la toucher ouvre « Mon avatar »
                 Box(
                     Modifier.size(92.dp).clip(CircleShape)
-                        .background(Brush.linearGradient(listOf(Accent.copy(alpha = 0.22f), Accent2.copy(alpha = 0.10f))))
+                        .background(com.zhuzi.app.ui.theme.Mist)
                         .clickable(onClick = onAvatar)
                         .semantics { contentDescription = tr(lang, "Mon avatar", "My avatar", "Мой аватар") },
                     contentAlignment = Alignment.Center,
@@ -142,8 +142,8 @@ fun HomeScreen(
         // Trois tuiles : découverts, bien retenus, série
         staggerItem(2, seen) {
             Row(Modifier.padding(top = 20.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                StatTile("字", Accent2, knownCount, tr("Découverts", "Discovered", "Открыто"), Modifier.weight(1f))
-                StatTile("记", TileBlue, masteredCount, tr("Retenus", "Learned", "Выучено"), Modifier.weight(1f))
+                StatTile("字", Ink, knownCount, tr("Découverts", "Discovered", "Открыто"), Modifier.weight(1f))
+                StatTile("记", Ink, masteredCount, tr("Retenus", "Learned", "Выучено"), Modifier.weight(1f))
                 StatTile("天", Seal, streakDays,
                     tr("Série", "Streak", "Серия"),
                     Modifier.weight(1f))
@@ -214,8 +214,10 @@ private fun SearchGlyph(c: Color) {
 /** Tuile chiffre : pastille colorée avec un caractère, le nombre, son libellé. */
 @Composable
 private fun StatTile(glyph: String, tint: Color, value: Int, label: String, modifier: Modifier) {
-    Column(modifier.softCard(RoundedCornerShape(22.dp)).padding(14.dp)) {
-        Box(Modifier.size(36.dp).clip(CircleShape).background(tint.copy(alpha = 0.14f)), contentAlignment = Alignment.Center) {
+    Column(modifier.softCard(RoundedCornerShape(16.dp)).padding(14.dp)) {
+        Box(Modifier.size(36.dp).clip(CircleShape)
+            .background(if (tint == Seal) tint.copy(alpha = 0.12f) else com.zhuzi.app.ui.theme.Mist),
+            contentAlignment = Alignment.Center) {
             Text(glyph, fontFamily = Kai, fontSize = 20.sp, color = tint)
         }
         CountUpText(value, Modifier.padding(top = 10.dp))
@@ -241,8 +243,8 @@ private fun GoalCard(
     val action: () -> Unit = if (due > 0) onReview else ({ onOpen(next) })
     Box(
         Modifier.padding(top = 18.dp).fillMaxWidth()
-            .shadow(20.dp, RoundedCornerShape(28.dp), ambientColor = a.copy(alpha = 0.35f), spotColor = a.copy(alpha = 0.5f))
-            .clip(RoundedCornerShape(28.dp))
+            .shadow(8.dp, RoundedCornerShape(20.dp), ambientColor = a.copy(alpha = 0.12f), spotColor = a.copy(alpha = 0.22f))
+            .clip(RoundedCornerShape(20.dp))
             .background(Brush.linearGradient(listOf(a, b)))
             .clickable(onClick = action),
     ) {
@@ -301,7 +303,7 @@ private fun TaskRow(done: Boolean, title: String, subtitle: String, onClick: () 
     val interaction = remember { MutableInteractionSource() }
     Row(
         Modifier.padding(bottom = 10.dp).fillMaxWidth().pressScale(interaction)
-            .softCard(RoundedCornerShape(20.dp))
+            .softCard(RoundedCornerShape(16.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,

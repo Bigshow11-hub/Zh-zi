@@ -12,8 +12,8 @@ android {
         applicationId = "com.zhuzi.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 23
-        versionName = "1.7.1"
+        versionCode = 24
+        versionName = "1.8.0"
     }
 
     // Clé de test fixe (sans secret) : chaque nouvelle version s'installe par-dessus l'ancienne.
@@ -55,6 +55,9 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
     implementation(libs.androidx.work.runtime.ktx)
+    // Lecture du texte chinois sur une photo (sur le téléphone, sans internet) et pinyin automatique
+    implementation(libs.mlkit.text.chinese)
+    implementation(libs.pinyin4j)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
 

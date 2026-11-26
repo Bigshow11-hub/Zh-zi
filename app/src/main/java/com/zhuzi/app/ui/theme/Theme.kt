@@ -56,9 +56,9 @@ data class ZhuziColors(
 val DayColors = ZhuziColors(
     gridLine = Color(0xFFCBCBE3),
     accent = Color(0xFF5B5CF0),
-    accent2 = Color(0xFF8B7BF7),
-    bgTop = Color(0xFFECEAFF),
-    bgBottom = Color(0xFFF8F8FC),
+    accent2 = Color(0xFF5B5CF0),
+    bgTop = Color(0xFFF6F6F9),
+    bgBottom = Color(0xFFF6F6F9),
     tones = listOf(
         Color(0xFFC62828), // 1er ton : rouge
         Color(0xFFB45309), // 2e ton : ambre
@@ -67,10 +67,10 @@ val DayColors = ZhuziColors(
         Color(0xFF5B6472), // neutre : gris
     ),
     paper = Color(0xFFFFFFFF),
-    mist = Color(0xFFF1F0FB),
+    mist = Color(0xFFF0F0F5),
     ink = Color(0xFF1C1D3B),
-    inkSoft = Color(0xFF6A6C8E),
-    rule = Color(0xFFE4E3F3),
+    inkSoft = Color(0xFF5F6175),
+    rule = Color(0xFFE5E5EC),
     right = Color(0xFF2E7D4F),
     rightBg = Color(0xFFE7F3EC),
     wrong = Color(0xFFB3261E),
@@ -80,9 +80,9 @@ val DayColors = ZhuziColors(
 val NightColors = ZhuziColors(
     gridLine = Color(0xFF3F4166),
     accent = Color(0xFF7C7DFF),
-    accent2 = Color(0xFFA497FF),
-    bgTop = Color(0xFF17183D),
-    bgBottom = Color(0xFF0E0F22),
+    accent2 = Color(0xFF7C7DFF),
+    bgTop = Color(0xFF111220),
+    bgBottom = Color(0xFF111220),
     tones = listOf(
         Color(0xFFFF8A80),
         Color(0xFFFDBA74),
@@ -90,11 +90,11 @@ val NightColors = ZhuziColors(
         Color(0xFF93C5FD),
         Color(0xFFA3ADBB),
     ),
-    paper = Color(0xFF1A1B35),
-    mist = Color(0xFF23244A),
+    paper = Color(0xFF1A1B2C),
+    mist = Color(0xFF232436),
     ink = Color(0xFFEDEDFF),
     inkSoft = Color(0xFFA6A8CC),
-    rule = Color(0xFF2D2E52),
+    rule = Color(0xFF2C2D40),
     right = Color(0xFF7BD49F),
     rightBg = Color(0xFF16301F),
     wrong = Color(0xFFFF9A8F),
@@ -153,7 +153,7 @@ val PinyinFont = FontFamily(
 )
 
 /** Formes : panneaux doux, boutons en pilule, cases d'écriture nettes. */
-val PanelShape = RoundedCornerShape(24.dp)
+val PanelShape = RoundedCornerShape(16.dp)
 val TileShape = RoundedCornerShape(16.dp)
 val PillShape = RoundedCornerShape(50)
 

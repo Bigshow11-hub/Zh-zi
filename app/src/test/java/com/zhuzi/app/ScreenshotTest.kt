@@ -293,6 +293,45 @@ class ScreenshotTest {
     }
 
     @Test
+    fun mesMots() {
+        compose.setContent {
+            ZhuziTheme {
+                Surface {
+                    com.zhuzi.app.ui.MyWordsScreen(
+                        words = listOf(
+                            com.zhuzi.app.data.MyWord(1, "熊猫", "xióngmāo", "panda", "main"),
+                            com.zhuzi.app.data.MyWord(2, "竹子", "zhúzi", "bambou", "photo"),
+                            com.zhuzi.app.data.MyWord(3, "朋友", "péngyou", "ami", "photo"),
+                        ),
+                        dueCount = 2, speak = {}, onAdd = { _, _ -> }, onRemove = {}, onReview = {}, onPhoto = {},
+                        onBack = {}, contentPadding = bars,
+                    )
+                }
+            }
+        }
+        shot("27-mes-mots")
+    }
+
+    @Test
+    fun photoCartes() {
+        compose.setContent {
+            ZhuziTheme {
+                Surface {
+                    com.zhuzi.app.ui.PhotoImportScreen(
+                        onCreate = {}, onBack = {}, contentPadding = bars,
+                        previewDrafts = listOf(
+                            com.zhuzi.app.ui.Draft("学习", "xuéxí", "étudier"),
+                            com.zhuzi.app.ui.Draft("汉字", "hànzì", ""),
+                            com.zhuzi.app.ui.Draft("我们明天去北京", "wǒ men míng tiān qù běi jīng", "", selected = false),
+                        ),
+                    )
+                }
+            }
+        }
+        shot("28-photo-cartes")
+    }
+
+    @Test
     fun ecrire() {
         lesson(1)
         shot("19-ecrire")

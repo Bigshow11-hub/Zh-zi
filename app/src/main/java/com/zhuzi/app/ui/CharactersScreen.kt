@@ -206,7 +206,7 @@ private fun WordCard(word: Word, lesson: Lesson, box: Int, modifier: Modifier, o
     val interaction = remember { MutableInteractionSource() }
     Column(
         modifier.fillMaxWidth().pressScale(interaction)
-            .softCard(RoundedCornerShape(22.dp))
+            .softCard(RoundedCornerShape(16.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .padding(10.dp),
     ) {
@@ -223,8 +223,8 @@ private fun WordCard(word: Word, lesson: Lesson, box: Int, modifier: Modifier, o
         Text(word.meaning(currentLang()), fontSize = 13.sp, color = InkSoft, maxLines = 2, minLines = 2,
             overflow = TextOverflow.Ellipsis, lineHeight = 17.sp, modifier = Modifier.padding(horizontal = 2.dp))
         Row(Modifier.padding(top = 6.dp, start = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("L" + lesson.id, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = lessonTint(lesson.id),
-                modifier = Modifier.clip(PillShape).background(lessonTint(lesson.id).copy(alpha = 0.12f))
+            Text("L" + lesson.id, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = InkSoft,
+                modifier = Modifier.clip(PillShape).background(Mist)
                     .padding(horizontal = 7.dp, vertical = 2.dp))
             Spacer(Modifier.width(8.dp))
             StatusTag(box)

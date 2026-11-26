@@ -40,13 +40,9 @@ import com.zhuzi.app.ui.theme.Accent2
 import com.zhuzi.app.ui.theme.InkSoft
 import com.zhuzi.app.ui.theme.Kai
 import com.zhuzi.app.ui.theme.Mist
+import com.zhuzi.app.ui.theme.Paper
 import com.zhuzi.app.ui.theme.PillShape
 
-/** Une couleur par leçon, pour la pastille du caractère symbole. */
-private val lessonTints = listOf(
-    Color(0xFF5B5CF0), Color(0xFF2BB59A), Color(0xFFFF7A66), Color(0xFF4C8DF6),
-    Color(0xFFE0A21B), Color(0xFF8B7BF7), Color(0xFFE0567A),
-)
 
 /** Onglet Leçons : synthèse du parcours, puis une carte par leçon. */
 @Composable
@@ -55,6 +51,8 @@ fun LessonsScreen(
     lessonKnown: (Lesson) -> Int,
     onOpen: (Lesson) -> Unit,
     contentPadding: PaddingValues,
+    myCount: Int = 0,
+    onMyWords: () -> Unit = {},
 ) {
     val lang = currentLang()
     val total = hsk1Lessons.sumOf { it.words.size }
@@ -78,33 +76,27 @@ fun LessonsScreen(
         // Synthèse du parcours
         staggerItem(1, seen) {
             val a = Accent
-            val b = Accent2
             Column(
-                Modifier.fillMaxWidth()
-                    .shadow(16.dp, RoundedCornerShape(26.dp), ambientColor = a.copy(alpha = 0.3f), spotColor = a.copy(alpha = 0.4f))
-                    .clip(RoundedCornerShape(26.dp))
-                    .background(Brush.linearGradient(listOf(a, b)))
-                    .padding(20.dp),
+                Modifier.fillMaxWidth().softCard(RoundedCornerShape(16.dp)).padding(20.dp),
             ) {
-                Text(tr("PARCOURS HSK 1", "HSK 1 PATH", "ПУТЬ HSK 1"), color = Color.White.copy(alpha = 0.8f),
-                    fontWeight = FontWeight.ExtraBold, fontSize = 11.sp, letterSpacing = 1.6.sp)
-                Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.Bottom) {
-                    Text("$known", color = Color.White, style = MaterialTheme.typography.displaySmall)
-                    Text(" / $total " + tr("mots", "words", "слов"), color = Color.White.copy(alpha = 0.85f),
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text("$known", style = MaterialTheme.typography.displaySmall, color = a)
+                    Text(" / $total " + tr("mots du HSK 1", "HSK 1 words", "слов HSK 1"), color = InkSoft,
                         fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 6.dp))
                 }
-                ProgressBar(known.toFloat() / total, Modifier.padding(top = 10.dp), color = Color.White,
-                    track = Color.White.copy(alpha = 0.28f), height = 8.dp)
+                ProgressBar(known.toFloat() / total, Modifier.padding(top = 10.dp), color = a, height = 8.dp)
                 Text(
                     tr("$masteredCount leçon${if (masteredCount > 1) "s" else ""} maîtrisée${if (masteredCount > 1) "s" else ""} sur ${hsk1Lessons.size}",
                         "$masteredCount of ${hsk1Lessons.size} lessons mastered",
                         "Освоено уроков: $masteredCount из ${hsk1Lessons.size}"),
-                    color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp, modifier = Modifier.padding(top = 8.dp),
+                    color = InkSoft, fontSize = 13.sp, modifier = Modifier.padding(top = 8.dp),
                 )
             }
         }
+        // Mes mots : ceux de l'élève, écrits ou pris en photo
+        staggerItem(2, seen) { MyWordsEntry(myCount, onMyWords) }
         hsk1Lessons.forEachIndexed { i, lesson ->
-            staggerItem(i + 2, seen) {
+            staggerItem(i + 3, seen) {
                 LessonCard(lesson, lessonKnown(lesson), mastered(lesson), lesson == current, bestScore, onOpen)
             }
         }
@@ -133,8 +125,8 @@ private fun LessonCard(
 ) {
     val lang = currentLang()
     val interaction = remember { MutableInteractionSource() }
-    val tint = lessonTints[(lesson.id - 1) % lessonTints.size]
-    val shape = RoundedCornerShape(24.dp)
+    val tint = Accent
+    val shape = RoundedCornerShape(16.dp)
     val complete = known >= lesson.words.size
     Column(
         Modifier.fillMaxWidth()
@@ -145,38 +137,32 @@ private fun LessonCard(
             .padding(16.dp),
     ) {
         Row(verticalAlignment = Alignment.Top) {
-            // Grande pastille colorée avec le caractère symbole
-            // Pastille du caractère, entourée d'un anneau de progression de la leçon
-            Box(Modifier.size(68.dp), contentAlignment = Alignment.Center) {
-                ProgressRing(known.toFloat() / lesson.words.size, 68.dp, stroke = 5.dp, color = tint,
-                    trackColor = tint.copy(alpha = 0.15f))
-                Box(
-                    Modifier.size(52.dp).clip(androidx.compose.foundation.shape.CircleShape).background(tint.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center,
-                ) { Text(lesson.symbol, fontFamily = Kai, fontSize = 30.sp, color = tint) }
-            }
+            // Le caractère symbole de la leçon, sur fond neutre (accent seulement pour la leçon en cours)
+            Box(
+                Modifier.size(54.dp).clip(RoundedCornerShape(16.dp)).background(if (isCurrent) tint.copy(alpha = 0.10f) else Mist),
+                contentAlignment = Alignment.Center,
+            ) { Text(lesson.symbol, fontFamily = Kai, fontSize = 30.sp, color = if (isCurrent) tint else com.zhuzi.app.ui.theme.Ink) }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(tr("LEÇON ", "LESSON ", "УРОК ") + lesson.id.toString().padStart(2, '0'),
-                        fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.4.sp, color = tint,
-                        modifier = Modifier.weight(1f))
+                Row(verticalAlignment = Alignment.Top) {
+                    Text(lesson.title(lang), fontWeight = FontWeight.Bold, fontSize = 17.sp, maxLines = 2,
+                        overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                     when {
                         isMastered -> SealStamp("记", 24.dp, animate = false)
                         isCurrent -> Badge(tr("En cours", "In progress", "В процессе"), Accent)
                         complete -> Badge(tr("Découverte", "Discovered", "Пройден"), InkSoft)
                     }
                 }
-                Text(lesson.title(lang), fontWeight = FontWeight.ExtraBold, fontSize = 17.sp, maxLines = 1,
-                    overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 2.dp))
+                Text(tr("Leçon ", "Lesson ", "Урок ") + lesson.id + " · " + wordsCount(lang, lesson.words.size),
+                    fontSize = 12.sp, color = InkSoft, modifier = Modifier.padding(top = 1.dp))
                 lessonIntros[lesson.id]?.let {
-                    Text(it.get(lang), fontSize = 13.sp, color = InkSoft, maxLines = 2, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 2.dp))
+                    Text(it.get(lang), fontSize = 14.sp, color = InkSoft, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 6.dp))
                 }
             }
         }
         Row(Modifier.padding(top = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-            ProgressBar(known.toFloat() / lesson.words.size, Modifier.weight(1f), color = tint, height = 6.dp)
+            ProgressBar(known.toFloat() / lesson.words.size, Modifier.weight(1f), color = if (complete) InkSoft else tint, height = 6.dp)
             Text("  $known/${lesson.words.size}", fontSize = 12.sp, color = InkSoft, fontWeight = FontWeight.Bold)
         }
         // Les quiz, en pilules : pleines quand le score atteint 80 % (passent à la ligne si besoin)
@@ -188,11 +174,11 @@ private fun LessonCard(
             QuizMode.entries.forEach { m ->
                 val done = bestScore(lesson.id, m) >= 80
                 Box(
-                    Modifier.clip(PillShape).background(if (done) tint else Mist)
+                    Modifier.clip(PillShape).background(if (done) com.zhuzi.app.ui.theme.Ink else Mist)
                         .padding(horizontal = 10.dp, vertical = 5.dp),
                 ) {
                     Text((if (done) "✓ " else "") + m.label(lang), fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                        color = if (done) Color.White else InkSoft)
+                        color = if (done) Paper else InkSoft)
                 }
             }
         }
@@ -203,5 +189,33 @@ private fun LessonCard(
 private fun Badge(text: String, color: Color) {
     Box(Modifier.clip(PillShape).background(color.copy(alpha = 0.13f)).padding(horizontal = 10.dp, vertical = 4.dp)) {
         Text(text, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = color)
+    }
+}
+
+/** Entrée « Mes mots » : ajouter ses propres mots ou les prendre en photo. */
+@Composable
+private fun MyWordsEntry(count: Int, onClick: () -> Unit) {
+    val lang = currentLang()
+    val interaction = remember { MutableInteractionSource() }
+    Row(
+        Modifier.fillMaxWidth().pressScale(interaction).softCard()
+            .clickable(interactionSource = interaction, indication = null, onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.size(54.dp).clip(RoundedCornerShape(16.dp)).background(Accent), contentAlignment = Alignment.Center) {
+            Text("词", fontFamily = Kai, fontSize = 30.sp, color = Color.White)
+        }
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(tr("Mes mots", "My words", "Мои слова"), fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            Text(
+                if (count == 0) tr("Ajoute les mots de tes cours, ou prends une page en photo",
+                    "Add words from your classes, or snap a page", "Добавь слова с занятий или сфотографируй страницу")
+                else wordsCount(lang, count) + tr(" · ajouter ou photographier", " · add or snap more", " · добавить или сфотографировать"),
+                fontSize = 13.sp, color = InkSoft, maxLines = 2,
+            )
+        }
+        Text("›", fontSize = 22.sp, color = InkSoft)
     }
 }

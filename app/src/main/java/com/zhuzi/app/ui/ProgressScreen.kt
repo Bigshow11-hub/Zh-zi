@@ -210,7 +210,7 @@ private fun SectionLabel(text: String) {
 
 @Composable
 private fun StatTile(label: String, value: String, sub: String, progress: Float?, modifier: Modifier) {
-    Column(modifier.softCard(androidx.compose.foundation.shape.RoundedCornerShape(22.dp)).padding(16.dp)) {
+    Column(modifier.softCard(androidx.compose.foundation.shape.RoundedCornerShape(16.dp)).padding(16.dp)) {
         Text(label, style = Kicker)
         val n = value.toIntOrNull()
         if (n != null) {

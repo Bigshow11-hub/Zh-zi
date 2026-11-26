@@ -158,7 +158,7 @@ private fun CenterButton(modifier: Modifier, onClick: () -> Unit) {
     val desc = tr("Lancer la séance du jour", "Start today's session", "Начать занятие дня")
     Box(
         modifier.size(64.dp).pressScale(interaction)
-            .shadow(16.dp, CircleShape, ambientColor = a.copy(alpha = 0.4f), spotColor = a.copy(alpha = 0.55f))
+            .shadow(8.dp, CircleShape, ambientColor = a.copy(alpha = 0.15f), spotColor = a.copy(alpha = 0.3f))
             .clip(CircleShape)
             .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(a, b)))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)

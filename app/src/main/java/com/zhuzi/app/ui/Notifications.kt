@@ -172,12 +172,14 @@ private fun NoteRow(note: DayNote, modifier: Modifier, onClick: () -> Unit) {
     val interaction = remember { MutableInteractionSource() }
     Row(
         modifier.padding(bottom = 10.dp).fillMaxWidth().pressScale(interaction)
-            .softCard(RoundedCornerShape(20.dp))
+            .softCard(RoundedCornerShape(16.dp))
             .clickable(interactionSource = interaction, indication = null, enabled = note.onClick != null, onClick = onClick)
             .padding(14.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        Box(Modifier.size(42.dp).clip(CircleShape).background(note.tint.copy(alpha = 0.14f)), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(42.dp).clip(CircleShape)
+            .background(if (note.tint == Ink) com.zhuzi.app.ui.theme.Mist else note.tint.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center) {
             Text(note.glyph, fontFamily = Kai, fontSize = 22.sp, color = note.tint)
         }
         Spacer(Modifier.width(12.dp))
@@ -228,9 +230,10 @@ fun dayNotes(
 ): List<DayNote> {
     val lang = currentLang()
     val accent = Accent
-    val blue = Color(0xFF4C8DF6)
-    val green = Color(0xFF2BB59A)
-    val amber = Color(0xFFE0A21B)
+    // Une seule couleur pour l'action ; le reste en encre neutre, le rouge pour la série
+    val blue = Ink
+    val green = Ink
+    val amber = Ink
     val start: () -> Unit = if (due > 0) onReview else ({ onOpen(next) })
     val notes = mutableListOf<DayNote>()
     // 1. La journée : valider par une séance
