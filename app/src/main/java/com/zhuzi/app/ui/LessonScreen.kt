@@ -96,13 +96,14 @@ fun LessonScreen(
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp))
         }
         // Choix Cartes / Quiz en pilules
-        Segmented(listOf(tr("Cartes", "Cards", "Карточки"), tr("Quiz", "Quiz", "Тест")), tab, { tab = it },
+        Segmented(listOf(tr("Cartes", "Cards", "Карточки"), tr("Écrire", "Write", "Писать"), tr("Quiz", "Quiz", "Тест")),
+            tab, { tab = it },
             Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp))
         Box(Modifier.weight(1f)) {
-            if (tab == 0) {
-                Flashcards(lesson.words, speak, onSeen, contentPadding)
-            } else {
-                Quiz(lesson, speak, onQuizDone, onQuizAnswer, onBack, contentPadding)
+            when (tab) {
+                0 -> Flashcards(lesson.words, speak, onSeen, contentPadding)
+                1 -> WritingTab(lesson.words, speak, onSeen, contentPadding)
+                else -> Quiz(lesson, speak, onQuizDone, onQuizAnswer, onBack, contentPadding)
             }
         }
     }
@@ -215,6 +216,48 @@ fun FlipCard(
                 Text(word.meaning(currentLang()), fontSize = 19.sp, color = InkSoft, textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 4.dp))
             }
+        }
+    }
+}
+
+/** Écrire : on trace chaque caractère du mot, trait par trait, au doigt. */
+@Composable
+private fun WritingTab(
+    words: List<Word>,
+    speak: (String) -> Unit,
+    onSeen: (Word) -> Unit,
+    contentPadding: PaddingValues,
+) {
+    var index by rememberSaveable { mutableIntStateOf(0) }
+    val word = words[index]
+    Column(Modifier.fillMaxSize()) {
+        Column(
+            Modifier.weight(1f).verticalScroll(rememberScrollState())
+                .padding(start = 20.dp, end = 20.dp, top = 18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            StepProgress(index + 1, words.size)
+            Spacer(Modifier.height(16.dp))
+            // Un tableau neuf pour chaque mot
+            key(index) {
+                WritingPractice(word, onWordDone = { onSeen(word); speak(word.hanzi) },
+                    modifier = Modifier.softCard().padding(vertical = 18.dp))
+            }
+            Text(
+                tr("Trace chaque trait au doigt, dans l'ordre. Le point rouge de l'indice montre où commencer.",
+                    "Trace each stroke with your finger, in order. The hint's red dot shows where to start.",
+                    "Проведи каждую черту пальцем по порядку. Красная точка подсказки показывает начало."),
+                fontSize = 13.sp, color = InkSoft, textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 14.dp, bottom = 12.dp),
+            )
+        }
+        BottomActions(contentPadding) {
+            InkOutlinedButton(tr("Précédent", "Previous", "Назад"), {
+                index = (index - 1 + words.size) % words.size
+            }, Modifier.weight(1f))
+            InkButton(tr("Suivant", "Next", "Далее"), {
+                index = (index + 1) % words.size
+            }, Modifier.weight(1f))
         }
     }
 }

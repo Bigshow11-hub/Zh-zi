@@ -28,6 +28,7 @@
 - Version 1.0.0 « premium et personnalité » : police d'interface Manrope (`res/font/manrope_*.ttf`, latin + cyrillique ; le pinyin reste en police du téléphone car Manrope n'a pas ǎ ǐ ǒ ǔ) ; carte « Aujourd'hui » en encre profonde avec bambou dessiné (`BambooArt`) ; salut selon l'heure (早上好/下午好/晚上好) ; proverbe du jour (12 proverbes, `data/Persona.kt`) ; accroche par leçon ; encouragements variés au quiz ; phrase d'exemple pour chacun des 151 mots en fr/en/ru (`data/Examples.kt`), le mot ressort en couleurs de tons. La police pinceau couvre désormais 222 caractères (mots + exemples + proverbes) : `tools/font/subset_wenkai.py` lit tout le dossier `data/`.
 - Version 1.1.0 « lavande » (inspirée d'une maquette choisie par le propriétaire le 26/11/2026) : fond en dégradé lavande, cartes blanches flottantes (`softCard`, ombre teintée), accent indigo → violet (`accent`/`accent2` dans `Theme.kt`) pour boutons, sélection, progression ; accueil avec boutons ronds recherche/rappel, avatar au logo, 3 tuiles chiffres, carte « Objectif du jour » en dégradé, liste « Au programme » à cocher ; barre du bas flottante avec bouton central « séance du jour » (révision s'il y en a, sinon la leçon à reprendre). Mode nuit en indigo très sombre.
 - Mascotte personnalisable (1.2.0) : un petit panda en pull, dessiné en code avec dégradés et reflets (rendu « pâte à modeler 3D », `ui/Avatar.kt`). 5 niveaux selon les mots découverts (Pousse 0, Jeune tige 10, Bambou 30, Bosquet 60, Forêt 100 ; la tige de bambou qu'il tient grandit). Tenue (6 couleurs), fond (5), accessoires à débloquer : écharpe (série 3 jours), chapeau de paille (20 mots), casque (quiz d'écoute ≥ 80 %), bonnet de lettré (1 leçon maîtrisée), couronne de jade (100 mots). Écran « Mon avatar » (`ui/AvatarScreen.kt`), accessible depuis l'accueil et l'onglet Progrès. Choix gardés dans `settings` (`data/Avatar.kt`). Un vrai modèle 3D demanderait Higgsfield payant + une bibliothèque 3D.
+- Tracé des caractères (1.3.0, `ui/Writing.kt`) : onglet « Écrire » dans chaque leçon (Cartes / Écrire / Quiz). On trace chaque trait au doigt ; `StrokeJudge` compare au tracé médian (départ, arrivée, sens, distance moyenne < 115, longueur 0,4–2,6×, points espacés ≥ 20 pour ignorer les tremblements). Testé sur les 1 179 traits : 99 % des traits tremblés/décalés acceptés, 0 % des traits à l'envers, 0,1 % des mauvais traits. Indice après 2 erreurs, interrupteur « Modèle », sceau 好 à la fin du mot ; le mot compte comme découvert.
 - Higgsfield (génération d'images) : connecté, mais l'offre gratuite ne permet aucune génération (abonnement Basic requis).
 - Lien de téléchargement fixe : https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
 - Construction automatique de l'APK par GitHub Actions.
@@ -35,7 +36,6 @@
 ## Idées de suite
 
 1. Quiz des tons.
-2. Tracé des caractères.
 3. Phrases d'exemple pour chaque mot.
 4. HSK 2.
 5. Choisir l'heure du rappel.

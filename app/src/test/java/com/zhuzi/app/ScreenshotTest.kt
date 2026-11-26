@@ -238,8 +238,14 @@ class ScreenshotTest {
     }
 
     @Test
-    fun quiz() {
+    fun ecrire() {
         lesson(1)
+        shot("19-ecrire")
+    }
+
+    @Test
+    fun quiz() {
+        lesson(2)
         shot("5-quiz-question")
         // Clique la première réponse proposée qu'on trouve à l'écran
         val choice = hsk1Lessons[0].words.first {
