@@ -141,6 +141,18 @@ fun ListenLink(onClick: () -> Unit) {
     }
 }
 
+/** Barre d'actions fixée en bas de l'écran, à portée du pouce. */
+@Composable
+fun BottomActions(contentPadding: PaddingValues, content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().background(Paper)
+            .padding(start = 20.dp, end = 20.dp, top = 12.dp,
+                bottom = contentPadding.calculateBottomPadding() + 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        content = content,
+    )
+}
+
 /** Repère de progression : barre + compteur. */
 @Composable
 fun StepProgress(done: Int, total: Int, modifier: Modifier = Modifier) {
@@ -170,7 +182,7 @@ fun FlipCard(
     Box(
         modifier
             .fillMaxWidth()
-            .height(380.dp)
+            .height(360.dp)
             .graphicsLayer {
                 rotationY = rotation
                 cameraDistance = 14f * density
@@ -215,23 +227,25 @@ private fun Flashcards(
     var revealed by rememberSaveable { mutableStateOf(false) }
     val word = words[index]
 
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, top = 18.dp,
-                bottom = contentPadding.calculateBottomPadding() + 20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        StepProgress(index + 1, words.size)
-        Spacer(Modifier.height(18.dp))
-        // Une carte neuve par mot : elle arrive toujours face caractères
-        key(index) {
-            FlipCard(word, revealed, {
-                revealed = !revealed
-                if (revealed) { onSeen(word); speak(word.hanzi) }
-            })
+    Column(Modifier.fillMaxSize()) {
+        Column(
+            Modifier.weight(1f).verticalScroll(rememberScrollState())
+                .padding(start = 20.dp, end = 20.dp, top = 18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            StepProgress(index + 1, words.size)
+            Spacer(Modifier.height(18.dp))
+            // Une carte neuve par mot : elle arrive toujours face caractères
+            key(index) {
+                FlipCard(word, revealed, {
+                    revealed = !revealed
+                    if (revealed) { onSeen(word); speak(word.hanzi) }
+                })
+            }
+            ListenLink { speak(word.hanzi) }
         }
-        ListenLink { speak(word.hanzi) }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        // Actions en bas, sous le pouce
+        BottomActions(contentPadding) {
             InkOutlinedButton("Précédent", {
                 index = (index - 1 + words.size) % words.size; revealed = false
             }, Modifier.weight(1f))

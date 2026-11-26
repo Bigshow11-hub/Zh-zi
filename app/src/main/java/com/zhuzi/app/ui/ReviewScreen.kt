@@ -48,27 +48,32 @@ fun ReviewScreen(
 
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         TopBar("Accueil", "Révision du jour", onBack)
-        Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-                .padding(start = 20.dp, end = 20.dp, top = 8.dp,
-                    bottom = contentPadding.calculateBottomPadding() + 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            if (queue.isEmpty()) {
-                Spacer(Modifier.height(80.dp))
+        if (queue.isEmpty()) {
+            Column(
+                Modifier.weight(1f).fillMaxWidth().padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
                 DoneBlock(
                     "记", "Révision terminée",
                     "$total mot${if (total > 1) "s" else ""} revu${if (total > 1) "s" else ""}. " +
                         "Les prochains reviendront au bon moment.",
                 )
-                Spacer(Modifier.height(32.dp))
-                InkButton("Retour à l'accueil", onBack, Modifier.fillMaxWidth())
-                return@Column
             }
+            BottomActions(contentPadding) {
+                InkButton("Retour à l'accueil", onBack, Modifier.weight(1f))
+            }
+            return@Column
+        }
 
+        val word = queue.first()
+        Column(
+            Modifier.weight(1f).verticalScroll(rememberScrollState())
+                .padding(start = 20.dp, end = 20.dp, top = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             StepProgress(done, total)
             Spacer(Modifier.height(18.dp))
-            val word = queue.first()
             // Changement de carte en fondu
             AnimatedContent(word, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "card") { w ->
                 FlipCard(w, revealed, {
@@ -76,11 +81,14 @@ fun ReviewScreen(
                 }, frontHint = "Tu t'en souviens ? Touche pour vérifier")
             }
             ListenLink { speak(word.hanzi) }
+        }
 
+        // Actions en bas, sous le pouce
+        BottomActions(contentPadding) {
             if (!revealed) {
-                InkButton("Voir la réponse", { revealed = true; speak(word.hanzi) }, Modifier.fillMaxWidth())
+                InkButton("Voir la réponse", { revealed = true; speak(word.hanzi) }, Modifier.weight(1f))
             } else {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                run {
                     InkOutlinedButton("Oublié", {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         failed.add(word)

@@ -19,6 +19,8 @@
 - Refonte « papier, encre et sceau » (0.6.0) : accueil avec panneau « Aujourd'hui » (mots à revoir en grand, anneau des mots découverts), carte « Continuer », parcours avec barres de progression et sceau 记 sur les leçons maîtrisées ; cartes qui se retournent en 3D ; quiz avec barre de progression, panneau de réponse qui glisse, vibration, secousse si faux ; sceau rouge qui se tamponne en fin de quiz et de révision. Panneaux arrondis et boutons en pilule, cases d'écriture nettes. Rôles des couleurs dans `ui/theme/Theme.kt`.
 - Photos d'écran automatiques : `app/src/test/.../ScreenshotTest.kt` (Robolectric + Roborazzi), lancées par GitHub ; les PNG sont publiés avec l'APK (ex. https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/1-accueil.png). Les regarder après chaque changement de design.
 - Refero : skill installé, mais l'abonnement Refero (MCP) est inactif : recherche faite sur le web à la place.
+- Mode nuit (0.6.1) : l'appli suit le réglage du téléphone (`DayColors` / `NightColors` dans `ui/theme/Theme.kt`, logo de nuit dans `drawable-night/`). Boutons d'action fixés en bas de l'écran (sous le pouce) dans les cartes et la révision.
+- Réseau de l'environnement cloud « Default » : sites de design ouverts le 26/11/2026 (muz.li, m3.material.io, blog/design.duolingo.com, apps.apple.com, androidauthority, uxdesign.cc, tech.yahoo.com). L'outil de lecture de pages ne les voit pas : les lire avec `curl` dans la session.
 - Higgsfield (génération d'images) : connecté, mais l'offre gratuite ne permet aucune génération (abonnement Basic requis).
 - Lien de téléchargement fixe : https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
 - Construction automatique de l'APK par GitHub Actions.

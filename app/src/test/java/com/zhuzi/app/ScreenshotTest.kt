@@ -1,7 +1,17 @@
 package com.zhuzi.app
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.Typeface
+import androidx.compose.ui.unit.sp
+import androidx.core.content.res.ResourcesCompat
+import com.zhuzi.app.ui.theme.Kai
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -43,9 +53,9 @@ class ScreenshotTest {
 
     private fun shot(name: String) = compose.onRoot().captureRoboImage("build/screens/$name.png")
 
-    private fun home(due: Int, knownTotal: Int, streak: Int) {
+    private fun home(due: Int, knownTotal: Int, streak: Int, night: Boolean = false) {
         compose.setContent {
-            ZhuziTheme {
+            ZhuziTheme(darkTheme = night) {
                 Surface {
                     LessonListScreen(
                         bestScore = { id, m -> scores[id]?.get(m) ?: -1 },
@@ -71,6 +81,34 @@ class ScreenshotTest {
     fun accueil() {
         home(due = 8, knownTotal = 37, streak = 12)
         shot("1-accueil")
+    }
+
+    @Test
+    fun accueilNuit() {
+        home(due = 8, knownTotal = 37, streak = 12, night = true)
+        shot("9-accueil-nuit")
+    }
+
+    /** Essai : la police pinceau chargée de trois façons, pour vérifier son affichage. */
+    @Test
+    fun polices() {
+        compose.setContent {
+            val ctx = LocalContext.current
+            val tf = ResourcesCompat.getFont(ctx, R.font.wenkai)
+            ZhuziTheme {
+                Surface {
+                    Column(Modifier.padding(24.dp)) {
+                        Text("Compose Font(R.font) :", fontSize = 14.sp)
+                        Text("你好谢谢竹子", fontFamily = Kai, fontSize = 44.sp)
+                        Text("ResourcesCompat (${if (tf == null) "null" else "ok"}) :", fontSize = 14.sp)
+                        if (tf != null) Text("你好谢谢竹子", fontFamily = FontFamily(Typeface(tf)), fontSize = 44.sp)
+                        Text("Police par défaut :", fontSize = 14.sp)
+                        Text("你好谢谢竹子", fontSize = 44.sp)
+                    }
+                }
+            }
+        }
+        shot("0-polices")
     }
 
     @Test

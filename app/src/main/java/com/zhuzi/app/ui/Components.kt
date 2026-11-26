@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import com.zhuzi.app.ui.theme.Grid
 import com.zhuzi.app.ui.theme.Ink
 import com.zhuzi.app.ui.theme.Kai
+import com.zhuzi.app.ui.theme.OnSeal
 import com.zhuzi.app.ui.theme.Paper
 import com.zhuzi.app.ui.theme.PillShape
 import com.zhuzi.app.ui.theme.Rule
@@ -168,13 +169,15 @@ fun ProgressBar(
 @Composable
 fun ProgressRing(progress: Float, size: Dp, modifier: Modifier = Modifier, stroke: Dp = 8.dp) {
     val p by animateFloatAsState(progress.coerceIn(0f, 1f), tween(900), label = "ring")
+    val track = Rule
+    val ink = Ink
     Canvas(modifier.size(size)) {
         val w = stroke.toPx()
         val inset = w / 2
         val arcSize = this.size.copy(this.size.width - w, this.size.height - w)
-        drawArc(Rule, -90f, 360f, false, Offset(inset, inset), arcSize, style = Stroke(w))
+        drawArc(track, -90f, 360f, false, Offset(inset, inset), arcSize, style = Stroke(w))
         if (p > 0f) {
-            drawArc(Ink, -90f, 360f * p, false, Offset(inset, inset), arcSize,
+            drawArc(ink, -90f, 360f * p, false, Offset(inset, inset), arcSize,
                 style = Stroke(w, cap = StrokeCap.Round))
         }
     }
@@ -209,13 +212,13 @@ fun SealStamp(char: String, size: Dp, modifier: Modifier = Modifier, animate: Bo
             }
             .clip(RoundedCornerShape(size * 0.08f))
             .background(Seal)
-            .border(size * 0.035f, Paper.copy(alpha = 0.85f), RoundedCornerShape(size * 0.06f)),
+            .border(size * 0.035f, OnSeal.copy(alpha = 0.85f), RoundedCornerShape(size * 0.06f)),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             char,
             fontFamily = Kai,
-            color = Paper,
+            color = OnSeal,
             fontWeight = FontWeight.Bold,
             fontSize = with(density) { (size * 0.62f).toSp() },
         )
@@ -230,7 +233,7 @@ fun StreakBadge(days: Int, modifier: Modifier = Modifier) {
             Modifier.size(30.dp).graphicsLayer { rotationZ = -6f }
                 .clip(RoundedCornerShape(3.dp)).background(Seal),
             contentAlignment = Alignment.Center,
-        ) { Text("$days", color = Paper, fontWeight = FontWeight.Black, fontSize = 14.sp) }
+        ) { Text("$days", color = OnSeal, fontWeight = FontWeight.Black, fontSize = 14.sp) }
         Text(if (days > 1) "  jours d'affilée" else "  jour", color = Ink,
             fontWeight = FontWeight.Bold, fontSize = 14.sp)
     }
