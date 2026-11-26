@@ -2,10 +2,12 @@ package com.zhuzi.app
 
 import android.Manifest
 import android.content.Intent
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -39,7 +41,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        // Fond blanc : icônes de la barre d'état toujours sombres, même en mode sombre du téléphone
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
+        )
         speaker = Speaker(this)
         val progress = Progress(this)
         val srs = Srs(this)
@@ -121,7 +127,7 @@ class MainActivity : ComponentActivity() {
                             LessonListScreen(
                                 bestScore = { id, mode -> if (v >= 0) progress.bestScore(id, mode) else -1 },
                                 onOpen = { screen = it.id },
-                                dueCount = srs.dueWords(allWords).size,
+                                dueWords = srs.dueWords(allWords),
                                 dueTomorrow = srs.dueTomorrow(allWords),
                                 knownCount = srs.knownCount(allWords),
                                 masteredCount = srs.masteredCount(allWords),

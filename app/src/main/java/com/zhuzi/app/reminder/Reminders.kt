@@ -54,11 +54,11 @@ object Reminders {
         val all = hsk1Lessons.flatMap { it.words }
         val due = srs.dueWords(all).size
         val days = streak.current()
-        val keep = if (days > 0) " Garde ta série de $days jour(s) 🔥" else ""
+        val keep = if (days > 0) " Garde ta série de $days jour${if (days > 1) "s" else ""} d'affilée." else ""
         return when {
-            due > 0 -> "$due mot(s) à revoir aujourd'hui.$keep"
+            due > 0 -> "$due mot${if (due > 1) "s" else ""} à revoir aujourd'hui.$keep"
             days > 0 -> "Un petit quiz pour continuer ?$keep"
-            srs.knownCount(all) == 0 -> "Tes premiers mots de chinois t'attendent 🎋"
+            srs.knownCount(all) == 0 -> "Tes premiers mots de chinois t'attendent."
             else -> null
         }
     }

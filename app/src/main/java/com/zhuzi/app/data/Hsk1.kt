@@ -3,14 +3,20 @@ package com.zhuzi.app.data
 /** Un mot à apprendre : caractères, prononciation (pinyin) et traduction. */
 data class Word(val hanzi: String, val pinyin: String, val french: String)
 
-/** Une leçon : un thème et ses mots. */
-data class Lesson(val id: Int, val title: String, val emoji: String, val words: List<Word>)
+/** Une leçon : un thème, un titre court, un caractère symbole et ses mots. */
+data class Lesson(
+    val id: Int,
+    val title: String,
+    val short: String,
+    val symbol: String,
+    val words: List<Word>,
+)
 
 private fun w(hanzi: String, pinyin: String, french: String) = Word(hanzi, pinyin, french)
 
 /** Les mots du HSK 1, rangés par thème. */
 val hsk1Lessons = listOf(
-    Lesson(1, "Bonjour et politesse", "👋", listOf(
+    Lesson(1, "Bonjour et politesse", "Politesse", "好", listOf(
         w("你好", "nǐ hǎo", "bonjour"),
         w("谢谢", "xièxie", "merci"),
         w("不客气", "bú kèqi", "de rien"),
@@ -24,7 +30,7 @@ val hsk1Lessons = listOf(
         w("叫", "jiào", "s'appeler"),
         w("名字", "míngzi", "nom, prénom"),
     )),
-    Lesson(2, "Les personnes", "🧑", listOf(
+    Lesson(2, "Les personnes", "Personnes", "人", listOf(
         w("我", "wǒ", "je, moi"),
         w("你", "nǐ", "tu, toi"),
         w("他", "tā", "il, lui"),
@@ -40,7 +46,7 @@ val hsk1Lessons = listOf(
         w("朋友", "péngyou", "ami"),
         w("医生", "yīshēng", "médecin"),
     )),
-    Lesson(3, "La famille et la maison", "🏠", listOf(
+    Lesson(3, "La famille et la maison", "Famille", "家", listOf(
         w("爸爸", "bàba", "papa"),
         w("妈妈", "māma", "maman"),
         w("儿子", "érzi", "fils"),
@@ -55,7 +61,7 @@ val hsk1Lessons = listOf(
         w("椅子", "yǐzi", "chaise"),
         w("东西", "dōngxi", "chose, objet"),
     )),
-    Lesson(4, "Les nombres", "🔢", listOf(
+    Lesson(4, "Les nombres", "Nombres", "十", listOf(
         w("一", "yī", "un"),
         w("二", "èr", "deux"),
         w("三", "sān", "trois"),
@@ -74,7 +80,7 @@ val hsk1Lessons = listOf(
         w("块", "kuài", "yuan (argent)"),
         w("些", "xiē", "quelques"),
     )),
-    Lesson(5, "Le temps", "🕒", listOf(
+    Lesson(5, "Le temps", "Le temps", "天", listOf(
         w("今天", "jīntiān", "aujourd'hui"),
         w("明天", "míngtiān", "demain"),
         w("昨天", "zuótiān", "hier"),
@@ -90,7 +96,7 @@ val hsk1Lessons = listOf(
         w("点", "diǎn", "heure (sur l'horloge)"),
         w("分钟", "fēnzhōng", "minute"),
     )),
-    Lesson(6, "Manger, boire, acheter", "🍵", listOf(
+    Lesson(6, "Manger, boire, acheter", "Manger", "吃", listOf(
         w("吃", "chī", "manger"),
         w("喝", "hē", "boire"),
         w("茶", "chá", "thé"),
@@ -105,7 +111,7 @@ val hsk1Lessons = listOf(
         w("买", "mǎi", "acheter"),
         w("商店", "shāngdiàn", "magasin"),
     )),
-    Lesson(7, "Les actions du quotidien", "🏃", listOf(
+    Lesson(7, "Les actions du quotidien", "Actions", "看", listOf(
         w("看", "kàn", "regarder, lire"),
         w("看见", "kànjiàn", "voir"),
         w("听", "tīng", "écouter"),
@@ -123,7 +129,7 @@ val hsk1Lessons = listOf(
         w("去", "qù", "aller"),
         w("回", "huí", "revenir, rentrer"),
     )),
-    Lesson(8, "Les lieux et les directions", "🧭", listOf(
+    Lesson(8, "Les lieux et les directions", "Lieux", "中", listOf(
         w("中国", "Zhōngguó", "Chine"),
         w("北京", "Běijīng", "Pékin"),
         w("学校", "xuéxiào", "école"),
@@ -139,7 +145,7 @@ val hsk1Lessons = listOf(
         w("后面", "hòumiàn", "derrière"),
         w("在", "zài", "être à, se trouver"),
     )),
-    Lesson(9, "Décrire et la météo", "🌦️", listOf(
+    Lesson(9, "Décrire et la météo", "Décrire", "大", listOf(
         w("大", "dà", "grand"),
         w("小", "xiǎo", "petit"),
         w("多", "duō", "beaucoup"),
@@ -153,7 +159,7 @@ val hsk1Lessons = listOf(
         w("天气", "tiānqì", "temps (météo)"),
         w("下雨", "xià yǔ", "pleuvoir"),
     )),
-    Lesson(10, "Questions et petits mots", "❓", listOf(
+    Lesson(10, "Questions et petits mots", "Questions", "吗", listOf(
         w("是", "shì", "être"),
         w("不", "bù", "ne… pas"),
         w("有", "yǒu", "avoir, il y a"),
@@ -172,7 +178,7 @@ val hsk1Lessons = listOf(
         w("想", "xiǎng", "vouloir, penser à"),
         w("一点儿", "yìdiǎnr", "un peu"),
     )),
-    Lesson(11, "Objets et transports", "✈️", listOf(
+    Lesson(11, "Objets et transports", "Objets", "书", listOf(
         w("书", "shū", "livre"),
         w("字", "zì", "caractère (écrit)"),
         w("汉语", "Hànyǔ", "langue chinoise"),
