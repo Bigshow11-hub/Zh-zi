@@ -132,8 +132,7 @@ fun HomeScreen(
                 StatTile("字", Accent2, "$knownCount", tr("Découverts", "Discovered", "Открыто"), Modifier.weight(1f))
                 StatTile("记", TileBlue, "$masteredCount", tr("Retenus", "Learned", "Выучено"), Modifier.weight(1f))
                 StatTile("天", Seal, "$streakDays",
-                    tr(if (streakDays > 1) "Jours de suite" else "Jour de suite", "Day streak",
-                        ruPlural(streakDays, "день подряд", "дня подряд", "дней подряд")),
+                    tr("Série", "Streak", "Серия"),
                     Modifier.weight(1f))
             }
         }

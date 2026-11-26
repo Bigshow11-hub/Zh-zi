@@ -73,6 +73,8 @@ fun MainFrame(
     ) {
         Scaffold(
             containerColor = Color.Transparent,
+            // Couleur du texte par défaut : l'encre du thème (sinon noir, illisible la nuit)
+            contentColor = com.zhuzi.app.ui.theme.Ink,
             bottomBar = { ZhuziBottomBar(tab, onTab, onCenter) },
             content = content,
         )
