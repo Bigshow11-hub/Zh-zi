@@ -237,7 +237,7 @@ class ScreenshotTest {
     fun carte() {
         lesson(0)
         shot("3-carte-recto")
-        compose.onNodeWithText("Touche la carte pour la retourner").performClick()
+        compose.onNodeWithText("Touche pour retourner").performClick()
         compose.waitForIdle()
         shot("4-carte-verso")
     }
@@ -542,7 +542,7 @@ class ScreenshotTest {
                 }
             }
         }
-        compose.onNodeWithText("Touche la carte pour la retourner").performClick()
+        compose.onNodeWithText("Touche pour retourner").performClick()
         compose.waitForIdle()
         shot("47-carte-verso-nuit")
     }
@@ -553,5 +553,22 @@ class ScreenshotTest {
         compose.onRoot().performTouchInput { swipeUp(startY = bottom - 300f, endY = top + 100f) }
         compose.waitForIdle()
         shot("48-accueil-bas-nuit")
+    }
+
+    @Test
+    fun accueilNouvelEleve() {
+        compose.setContent {
+            ZhuziTheme {
+                Surface {
+                    com.zhuzi.app.ui.OnboardingScreen(
+                        lang = com.zhuzi.app.data.Lang.FR, onLang = {}, onDone = { _, _, _ -> }, contentPadding = bars,
+                    )
+                }
+            }
+        }
+        shot("50-premier-lancement")
+        compose.onNodeWithText("Continuer").performClick()
+        compose.waitForIdle()
+        shot("51-premier-lancement-niveau")
     }
 }

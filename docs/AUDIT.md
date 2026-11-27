@@ -10,7 +10,7 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 
 ## A. À régler avant une sortie sur le Play Store
 
-### 1. Pas de son si le téléphone n'a pas de voix chinoise ⬜
+### 1. Pas de son si le téléphone n'a pas de voix chinoise ✅ (2.6.0)
 - **Où** : `ui/Speaker.kt`.
 - **Pourquoi** : si la voix chinoise n'est pas installée, `speak()` ne fait rien, en silence. L'élève touche
   « Écouter », rien ne se passe, et le quiz « Écoute » devient impossible. C'est la première cause probable
@@ -32,7 +32,7 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 - **Proposition** : `isMinifyEnabled = true` + `isShrinkResources = true` en version publiée, tester que ML Kit
   et pinyin4j marchent toujours (règles ProGuard si besoin).
 
-### 4. Les progrès peuvent se perdre en changeant de téléphone ⬜
+### 4. Les progrès peuvent se perdre en changeant de téléphone ✅ (2.6.0 : règles de sauvegarde Android + fichier de sauvegarde dans Progrès)
 - **Où** : `AndroidManifest.xml` (`allowBackup="true"` sans règles), `data/Srs.kt`, `data/Streak.kt`.
 - **Pourquoi** : la sauvegarde Android n'est pas réglée (pas de `dataExtractionRules`), et il n'y a ni export
   ni compte. Perdre sa série de 100 jours est la pire expérience pour une appli d'apprentissage.
@@ -65,7 +65,7 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
   interrupteur et heure, À propos avec la version). La ligne « Rappel quotidien » entière bascule
   l'interrupteur (et TalkBack l'annonce comme un interrupteur).
 
-### 8. Pas d'accueil pour un nouvel élève ⬜
+### 8. Pas d'accueil pour un nouvel élève ✅ (2.6.0 : langue → niveau → rappel)
 - **Où** : `MainActivity.kt` (aucun écran de premier lancement).
 - **Pourquoi** : à la première ouverture, on arrive directement sur l'accueil, sans choisir son niveau
   (un élève qui connaît déjà le HSK 1 doit tout « découvrir »), son objectif du jour ni l'heure du rappel.
@@ -83,7 +83,7 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 - **Pourquoi** : impossible pour une personne qui ne peut pas tracer au doigt (TalkBack, motricité).
 - **Proposition** : bouton « Passer ce caractère » et lecture du nombre de traits.
 
-### 11. Cartes de hauteur fixe ⬜
+### 11. Cartes de hauteur fixe ✅ (2.6.0 : hauteur minimale, panneau du quiz mesuré)
 - **Où** : `ui/LessonScreen.kt` (`FlipCard` : `height(360.dp)`, pile de 380 dp), `Quiz` (marge basse fixe de 220 dp).
 - **Pourquoi** : avec une grande taille de police (réglage du téléphone à 130 %) ou un long sens en russe,
   le dos de la carte peut être coupé ; sur un petit téléphone, la carte prend presque tout l'écran.
@@ -180,7 +180,7 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 
 ## E. Performances
 
-### 26. Calculs répétés à chaque affichage ⬜
+### 26. Calculs répétés à chaque affichage ✅ (2.6.0 : révision espacée gardée en mémoire dans `Srs`)
 - **Où** : `MainActivity.kt` (`srs.dueWords(reviewPool)`, `knownCount`, `masteredCount`, `dueTomorrow`
   appelés à chaque recomposition de l'onglet, sur ~600 mots ; `progress.bestScore` pour 41 leçons).
 - **Pourquoi** : chaque appel relit et découpe ~600 chaînes ; pendant les transitions d'onglet (fondu),
