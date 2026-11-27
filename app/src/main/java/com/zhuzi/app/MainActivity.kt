@@ -299,7 +299,7 @@ class MainActivity : ComponentActivity() {
                             contentPadding = bars,
                         )
                     }
-                    overlay <= EXAM_BASE - 1 && overlay >= EXAM_BASE - 3 -> Surface {
+                    overlay <= EXAM_BASE - 1 && overlay >= EXAM_BASE - 4 -> Surface {
                         BackHandler(onBack = close)
                         val examLevel = EXAM_BASE - overlay
                         com.zhuzi.app.ui.ExamScreen(

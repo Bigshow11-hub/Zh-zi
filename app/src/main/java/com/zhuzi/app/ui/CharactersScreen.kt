@@ -138,9 +138,9 @@ fun CharactersScreen(
                         1 -> tr("${com.zhuzi.app.data.charInfos.size} caractères : sens, clé et astuce pour les retenir",
                             "${com.zhuzi.app.data.charInfos.size} characters: meaning, radical and a tip to remember them",
                             "${com.zhuzi.app.data.charInfos.size} иероглифа: смысл, ключ и подсказка")
-                        else -> tr("${com.zhuzi.app.data.grammarPoints.size} règles du HSK 1 à 3, avec des exemples à écouter",
-                            "${com.zhuzi.app.data.grammarPoints.size} HSK 1–3 rules, with examples to listen to",
-                            "${com.zhuzi.app.data.grammarPoints.size} правил HSK 1–3 с примерами")
+                        else -> tr("${com.zhuzi.app.data.grammarPoints.size} règles du HSK 1 à 4, avec des exemples à écouter",
+                            "${com.zhuzi.app.data.grammarPoints.size} HSK 1–4 rules, with examples to listen to",
+                            "${com.zhuzi.app.data.grammarPoints.size} правил HSK 1–4 с примерами")
                     },
                 )
                 Segmented(listOf(tr("Mots", "Words", "Слова"), tr("Caractères", "Characters", "Знаки"),

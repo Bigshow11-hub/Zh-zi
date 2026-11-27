@@ -10,6 +10,7 @@ private fun w(hanzi: String, pinyin: String, french: String, english: String, ru
 
 /** Niveau HSK d'une leçon : 1 (leçons 1 à 11), 2 (12 à 21) ou 3 (22 et suivantes). */
 val Lesson.level: Int get() = when {
+    id > 41 -> 4
     id > 21 -> 3
     id > 11 -> 2
     else -> 1
@@ -17,6 +18,7 @@ val Lesson.level: Int get() = when {
 
 /** Numéro de la leçon dans son niveau (la leçon 12 est la leçon 1 du HSK 2, la 22 la leçon 1 du HSK 3). */
 val Lesson.number: Int get() = when {
+    id > 41 -> id - 41
     id > 21 -> id - 21
     id > 11 -> id - 11
     else -> id
@@ -204,7 +206,7 @@ val hsk2Lessons = listOf(
 )
 
 /** Toutes les leçons, HSK 1, 2 puis 3. */
-val allLessons: List<Lesson> by lazy { hsk1Lessons + hsk2Lessons + hsk3Lessons + hsk3bLessons }
+val allLessons: List<Lesson> by lazy { hsk1Lessons + hsk2Lessons + hsk3Lessons + hsk3bLessons + hsk4Lessons }
 
 /** Les accroches des leçons du HSK 2. */
 val hsk2Intros: Map<Int, T3> = mapOf(

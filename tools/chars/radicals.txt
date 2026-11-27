@@ -164,3 +164,12 @@
 牙|dent|tooth|зуб
 士|lettré|scholar|учёный муж
 而|barbe|beard|борода
+入|entrer|enter|входить
+金|or, métal|gold, metal|золото, металл
+言|parole|speech|речь
+羽|plume|feather|перо
+幺|petit, fil|tiny, thread|маленький, нить
+虎|tigre|tiger|тигр
+缶|jarre|jar|кувшин
+毛|poil, plume|fur, feather|шерсть
+辛|amer|bitter|горький

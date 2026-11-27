@@ -18,7 +18,7 @@ data class GrammarPoint(
 private fun ex(hanzi: String, pinyin: String, fr: String, en: String, ru: String) = Example(hanzi, pinyin, fr, en, ru)
 
 /** Toutes les règles : HSK 1 puis HSK 2. */
-val grammarPoints: List<GrammarPoint> by lazy { hsk1Grammar + hsk2Grammar + hsk3Grammar + hsk3bGrammar }
+val grammarPoints: List<GrammarPoint> by lazy { hsk1Grammar + hsk2Grammar + hsk3Grammar + hsk3bGrammar + hsk4Grammar }
 
 private val hsk1Grammar: List<GrammarPoint> = listOf(
     GrammarPoint(
@@ -327,7 +327,7 @@ private val hsk1Grammar: List<GrammarPoint> = listOf(
 )
 
 /** « Le savais-tu ? » : une note de culture par leçon. */
-val lessonCulture: Map<Int, T3> by lazy { hsk1Culture + hsk2Culture + hsk3Culture + hsk3bCulture }
+val lessonCulture: Map<Int, T3> by lazy { hsk1Culture + hsk2Culture + hsk3Culture + hsk3bCulture + hsk4Culture }
 
 private val hsk1Culture: Map<Int, T3> = mapOf(
     1 to T3("En Chine, on se salue rarement par une bise. Un signe de tête ou une poignée de main suffit, et 你好 se dit surtout aux inconnus ; entre amis, on lance plutôt 吃了吗 ? « Tu as mangé ? ».",
