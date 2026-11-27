@@ -4,44 +4,52 @@ name: Tester l'installation
 # pour voir l'erreur exacte si l'installation échoue.
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/install-test.yml]
   workflow_run:
     workflows: ["Construire l'APK"]
     types: [completed]
     branches: [main]
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   install:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [34, 35, 36]
     steps:
-      - name: Récupérer l'APK publié
+      - name: Récupérer l'APK publié (et la version 2.0.0 pour tester la mise à jour)
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download derniere-version -R "$GITHUB_REPOSITORY" -p zhuzi.apk
-      - name: Examiner l'APK
         run: |
-          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
-          echo "build-tools: $BT"
-          "$BT/apksigner" verify --verbose --print-certs zhuzi.apk || true
-          "$BT/aapt2" dump badging zhuzi.apk | head -40 || true
-          "$BT/zipalign" -c -P 16 -v 4 zhuzi.apk | tail -5 || true
+          gh release download derniere-version -R "$GITHUB_REPOSITORY" -p zhuzi.apk
+          gh run download 45932025624 -R "$GITHUB_REPOSITORY" -n zhuzi-apk -D old || true
+          ls -la zhuzi.apk old || true
       - name: Activer KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Installer et lancer sur Android 14
+      - name: Installer et lancer
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
+          api-level: ${{ matrix.api }}
           target: google_apis
           arch: x86_64
           disable-animations: true
           script: |
-            adb install zhuzi.apk; echo "resultat install: $?"
-            adb shell pm list packages | grep zhuzi || echo "PAS INSTALLEE"
+            echo "== installation neuve"; adb install zhuzi.apk; echo "resultat neuve: $?"
+            adb uninstall com.zhuzi.app || true
+            if [ -f old/app-debug.apk ]; then echo "== 2.0.0 puis mise a jour"; adb install old/app-debug.apk; echo "resultat 2.0.0: $?"; adb install -r zhuzi.apk; echo "resultat mise a jour: $?"; fi
+            adb shell dumpsys package com.zhuzi.app | grep -E "versionName|versionCode" || echo "PAS INSTALLEE"
             adb logcat -c
             adb shell monkey -p com.zhuzi.app -c android.intent.category.LAUNCHER 1 || true
             sleep 15
             adb shell pidof com.zhuzi.app && echo "APPLI LANCEE" || echo "APPLI ARRETEE"
             adb logcat -d -b crash || true
-            adb logcat -d | grep -iE "zhuzi|FATAL|AndroidRuntime|PackageManager" | tail -80 || true
