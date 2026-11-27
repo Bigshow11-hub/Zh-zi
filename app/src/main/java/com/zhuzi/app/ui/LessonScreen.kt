@@ -1,5 +1,10 @@
 package com.zhuzi.app.ui
 
+import androidx.compose.foundation.layout.size
+import com.zhuzi.app.ui.theme.Accent
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -155,19 +160,31 @@ fun FlipCard(
     flipped: Boolean,
     onFlip: () -> Unit,
     modifier: Modifier = Modifier,
-    frontHint: String = tr("Touche la carte pour la retourner", "Tap the card to flip it", "Нажми на карточку, чтобы перевернуть"),
+    frontHint: String = tr("Touche pour retourner", "Tap to flip", "Нажми, чтобы перевернуть"),
+    onListen: (() -> Unit)? = null,
 ) {
     val rotation by animateFloatAsState(
         if (flipped) 180f else 0f,
         spring(dampingRatio = 0.72f, stiffness = Spring.StiffnessMediumLow),
         label = "flip",
     )
+    // Si on ne touche à rien, la carte se penche un peu pour inviter à la retourner
+    val nudge = remember(word) { Animatable(0f) }
+    LaunchedEffect(word, flipped) {
+        if (flipped) { nudge.snapTo(0f); return@LaunchedEffect }
+        kotlinx.coroutines.delay(4200)
+        nudge.animateTo(14f, androidx.compose.animation.core.tween(260, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+        nudge.animateTo(0f, spring(dampingRatio = 0.4f, stiffness = Spring.StiffnessLow))
+    }
+    // Les caractères apparaissent à l'encre, l'un après l'autre
+    val ink = remember(word) { Animatable(0f) }
+    LaunchedEffect(word) { ink.animateTo(1f, androidx.compose.animation.core.tween(520, easing = androidx.compose.animation.core.FastOutSlowInEasing)) }
     Box(
         modifier
             .fillMaxWidth()
             .height(360.dp)
             .graphicsLayer {
-                rotationY = rotation
+                rotationY = rotation + nudge.value
                 cameraDistance = 12f * density
                 // la carte se soulève pendant qu'elle tourne, puis se repose
                 val lift = kotlin.math.sin(Math.toRadians(rotation.toDouble())).toFloat().let { kotlin.math.abs(it) }
@@ -183,10 +200,52 @@ fun FlipCard(
         contentAlignment = Alignment.Center,
     ) {
         if (rotation <= 90f) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                WordGrids(word.hanzi, maxSize = 200.dp, diagonals = true)
-                Spacer(Modifier.height(24.dp))
-                Text(frontHint, color = InkSoft, fontSize = 14.sp)
+            Box(Modifier.fillMaxSize()) {
+                // En-tête : nombre de caractères et bouton pour écouter sans retourner
+                Row(Modifier.fillMaxWidth().align(Alignment.TopCenter), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        countOf(currentLang(), word.hanzi.length, "caractère" to "caractères", "character" to "characters",
+                            Triple("иероглиф", "иероглифа", "иероглифов")).uppercase(),
+                        style = Kicker, color = InkSoft, modifier = Modifier.weight(1f),
+                    )
+                    if (onListen != null) {
+                        val accent = Accent
+                        Box(
+                            Modifier.size(40.dp).clip(CircleShape).background(accent.copy(alpha = 0.1f))
+                                .clickable(onClick = onListen)
+                                .semantics { contentDescription = tr("Écouter", "Listen", "Слушать") },
+                            contentAlignment = Alignment.Center,
+                        ) { ZIcon(Glyph.SPEAKER, accent, size = 20.dp, weight = 1.2f) }
+                    }
+                }
+                WordGrids(
+                    word.hanzi, maxSize = 168.dp, diagonals = true,
+                    modifier = Modifier.align(Alignment.Center).graphicsLayer {
+                        alpha = ink.value
+                        val sc = 0.9f + 0.1f * ink.value
+                        scaleX = sc; scaleY = sc
+                        translationY = (1f - ink.value) * 14.dp.toPx()
+                    },
+                )
+                // Invitation à retourner, qui respire doucement
+                val breathe = androidx.compose.animation.core.rememberInfiniteTransition(label = "hint")
+                val a by breathe.animateFloat(
+                    0.45f, 1f,
+                    androidx.compose.animation.core.infiniteRepeatable(
+                        androidx.compose.animation.core.tween(1400, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                        androidx.compose.animation.core.RepeatMode.Reverse,
+                    ),
+                    label = "hintAlpha",
+                )
+                Row(
+                    Modifier.align(Alignment.BottomCenter).graphicsLayer { alpha = a }
+                        .clip(PillShape).background(Mist).padding(horizontal = 14.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    FlipGlyph(InkSoft)
+                    Spacer(Modifier.width(8.dp))
+                    Text(frontHint, color = InkSoft, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                }
             }
         } else {
             Column(
@@ -216,6 +275,27 @@ fun FlipCard(
                 }
             }
         }
+    }
+}
+
+/** Deux flèches en arc : « retourner la carte ». */
+@Composable
+private fun FlipGlyph(tint: androidx.compose.ui.graphics.Color) {
+    androidx.compose.foundation.Canvas(Modifier.size(16.dp)) {
+        val w = size.width
+        val st = androidx.compose.ui.graphics.drawscope.Stroke(w * 0.11f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+        drawArc(tint, 200f, 150f, false, androidx.compose.ui.geometry.Offset(w * 0.1f, w * 0.1f),
+            androidx.compose.ui.geometry.Size(w * 0.8f, w * 0.8f), style = st)
+        drawArc(tint, 20f, 150f, false, androidx.compose.ui.geometry.Offset(w * 0.1f, w * 0.1f),
+            androidx.compose.ui.geometry.Size(w * 0.8f, w * 0.8f), style = st)
+        val head = androidx.compose.ui.graphics.Path().apply {
+            moveTo(w * 0.86f, w * 0.18f); lineTo(w * 0.9f, w * 0.44f); lineTo(w * 0.64f, w * 0.38f); close()
+        }
+        drawPath(head, tint)
+        val head2 = androidx.compose.ui.graphics.Path().apply {
+            moveTo(w * 0.14f, w * 0.82f); lineTo(w * 0.1f, w * 0.56f); lineTo(w * 0.36f, w * 0.62f); close()
+        }
+        drawPath(head2, tint)
     }
 }
 
@@ -322,6 +402,7 @@ private fun Flashcards(
                             revealed = !revealed
                             if (revealed) { onSeen(word); speak(word.hanzi) }
                         },
+                        onListen = { speak(word.hanzi) },
                         Modifier
                             .graphicsLayer {
                                 translationX = drag.value

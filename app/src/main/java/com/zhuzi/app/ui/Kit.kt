@@ -490,7 +490,8 @@ fun Grabber() {
 fun ZhuziSheet(
     onDismiss: () -> Unit,
     grouped: Boolean = false,
-    sheetState: SheetState = rememberModalBottomSheetState(),
+    // Toujours grand ouvert : rien ne reste caché sous la barre du téléphone
+    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     ModalBottomSheet(

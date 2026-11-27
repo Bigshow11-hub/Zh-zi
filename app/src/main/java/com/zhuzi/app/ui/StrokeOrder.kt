@@ -24,7 +24,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.zhuzi.app.ui.theme.Accent
+import com.zhuzi.app.ui.theme.AccentFill
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
@@ -59,34 +74,39 @@ import com.zhuzi.app.ui.theme.toneColor
 import kotlinx.coroutines.delay
 import kotlin.math.hypot
 
-/** Le début d'une ligne médiane, jusqu'à la fraction donnée de sa longueur. */
-private fun partialPath(points: List<Pair<Float, Float>>, fraction: Float): Path {
+/** Le début d'une ligne médiane, jusqu'à la fraction donnée de sa longueur (et le bout atteint). */
+private fun partialPath(points: List<Pair<Float, Float>>, fraction: Float): Pair<Path, Offset> {
     val path = Path()
-    if (points.isEmpty()) return path
+    if (points.isEmpty()) return path to Offset.Zero
     val segs = points.zipWithNext { a, b -> hypot(b.first - a.first, b.second - a.second) }
     var left = segs.sum() * fraction
     path.moveTo(points[0].first, points[0].second)
+    var tip = Offset(points[0].first, points[0].second)
     for (i in segs.indices) {
         val (ax, ay) = points[i]
         val (bx, by) = points[i + 1]
         if (left >= segs[i]) {
-            path.lineTo(bx, by); left -= segs[i]
+            path.lineTo(bx, by); left -= segs[i]; tip = Offset(bx, by)
         } else {
             val t = if (segs[i] == 0f) 0f else left / segs[i]
-            path.lineTo(ax + (bx - ax) * t, ay + (by - ay) * t)
+            tip = Offset(ax + (bx - ax) * t, ay + (by - ay) * t)
+            path.lineTo(tip.x, tip.y)
             break
         }
     }
-    return path
+    return path to tip
 }
 
+private enum class StrokeCmd { PLAY, PAUSE, NEXT, PREV }
+
 /**
- * Animation de l'ordre des traits d'un caractère : chaque trait se dessine dans son sens,
- * le trait en cours en rouge, les traits finis à l'encre, ceux à venir en gris clair.
- * Le point rouge montre où poser le pinceau.
+ * Animation de l'ordre des traits d'un caractère, comme un pinceau :
+ * le trait en cours se dessine en rouge dans son sens (la pointe du pinceau le suit),
+ * les traits finis passent à l'encre, ceux à venir restent en filigrane.
+ * Commandes : trait précédent, lecture / pause / rejouer, trait suivant, vitesse.
  */
 @Composable
-fun StrokeOrderView(char: String, size: Dp, modifier: Modifier = Modifier) {
+fun StrokeOrderView(char: String, size: Dp, modifier: Modifier = Modifier, controls: Boolean = true) {
     val context = LocalContext.current
     val data = remember(char) { StrokeData.get(context, char) }
     if (data == null) {
@@ -100,103 +120,205 @@ fun StrokeOrderView(char: String, size: Dp, modifier: Modifier = Modifier) {
     }
     val n = outlines.size
 
-    // done = nombre de traits finis ; progress = avancée du trait suivant ; run relance l'animation
-    var done by remember(char) { mutableIntStateOf(0) }
-    var run by remember(char) { mutableIntStateOf(1) }
+    var done by remember(char) { mutableIntStateOf(0) }          // traits finis
+    var playing by remember(char) { mutableStateOf(false) }
+    var slow by remember { mutableStateOf(false) }
+    var cmd by remember(char) { mutableStateOf(StrokeCmd.PLAY) }
+    var tick by remember(char) { mutableIntStateOf(0) }           // relance la commande
     val progress = remember(char) { Animatable(0f) }
-    LaunchedEffect(char, run) {
-        if (run <= 0) { // pas à pas : on arrête l'animation automatique
-            progress.snapTo(0f)
-            return@LaunchedEffect
-        }
-        done = 0
-        delay(250)
-        for (i in 0 until n) {
-            done = i
-            progress.snapTo(0f)
-            progress.animateTo(1f, tween((lengths[i] * 0.9f).toInt().coerceIn(260, 800), easing = FastOutSlowInEasing))
-            delay(140)
-        }
-        done = n
+    val appear = remember(char) { Animatable(0f) }
+    val send: (StrokeCmd) -> Unit = { c -> cmd = c; tick++ }
+
+    suspend fun drawStroke(i: Int) {
+        val ms = ((lengths[i] * 0.95f).toInt().coerceIn(320, 900) * (if (slow) 1.9f else 1f)).toInt()
         progress.snapTo(0f)
+        progress.animateTo(1f, tween(ms, easing = FastOutSlowInEasing))
+        done = i + 1
+        progress.snapTo(0f)
+    }
+
+    LaunchedEffect(char) { appear.animateTo(1f, tween(380, easing = FastOutSlowInEasing)) }
+    LaunchedEffect(char, tick) {
+        when (cmd) {
+            StrokeCmd.PLAY -> {
+                if (done >= n) done = 0
+                playing = true
+                delay(if (tick == 0) 450 else 150)
+                while (done < n) {
+                    drawStroke(done)
+                    delay(if (slow) 260 else 130)
+                }
+                playing = false
+            }
+            StrokeCmd.PAUSE -> { playing = false; progress.snapTo(0f) }
+            StrokeCmd.NEXT -> { playing = false; if (done < n) drawStroke(done) }
+            StrokeCmd.PREV -> { playing = false; progress.snapTo(0f); done = (done - 1).coerceAtLeast(0) }
+        }
     }
 
     val ink = Ink
     val ghost = GridLine
     val guide = GridLine
     val paper = Paper
+    val accent = Accent
+    val soft = Mist
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Canvas(Modifier.size(size)) {
+        Canvas(Modifier.size(size).graphicsLayer {
+            alpha = appear.value
+            val sc = 0.94f + 0.06f * appear.value
+            scaleX = sc; scaleY = sc
+        }) {
             val w = this.size.width
-            val r = CornerRadius(6.dp.toPx(), 6.dp.toPx())
+            val r = CornerRadius(14.dp.toPx(), 14.dp.toPx())
             val thin = 1.dp.toPx()
-            val dash = PathEffect.dashPathEffect(floatArrayOf(6f, 5f))
-            // Case 米字格
+            val dash = PathEffect.dashPathEffect(floatArrayOf(7f, 6f))
+            // Case 米字格, douce
             drawRoundRect(paper, cornerRadius = r)
-            drawLine(guide.copy(alpha = 0.6f), Offset(0f, 0f), Offset(w, w), thin, pathEffect = dash)
-            drawLine(guide.copy(alpha = 0.6f), Offset(w, 0f), Offset(0f, w), thin, pathEffect = dash)
+            drawLine(guide.copy(alpha = 0.55f), Offset(0f, 0f), Offset(w, w), thin, pathEffect = dash)
+            drawLine(guide.copy(alpha = 0.55f), Offset(w, 0f), Offset(0f, w), thin, pathEffect = dash)
             drawLine(guide, Offset(w / 2, 0f), Offset(w / 2, w), thin, pathEffect = dash)
             drawLine(guide, Offset(0f, w / 2), Offset(w, w / 2), thin, pathEffect = dash)
-            drawRoundRect(ink.copy(alpha = 0.28f), topLeft = Offset(0.8.dp.toPx(), 0.8.dp.toPx()),
-                size = Size(w - 1.6.dp.toPx(), w - 1.6.dp.toPx()), cornerRadius = r, style = Stroke(1.6.dp.toPx()))
+            drawRoundRect(ink.copy(alpha = 0.16f), topLeft = Offset(0.75.dp.toPx(), 0.75.dp.toPx()),
+                size = Size(w - 1.5.dp.toPx(), w - 1.5.dp.toPx()), cornerRadius = r, style = Stroke(1.5.dp.toPx()))
 
-            val k = w / 1024f
+            val k = w * 0.9f / 1024f
+            val pad = w * 0.05f
             withTransform({
-                translate(top = 900f * k)
+                translate(left = pad, top = pad + 900f * k)
                 scale(k, -k, pivot = Offset.Zero)
             }) {
+                var tip: Offset? = null
                 outlines.forEachIndexed { i, p ->
                     when {
                         i < done -> drawPath(p, ink)
                         i == done && progress.value > 0f -> {
-                            drawPath(p, ghost)
+                            drawPath(p, ghost.copy(alpha = 0.55f))
+                            val (part, end) = partialPath(medians[i], progress.value)
+                            tip = end
                             clipPath(p) {
-                                drawPath(
-                                    partialPath(medians[i], progress.value), Seal,
-                                    style = Stroke(width = 190f, cap = StrokeCap.Round, join = StrokeJoin.Round),
-                                )
+                                drawPath(part, Seal, style = Stroke(width = 200f, cap = StrokeCap.Round, join = StrokeJoin.Round))
                             }
                         }
-                        else -> drawPath(p, ghost)
+                        else -> drawPath(p, ghost.copy(alpha = 0.55f))
                     }
                 }
-                // Point de départ du trait suivant
-                if (done < n) {
-                    val (sx, sy) = medians[done].first()
-                    drawCircle(Seal, radius = 34f, center = Offset(sx, sy))
-                    drawCircle(paper, radius = 14f, center = Offset(sx, sy))
+                // La pointe du pinceau pendant le tracé, sinon le point de départ du trait suivant
+                tip?.let {
+                    drawCircle(Seal.copy(alpha = 0.22f), radius = 58f, center = it)
+                    drawCircle(Seal, radius = 26f, center = it)
+                } ?: run {
+                    if (done < n) {
+                        val (sx, sy) = medians[done].first()
+                        drawCircle(Seal.copy(alpha = 0.18f), radius = 52f, center = Offset(sx, sy))
+                        drawCircle(Seal, radius = 26f, center = Offset(sx, sy))
+                        drawCircle(paper, radius = 11f, center = Offset(sx, sy))
+                    }
                 }
             }
         }
-        Spacer(Modifier.height(12.dp))
-        Text(
-            if (done >= n) countOf(currentLang(), n, "trait" to "traits", "stroke" to "strokes", Triple("черта", "черты", "черт"))
-            else tr("Trait ${done + 1} sur $n", "Stroke ${done + 1} of $n", "Черта ${done + 1} из $n"),
-            fontSize = 13.sp, fontWeight = FontWeight.Bold, color = InkSoft,
-        )
-        Spacer(Modifier.height(10.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SmallPill("‹ " + tr("Trait", "Stroke", "Черта")) {
-                run = 0; done = (done - 1).coerceAtLeast(0)
-            }
-            SmallPill(tr("Rejouer", "Replay", "Повтор"), filled = true) { run = if (run > 0) run + 1 else 1 }
-            SmallPill(tr("Trait", "Stroke", "Черта") + " ›") {
-                run = 0; done = (done + 1).coerceAtMost(n)
+        if (!controls) return@Column
+        // Avancement : une petite barre par trait
+        Spacer(Modifier.height(14.dp))
+        Canvas(Modifier.width(size).height(5.dp)) {
+            val gap = 3.dp.toPx()
+            val seg = (this.size.width - gap * (n - 1)) / n
+            val h = this.size.height
+            for (i in 0 until n) {
+                val x = i * (seg + gap)
+                drawRoundRect(soft, Offset(x, 0f), Size(seg, h), CornerRadius(h / 2, h / 2))
+                val f = when {
+                    i < done -> 1f
+                    i == done -> progress.value
+                    else -> 0f
+                }
+                if (f > 0f) drawRoundRect(if (i < done) accent else Seal, Offset(x, 0f), Size(seg * f, h), CornerRadius(h / 2, h / 2))
             }
         }
+        Spacer(Modifier.height(10.dp))
+        Text(
+            if (done >= n && !playing) countOf(currentLang(), n, "trait" to "traits", "stroke" to "strokes", Triple("черта", "черты", "черт"))
+            else tr("Trait ${(done + 1).coerceAtMost(n)} sur $n", "Stroke ${(done + 1).coerceAtMost(n)} of $n",
+                "Черта ${(done + 1).coerceAtMost(n)} из $n"),
+            fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = InkSoft,
+        )
+        Spacer(Modifier.height(12.dp))
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            RoundIcon(tr("Trait précédent", "Previous stroke", "Предыдущая черта"), enabled = done > 0 || progress.value > 0f,
+                onClick = { send(StrokeCmd.PREV) }) { tint -> ZIcon(Glyph.CHEVRON_LEFT, tint, size = 22.dp, weight = 1.4f) }
+            PlayButton(playing = playing, finished = done >= n && !playing) {
+                send(if (playing) StrokeCmd.PAUSE else StrokeCmd.PLAY)
+            }
+            RoundIcon(tr("Trait suivant", "Next stroke", "Следующая черта"), enabled = done < n,
+                onClick = { send(StrokeCmd.NEXT) }) { tint -> ZIcon(Glyph.CHEVRON_RIGHT, tint, size = 22.dp, weight = 1.4f) }
+        }
+        Spacer(Modifier.height(10.dp))
+        Text(
+            if (slow) tr("Vitesse : lente", "Speed: slow", "Скорость: медленно") else tr("Vitesse : normale", "Speed: normal", "Скорость: обычная"),
+            fontSize = 13.sp, color = accent, fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.clip(PillShape).clickable { slow = !slow }.padding(horizontal = 14.dp, vertical = 8.dp),
+        )
     }
 }
 
+/** Bouton rond secondaire (précédent / suivant). */
 @Composable
-private fun SmallPill(label: String, filled: Boolean = false, onClick: () -> Unit) {
+private fun RoundIcon(desc: String, enabled: Boolean, onClick: () -> Unit, icon: @Composable (Color) -> Unit) {
+    val tint = if (enabled) Ink else InkSoft.copy(alpha = 0.4f)
     Box(
-        Modifier.clip(PillShape)
-            .background(if (filled) Ink else Paper)
-            .border(1.5.dp, Ink, PillShape)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+        Modifier.size(48.dp).clip(CircleShape).background(Mist)
+            .clickable(enabled = enabled, onClick = onClick)
+            .semantics { contentDescription = desc },
         contentAlignment = Alignment.Center,
-    ) { Text(label, color = if (filled) Paper else Ink, fontWeight = FontWeight.Bold, fontSize = 14.sp) }
+    ) { icon(tint) }
+}
+
+/** Gros bouton central : lecture, pause ou rejouer. */
+@Composable
+private fun PlayButton(playing: Boolean, finished: Boolean, onClick: () -> Unit) {
+    val fill = AccentFill
+    val desc = when {
+        playing -> tr("Pause", "Pause", "Пауза")
+        finished -> tr("Rejouer", "Replay", "Повтор")
+        else -> tr("Lecture", "Play", "Воспроизвести")
+    }
+    val press = remember { Animatable(1f) }
+    val scope = rememberCoroutineScope()
+    Box(
+        Modifier.size(60.dp).graphicsLayer { scaleX = press.value; scaleY = press.value }
+            .clip(CircleShape).background(fill)
+            .clickable {
+                scope.launch { press.snapTo(0.9f); press.animateTo(1f, tween(220, easing = FastOutSlowInEasing)) }
+                onClick()
+            }
+            .semantics { contentDescription = desc },
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(Modifier.size(24.dp)) {
+            val w = this.size.width
+            val white = Color.White
+            when {
+                playing -> {
+                    val bw = w * 0.22f
+                    drawRoundRect(white, Offset(w * 0.2f, w * 0.12f), Size(bw, w * 0.76f), CornerRadius(bw / 3, bw / 3))
+                    drawRoundRect(white, Offset(w * 0.58f, w * 0.12f), Size(bw, w * 0.76f), CornerRadius(bw / 3, bw / 3))
+                }
+                finished -> {
+                    val st = Stroke(w * 0.13f, cap = StrokeCap.Round)
+                    drawArc(white, -60f, 290f, false, Offset(w * 0.14f, w * 0.14f), Size(w * 0.72f, w * 0.72f), style = st)
+                    val a = Path().apply {
+                        moveTo(w * 0.62f, w * 0.02f); lineTo(w * 0.86f, w * 0.2f); lineTo(w * 0.58f, w * 0.32f); close()
+                    }
+                    drawPath(a, white)
+                }
+                else -> {
+                    val t = Path().apply {
+                        moveTo(w * 0.3f, w * 0.14f); lineTo(w * 0.86f, w * 0.5f); lineTo(w * 0.3f, w * 0.86f); close()
+                    }
+                    drawPath(t, white)
+                }
+            }
+        }
+    }
 }
 
 /** Lien « Ordre des traits » : pinceau + libellé en accent. */
@@ -210,16 +332,25 @@ fun StrokeLink(onClick: () -> Unit) {
 @Composable
 fun StrokeSheet(word: Word?, onDismiss: () -> Unit) {
     if (word == null) return
-    ZhuziSheet(onDismiss) {
+    val screen = androidx.compose.ui.platform.LocalConfiguration.current
+    val grid = minOf(screen.screenWidthDp * 0.64f, screen.screenHeightDp * 0.34f, 280f).dp
+    ZhuziSheet(onDismiss, sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(
-            Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
+                .padding(start = 24.dp, end = 24.dp, bottom = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            WordGrids(word.hanzi, maxSize = 56.dp, pinyin = word.pinyin)
-            Spacer(Modifier.height(6.dp))
-            PinyinText(word.pinyin, 18.sp)
+            // En-tête : le mot, sa prononciation et son sens
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                HanziText(word, 30.sp)
+                Spacer(Modifier.width(12.dp))
+                Column {
+                    PinyinText(word.pinyin, 17.sp)
+                    Text(word.meaning(currentLang()), fontSize = 14.sp, color = InkSoft, maxLines = 1)
+                }
+            }
             Spacer(Modifier.height(18.dp))
-            StrokePanel(word, size = 240.dp)
+            StrokePanel(word, size = grid)
         }
     }
 }
@@ -243,22 +374,33 @@ fun StrokePanel(word: Word, modifier: Modifier = Modifier, size: Dp = 220.dp) {
     val chars = word.hanzi.map { it.toString() }
     val tones = Tones.forWord(word.hanzi, word.pinyin)
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(tr("ORDRE DES TRAITS", "STROKE ORDER", "ПОРЯДОК ЧЕРТ"), style = Kicker)
+        Text(tr("ORDRE DES TRAITS", "STROKE ORDER", "ПОРЯДОК ЧЕРТ"), style = Kicker, color = InkSoft)
         if (chars.size > 1) {
             Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 chars.forEachIndexed { i, c ->
                     val on = i == index
+                    val accent = Accent
                     Box(
-                        Modifier.size(48.dp).clip(PillShape).background(if (on) Ink else Mist)
+                        Modifier.size(48.dp).clip(RoundedCornerShape(14.dp))
+                            .background(if (on) accent.copy(alpha = 0.12f) else Mist)
+                            .border(if (on) 1.5.dp else 0.dp, if (on) accent else Color.Transparent, RoundedCornerShape(14.dp))
                             .clickable { index = i },
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(c, fontFamily = Kai, fontSize = 22.sp, color = if (on) Paper else toneColor(tones[i]))
+                        Text(c, fontFamily = Kai, fontSize = 24.sp, color = toneColor(tones[i]))
                     }
                 }
             }
         }
-        Spacer(Modifier.height(12.dp))
-        StrokeOrderView(chars[index.coerceIn(0, chars.size - 1)], size)
+        Spacer(Modifier.height(14.dp))
+        androidx.compose.animation.AnimatedContent(
+            index.coerceIn(0, chars.size - 1),
+            transitionSpec = {
+                val dir = if (targetState > initialState) 1 else -1
+                (androidx.compose.animation.fadeIn(tween(260)) + androidx.compose.animation.slideInHorizontally(tween(300)) { it / 6 * dir }) togetherWith
+                    (androidx.compose.animation.fadeOut(tween(160)) + androidx.compose.animation.slideOutHorizontally(tween(260)) { -it / 6 * dir })
+            },
+            label = "strokeChar",
+        ) { i -> StrokeOrderView(chars[i], size) }
     }
 }
