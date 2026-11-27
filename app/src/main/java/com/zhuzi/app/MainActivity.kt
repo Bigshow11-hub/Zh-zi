@@ -47,6 +47,7 @@ import com.zhuzi.app.ui.ProgressScreen
 import com.zhuzi.app.ui.ReviewScreen
 import com.zhuzi.app.ui.Speaker
 import com.zhuzi.app.ui.Tab
+import com.zhuzi.app.ui.tr
 import com.zhuzi.app.ui.theme.ZhuziTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -75,6 +76,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (::speaker.isInitialized) speaker.check()
         exactOk = com.zhuzi.app.reminder.Alarms.canExact(this)
         batteryOk = com.zhuzi.app.reminder.Alarms.batteryFree(this)
         // L'accord « heure exacte » vient peut-être d'être donné : on reprogramme les alarmes
@@ -160,8 +162,15 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
-                LaunchedEffect(Unit) {
-                    if (Build.VERSION.SDK_INT >= 33 && !Reminders.canNotify(this@MainActivity) &&
+                // Premier lancement : 3 écrans d'accueil (un élève qui a déjà des progrès ne les voit pas)
+                var onboarded by remember {
+                    mutableStateOf(settings.getBoolean("onboarded", false) || srs.knownCount(allWords) > 0)
+                }
+                LaunchedEffect(onboarded) {
+                    if (onboarded) settings.edit().putBoolean("onboarded", true).apply()
+                }
+                LaunchedEffect(onboarded) {
+                    if (onboarded && Build.VERSION.SDK_INT >= 33 && !Reminders.canNotify(this@MainActivity) &&
                         !settings.getBoolean("asked_notifications", false)
                     ) {
                         settings.edit().putBoolean("asked_notifications", true).apply()
@@ -174,6 +183,54 @@ class MainActivity : ComponentActivity() {
                         fromButton = true
                         askPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
+                }
+
+                // Voix chinoise absente : on explique comment l'installer (une fois par ouverture)
+                var voiceSheet by remember { mutableStateOf(false) }
+                var voiceAsked by remember { mutableStateOf(false) }
+                LaunchedEffect(Unit) {
+                    speaker.onMissing = { if (!voiceAsked) { voiceAsked = true; voiceSheet = true } }
+                }
+                val openVoiceInstall: () -> Unit = {
+                    voiceSheet = false
+                    Speaker.installIntents().firstOrNull { runCatching { startActivity(it) }.isSuccess }
+                }
+                if (voiceSheet) com.zhuzi.app.ui.VoiceSheet(onInstall = openVoiceInstall) { voiceSheet = false }
+
+                // Sauvegarde des progrès dans un fichier, et restauration
+                val exportLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.CreateDocument("application/json"),
+                ) { uri ->
+                    if (uri != null) {
+                        val ok = com.zhuzi.app.data.Backup.export(this@MainActivity, uri)
+                        android.widget.Toast.makeText(this@MainActivity,
+                            if (ok) tr(lang, "Progrès sauvegardés.", "Progress saved.", "Прогресс сохранён.")
+                            else tr(lang, "La sauvegarde a échoué.", "Backup failed.", "Не удалось сохранить."),
+                            android.widget.Toast.LENGTH_LONG).show()
+                    }
+                }
+                var restoreUri by remember { mutableStateOf<android.net.Uri?>(null) }
+                val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+                    if (uri != null) restoreUri = uri
+                }
+                restoreUri?.let { uri ->
+                    com.zhuzi.app.ui.RestoreDialog(
+                        onConfirm = {
+                            restoreUri = null
+                            if (com.zhuzi.app.data.Backup.import(this@MainActivity, uri)) {
+                                com.zhuzi.app.reminder.Push.scheduleAll(this@MainActivity)
+                                android.widget.Toast.makeText(this@MainActivity,
+                                    tr(lang, "Progrès restaurés.", "Progress restored.", "Прогресс восстановлен."),
+                                    android.widget.Toast.LENGTH_LONG).show()
+                                recreate()
+                            } else {
+                                android.widget.Toast.makeText(this@MainActivity,
+                                    tr(lang, "Ce fichier n'est pas une sauvegarde Zhúzi.", "This file isn't a Zhúzi backup.",
+                                        "Это не резервная копия Zhúzi."), android.widget.Toast.LENGTH_LONG).show()
+                            }
+                        },
+                        onDismiss = { restoreUri = null },
+                    )
                 }
 
                 // Mes mots : relus après chaque ajout ou suppression
@@ -199,6 +256,28 @@ class MainActivity : ComponentActivity() {
                 val bars = WindowInsets.systemBars.asPaddingValues()
 
                 when {
+                    !onboarded -> Surface {
+                        com.zhuzi.app.ui.OnboardingScreen(
+                            lang = lang,
+                            onLang = { l -> LangPref.set(this@MainActivity, l); lang = l },
+                            onDone = { level, remind, h ->
+                                // Mots déjà connus : rangés dans les révisions, étalés sur ~5 semaines
+                                allLessons.filter { it.level <= level }.flatMap { it.words }
+                                    .forEachIndexed { i, w -> srs.markKnown(w, i % 35) }
+                                Reminders.setTime(this@MainActivity, h, 0)
+                                reminderAt = h to 0
+                                Reminders.setEnabled(this@MainActivity, remind)
+                                reminderOn = remind && Reminders.canNotify(this@MainActivity)
+                                settings.edit().putBoolean("asked_notifications", true).apply()
+                                if (remind && Build.VERSION.SDK_INT >= 33 && !Reminders.canNotify(this@MainActivity)) {
+                                    askPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
+                                onboarded = true
+                                version++
+                            },
+                            contentPadding = bars,
+                        )
+                    }
                     // Révision du jour, plein écran
                     // Mon avatar, plein écran
                     overlay == AVATAR -> Surface {
@@ -343,6 +422,8 @@ class MainActivity : ComponentActivity() {
                                             nextKnown = lessonKnown(next),
                                             wordOfDay = wordOfDay,
                                             wordOfDayKnown = srs.boxOf(wordOfDay) > 0,
+                                            voiceMissing = speaker.voice == com.zhuzi.app.ui.Voice.MISSING,
+                                            onVoice = { voiceSheet = true },
                                             speak = speaker::speak,
                                             onReview = { overlay = REVIEW },
                                             onOpen = openLesson,
@@ -423,6 +504,8 @@ class MainActivity : ComponentActivity() {
                                                     runCatching { startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }
                                                 }
                                         },
+                                        onExport = { exportLauncher.launch(com.zhuzi.app.data.Backup.fileName()) },
+                                        onImport = { importLauncher.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) },
                                         onTest = {
                                             if (Reminders.canNotify(this@MainActivity)) {
                                                 com.zhuzi.app.reminder.DailyWord.show(this@MainActivity, test = true)

@@ -10,19 +10,40 @@ import java.time.LocalDate
 class Srs(context: Context) {
     private val prefs = context.getSharedPreferences("srs", Context.MODE_PRIVATE)
 
+    // Copie en mémoire (lue une fois) : les écrans consultent ~600 mots à chaque affichage.
+    private val cache = HashMap<String, Pair<Int, Long>>().apply {
+        prefs.all.forEach { (k, v) -> (v as? String)?.let { parse(it) }?.let { put(k, it) } }
+    }
+    // Un mot ajouté ailleurs (bouton de la notification) met la copie à jour
+    private val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { p, key ->
+        if (key == null) { cache.clear(); return@OnSharedPreferenceChangeListener }
+        val parsed = p.getString(key, null)?.let { parse(it) }
+        if (parsed == null) cache.remove(key) else cache[key] = parsed
+    }.also { prefs.registerOnSharedPreferenceChangeListener(it) }
+
+    private fun parse(raw: String): Pair<Int, Long>? = runCatching {
+        val (box, due) = raw.split(":")
+        box.toInt() to due.toLong()
+    }.getOrNull()
+
     /** Jours d'attente avant de revoir un mot, selon sa boîte (1 à 6). */
     private val intervals = mapOf(1 to 1, 2 to 2, 3 to 4, 4 to 7, 5 to 15, 6 to 30)
 
     private fun today() = LocalDate.now().toEpochDay()
 
-    private fun read(word: Word): Pair<Int, Long>? {
-        val raw = prefs.getString(word.hanzi, null) ?: return null
-        val (box, due) = raw.split(":")
-        return box.toInt() to due.toLong()
-    }
+    private fun read(word: Word): Pair<Int, Long>? = cache[word.hanzi]
 
     private fun write(word: Word, box: Int, due: Long) {
+        cache[word.hanzi] = box to due
         prefs.edit().putString(word.hanzi, "$box:$due").apply()
+    }
+
+    /**
+     * Mot déjà connu (niveau choisi au premier lancement) : il entre directement en boîte 4,
+     * avec une première révision étalée sur les semaines à venir (pas 150 mots le même jour).
+     */
+    fun markKnown(word: Word, spreadDays: Int) {
+        if (read(word) == null) write(word, 4, today() + 3 + spreadDays)
     }
 
     /** Un mot vu pour la première fois entre en boîte 1, à revoir demain. */

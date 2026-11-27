@@ -97,6 +97,8 @@ fun HomeScreen(
     hour: Int = java.time.LocalTime.now().hour,
     startWithNotes: Boolean = false,
     reminderAt: Pair<Int, Int> = 19 to 0,
+    voiceMissing: Boolean = false,
+    onVoice: () -> Unit = {},
 ) {
     val lang = currentLang()
     val seen = remember { mutableSetOf<Any>() }
@@ -160,6 +162,26 @@ fun HomeScreen(
         // Les trois chiffres, dans une seule carte, séparés par des filets
         staggerItem(2, seen) {
             StatsCard(knownCount, masteredCount, streakDays, Modifier.padding(top = 20.dp))
+        }
+        // Pas de voix chinoise sur le téléphone : on le dit, avec la solution
+        if (voiceMissing) item {
+            val accent = com.zhuzi.app.ui.theme.Accent
+            Row(
+                Modifier.padding(top = 14.dp).fillMaxWidth().clip(com.zhuzi.app.ui.theme.GroupShape).background(Paper)
+                    .clickable(onClick = onVoice).padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(Modifier.size(36.dp).clip(CircleShape).background(accent.copy(alpha = 0.12f)), contentAlignment = Alignment.Center) {
+                    ZIcon(Glyph.SPEAKER, accent, size = 20.dp, weight = 1.2f)
+                }
+                Column(Modifier.weight(1f).padding(start = 12.dp)) {
+                    Text(tr("Pas de voix chinoise", "No Chinese voice", "Нет китайского голоса"),
+                        fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = Ink)
+                    Text(tr("Installe-la pour entendre les mots.", "Install it to hear the words.", "Установи его, чтобы слышать слова."),
+                        fontSize = 13.sp, color = InkSoft)
+                }
+                ZIcon(Glyph.CHEVRON_RIGHT, InkSoft, size = 18.dp, weight = 1.3f)
+            }
         }
         // Objectif du jour
         staggerItem(3, seen) { GoalCard(dueWords.size, dueTomorrow, knownCount, total, next, onReview, onOpen) }

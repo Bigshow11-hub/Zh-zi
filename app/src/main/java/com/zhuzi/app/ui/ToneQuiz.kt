@@ -1,5 +1,6 @@
 package com.zhuzi.app.ui
 
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -90,6 +91,10 @@ fun ToneQuiz(
     val answers = remember(round, index) { mutableStateListOf<Int>() }
     val haptic = LocalHapticFeedback.current
     val bottom = contentPadding.calculateBottomPadding()
+    // Marge du bas = hauteur réelle du panneau de réponse (mesurée), pour ne jamais cacher les choix
+    var panelHeight by remember { mutableIntStateOf(0) }
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val panelSpace = if (panelHeight > 0) with(density) { panelHeight.toDp() } + 16.dp else 220.dp
 
     val word = words[index]
     val syllables = remember(word) { Tones.syllables(word.pinyin) }
@@ -101,7 +106,7 @@ fun ToneQuiz(
     Box(Modifier.fillMaxSize()) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-                .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = bottom + 220.dp),
+                .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = bottom + panelSpace),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             header()
@@ -205,7 +210,8 @@ fun ToneQuiz(
             visible = answered && !finished,
             enter = slideInVertically(spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow)) { it } + fadeIn(),
             exit = slideOutVertically { it } + fadeOut(),
-            modifier = Modifier.align(Alignment.BottomCenter),
+            modifier = Modifier.align(Alignment.BottomCenter)
+                .onSizeChanged { if (it.height > 0) panelHeight = it.height },
         ) {
             FeedbackPanel(ok, word, last = index + 1 >= words.size, seed = index) {
                 if (index + 1 < words.size) {

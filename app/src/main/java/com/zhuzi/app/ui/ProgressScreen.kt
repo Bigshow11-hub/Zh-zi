@@ -85,6 +85,8 @@ fun ProgressScreen(
     onExact: () -> Unit = {},
     onBattery: () -> Unit = {},
     onTest: () -> Unit = {},
+    onExport: () -> Unit = {},
+    onImport: () -> Unit = {},
     contentPadding: PaddingValues,
 ) {
     var pickTime by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
@@ -255,6 +257,29 @@ fun ProgressScreen(
                 icon = { IconTile(Glyph.INFO) },
                 modifier = Modifier.toggleable(value = updatesOn, role = Role.Switch) { onUpdatesChange(it) },
                 trailing = { ZSwitch(updatesOn) },
+            )
+        }
+
+        // Sauvegarde : garder ses progrès en changeant de téléphone
+        GroupedSection(
+            Modifier.padding(top = 28.dp),
+            header = tr("SAUVEGARDE", "BACKUP", "РЕЗЕРВНАЯ КОПИЯ"),
+            footer = tr("Un fichier avec tous tes progrès (révisions, série, scores, mes mots, réglages). Garde-le (Drive, e-mail…) pour le restaurer sur un autre téléphone. Ils sont aussi copiés par la sauvegarde Google du téléphone.",
+                "A file with all your progress (reviews, streak, scores, my words, settings). Keep it (Drive, email…) to restore it on another phone. It is also included in the phone's Google backup.",
+                "Файл со всем прогрессом (повторения, серия, результаты, мои слова, настройки). Сохрани его (Drive, почта…), чтобы восстановить на другом телефоне."),
+        ) {
+            GroupedRow(
+                title = tr("Sauvegarder mes progrès", "Back up my progress", "Сохранить прогресс"),
+                icon = { IconTile(Glyph.CHECK) },
+                chevron = true,
+                onClick = onExport,
+            )
+            RowDivider(RowIconInset)
+            GroupedRow(
+                title = tr("Restaurer une sauvegarde", "Restore a backup", "Восстановить из копии"),
+                icon = { IconTile(Glyph.CLOCK) },
+                chevron = true,
+                onClick = onImport,
             )
         }
 

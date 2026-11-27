@@ -1,5 +1,6 @@
 package com.zhuzi.app.ui
 
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.foundation.layout.size
 import com.zhuzi.app.ui.theme.Accent
 import androidx.compose.ui.semantics.contentDescription
@@ -183,7 +184,8 @@ fun FlipCard(
     Box(
         modifier
             .fillMaxWidth()
-            .height(360.dp)
+            // Hauteur minimale, pas fixe : un sens long ou une grande police agrandit la carte au lieu de la couper
+            .heightIn(min = 360.dp)
             .graphicsLayer {
                 rotationY = rotation + nudge.value
                 cameraDistance = 12f * density
@@ -201,7 +203,7 @@ fun FlipCard(
         contentAlignment = Alignment.Center,
     ) {
         if (rotation <= 90f) {
-            Box(Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxWidth().height(320.dp)) {
                 // En-tête : nombre de caractères et bouton pour écouter sans retourner
                 Row(Modifier.fillMaxWidth().align(Alignment.TopCenter), verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -389,7 +391,7 @@ private fun Flashcards(
             val drag = remember { Animatable(0f) }
             val scope = rememberCoroutineScope()
             val go: (Int) -> Unit = { d -> index = (index + d + words.size) % words.size; revealed = false }
-            Box(Modifier.fillMaxWidth().height(380.dp), contentAlignment = Alignment.TopCenter) {
+            Box(Modifier.fillMaxWidth().heightIn(min = 380.dp), contentAlignment = Alignment.TopCenter) {
                 val lift = (kotlin.math.abs(drag.value) / 600f).coerceIn(0f, 1f)
                 Box(Modifier.padding(top = 20.dp).fillMaxWidth(0.84f + 0.04f * lift).height(360.dp).softCard()
                     .graphicsLayer { alpha = 0.55f })
@@ -500,11 +502,15 @@ private fun Quiz(
     var finished by remember(round, mode) { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
     val bottom = contentPadding.calculateBottomPadding()
+    // Marge du bas = hauteur réelle du panneau de réponse (mesurée), pour ne jamais cacher les choix
+    var panelHeight by remember { mutableIntStateOf(0) }
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val panelSpace = if (panelHeight > 0) with(density) { panelHeight.toDp() } + 16.dp else 220.dp
 
     Box(Modifier.fillMaxSize()) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = bottom + 220.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = bottom + panelSpace),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             modeSelector()
@@ -590,7 +596,8 @@ private fun Quiz(
             enter = slideInVertically(spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow)) { it } +
                 fadeIn(),
             exit = slideOutVertically { it } + fadeOut(),
-            modifier = Modifier.align(Alignment.BottomCenter),
+            modifier = Modifier.align(Alignment.BottomCenter)
+                .onSizeChanged { if (it.height > 0) panelHeight = it.height },
         ) {
             if (q != null) {
                 val ok = picked == q.word
