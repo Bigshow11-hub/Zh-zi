@@ -351,6 +351,36 @@ class ScreenshotTest {
     }
 
     @Test
+    fun leconsHsk2() {
+        inTab(Tab.LESSONS) {
+            LessonsScreen(
+                bestScore = { id, m -> scores[id]?.get(m) ?: -1 },
+                lessonKnown = { l -> known[l.id] ?: 0 },
+                onOpen = {},
+                contentPadding = it,
+            )
+        }
+        compose.onNodeWithText("HSK 2").performClick()
+        compose.waitForIdle()
+        shot("30-lecons-hsk2")
+    }
+
+    @Test
+    fun leconHsk2() {
+        compose.setContent {
+            ZhuziTheme {
+                Surface {
+                    LessonScreen(
+                        lesson = com.zhuzi.app.data.hsk2Lessons[0], speak = {}, onBack = {}, onQuizDone = { _, _ -> },
+                        onSeen = {}, onQuizAnswer = { _, _ -> }, contentPadding = bars, startTab = 2,
+                    )
+                }
+            }
+        }
+        shot("31-hsk2-grammaire")
+    }
+
+    @Test
     fun ecrire() {
         lesson(1)
         shot("19-ecrire")

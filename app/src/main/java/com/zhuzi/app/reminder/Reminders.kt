@@ -19,7 +19,7 @@ import com.zhuzi.app.MainActivity
 import com.zhuzi.app.R
 import com.zhuzi.app.data.Srs
 import com.zhuzi.app.data.Streak
-import com.zhuzi.app.data.hsk1Lessons
+import com.zhuzi.app.data.allLessons
 import com.zhuzi.app.ui.LangPref
 import com.zhuzi.app.ui.daysCount
 import com.zhuzi.app.ui.tr
@@ -84,7 +84,7 @@ object Reminders {
         val streak = Streak(context)
         if (streak.activeToday()) return null
         val srs = Srs(context)
-        val all = hsk1Lessons.flatMap { it.words }
+        val all = allLessons.flatMap { it.words }
         val due = srs.dueWords(all).size
         val days = streak.current()
         val lang = LangPref.get(context)

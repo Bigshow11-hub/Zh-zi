@@ -1,5 +1,7 @@
 package com.zhuzi.app.ui
 
+import com.zhuzi.app.data.level
+import com.zhuzi.app.data.number
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -42,7 +44,7 @@ import com.zhuzi.app.data.T3
 import com.zhuzi.app.data.Tones
 import com.zhuzi.app.data.Word
 import com.zhuzi.app.data.charInfos
-import com.zhuzi.app.data.hsk1Lessons
+import com.zhuzi.app.data.allLessons
 import com.zhuzi.app.ui.theme.Accent
 import com.zhuzi.app.ui.theme.Accent2
 import com.zhuzi.app.ui.theme.Ink
@@ -121,7 +123,7 @@ fun CharCard(info: CharInfo, modifier: Modifier = Modifier, onClick: () -> Unit)
 fun CharDetail(info: CharInfo, speak: (String) -> Unit) {
     val lang = currentLang()
     val color = toneColor(info.tone())
-    val words = remember(info) { hsk1Lessons.flatMap { it.words }.filter { info.char in it.hanzi } }
+    val words = remember(info) { allLessons.flatMap { it.words }.filter { info.char in it.hanzi } }
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
             .padding(start = 22.dp, end = 22.dp, bottom = 24.dp),
@@ -302,7 +304,7 @@ fun GrammarCard(point: GrammarPoint, modifier: Modifier = Modifier, onClick: () 
         Column(Modifier.weight(1f)) {
             Text(point.title.get(lang), fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Ink,
                 maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text(point.pattern.get(lang) + "  ·  " + tr("leçon ", "lesson ", "урок ") + point.lesson, fontSize = 12.sp,
+            Text(point.pattern.get(lang) + "  ·  " + lessonName(point.lesson).lowercase(), fontSize = 12.sp,
                 color = InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 2.dp))
         }
         Text("›", fontSize = 22.sp, color = InkSoft, modifier = Modifier.padding(start = 6.dp))
@@ -367,7 +369,7 @@ fun GrammarSheetContent(point: GrammarPoint, speak: (String) -> Unit) {
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
             .padding(start = 22.dp, end = 22.dp, bottom = 24.dp),
     ) {
-        Text(tr("LEÇON ", "LESSON ", "УРОК ") + point.lesson, style = Kicker)
+        Text(lessonName(point.lesson).uppercase(), style = Kicker)
         GrammarDetail(point, speak, Modifier.padding(top = 4.dp))
     }
 }
@@ -406,3 +408,13 @@ fun PlayIcon(color: Color, size: androidx.compose.ui.unit.Dp) {
         drawPath(p, color)
     }
 }
+
+/** « Leçon 3 » (HSK 1) ou « HSK 2 · Leçon 1 ». */
+@Composable
+fun lessonName(lesson: com.zhuzi.app.data.Lesson): String =
+    (if (lesson.level == 2) "HSK 2 · " else "") + tr("Leçon ", "Lesson ", "Урок ") + lesson.number
+
+/** Même chose à partir du numéro global (règles de grammaire). */
+@Composable
+fun lessonName(id: Int): String = com.zhuzi.app.data.allLessons.firstOrNull { it.id == id }?.let { lessonName(it) }
+    ?: (tr("Leçon ", "Lesson ", "Урок ") + id)

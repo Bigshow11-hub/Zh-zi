@@ -303,7 +303,7 @@ private fun AddWordForm(onSave: (String, String, String) -> Unit) {
             hanzi = it
             if (!pinyinEdited) pinyin = PinyinAuto.of(it)
             if (meaning.isEmpty()) {
-                val known = com.zhuzi.app.data.hsk1Lessons.flatMap { l -> l.words }.firstOrNull { w -> w.hanzi == it.trim() }
+                val known = com.zhuzi.app.data.allLessons.flatMap { l -> l.words }.firstOrNull { w -> w.hanzi == it.trim() }
                 if (known != null) meaning = known.meaning(lang)
             }
         }, placeholder = "你好", big = true, font = Kai)
@@ -388,7 +388,7 @@ fun PhotoImportScreen(
             drafts.clear()
             if (runs == null) { step = 4; return@launch }
             runs.forEach { r ->
-                val known = com.zhuzi.app.data.hsk1Lessons.flatMap { it.words }.firstOrNull { it.hanzi == r }
+                val known = com.zhuzi.app.data.allLessons.flatMap { it.words }.firstOrNull { it.hanzi == r }
                 drafts += Draft(r, PinyinAuto.of(r), known?.meaning(lang) ?: "", selected = r.length <= 6)
             }
             step = if (drafts.isEmpty()) 3 else 2

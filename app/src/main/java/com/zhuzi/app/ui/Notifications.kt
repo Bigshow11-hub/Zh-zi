@@ -288,7 +288,7 @@ fun dayNotes(
             at, pending = false, action = tr("Régler", "Settings", "Настроить"), onClick = onReminder)
     }
     // 5. La leçon en cours
-    notes += DayNote(next.symbol, green, tr("Leçon ", "Lesson ", "Урок ") + next.id + " · " + next.title(lang),
+    notes += DayNote(next.symbol, green, lessonName(next) + " · " + next.title(lang),
         "$nextKnown / ${next.words.size} " + tr("mots découverts", "words discovered", "слов открыто"),
         tr("En cours", "In progress", "В процессе"), pending = false, done = nextKnown >= next.words.size,
         action = tr("Continuer", "Continue", "Продолжить"), onClick = { onOpen(next) })

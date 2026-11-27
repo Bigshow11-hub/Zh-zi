@@ -11,7 +11,7 @@ data class Milestone(val key: String, val badge: String, val title: T3, val body
  */
 object Celebrations {
     private val streaks = listOf(3, 7, 14, 30, 50, 100, 200, 365)
-    private val masteredSteps = listOf(1, 3, 5, 11)
+    private val masteredSteps = listOf(1, 3, 5, 11, 21)
 
     private fun prefs(context: Context) = context.getSharedPreferences("celebrations", Context.MODE_PRIVATE)
 
@@ -32,9 +32,9 @@ object Celebrations {
                 "mastered$n", "$n",
                 if (n == 1) T3("Première leçon maîtrisée !", "First lesson mastered!", "Первый урок освоен!")
                 else T3("$n leçons maîtrisées !", "$n lessons mastered!", "Освоено уроков: $n!"),
-                if (n >= 11) T3("Tout le HSK 1 est maîtrisé. Bravo, c'est un vrai cap !",
-                    "All of HSK 1 is mastered. Well done, that's a real milestone!",
-                    "Весь HSK 1 освоен. Браво, это настоящий рубеж!")
+                if (n >= 21) T3("Tout le HSK 1 et le HSK 2 sont maîtrisés. Bravo, c'est un vrai cap !",
+                    "All of HSK 1 and HSK 2 mastered. Well done, that's a real milestone!",
+                    "HSK 1 и HSK 2 освоены полностью. Браво, это настоящий рубеж!")
                 else T3("Sens, écrit et écoute réussis à plus de 80 %. Le sceau 记 est à toi.",
                     "Meaning, writing and listening passed above 80%. The 记 seal is yours.",
                     "Смысл, письмо и аудирование пройдены более чем на 80 %. Печать 记 твоя."),

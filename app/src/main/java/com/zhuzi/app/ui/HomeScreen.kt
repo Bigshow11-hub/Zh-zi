@@ -174,7 +174,7 @@ fun HomeScreen(
         staggerItem(6, seen) {
             TaskRow(
                 done = nextKnown >= next.words.size,
-                title = tr("Leçon ", "Lesson ", "Урок ") + next.id + " · " + next.title(lang),
+                title = lessonName(next) + " · " + next.title(lang),
                 subtitle = "$nextKnown / ${next.words.size} " + tr("mots découverts", "words discovered", "слов открыто"),
                 onClick = { onOpen(next) },
             )
@@ -292,7 +292,7 @@ private fun GoalCard(
                     track = Color.White.copy(alpha = 0.28f), height = 8.dp)
                 Text("  $percent %", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
-            Text(tr("du HSK 1 découvert", "of HSK 1 discovered", "HSK 1 открыто"), color = Color.White.copy(alpha = 0.75f),
+            Text(tr("du vocabulaire HSK découvert", "of HSK vocabulary discovered", "словаря HSK открыто"), color = Color.White.copy(alpha = 0.75f),
                 fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
         }
     }

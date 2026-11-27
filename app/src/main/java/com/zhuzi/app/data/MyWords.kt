@@ -73,7 +73,7 @@ object PinyinAuto {
 
     /** Les sons déjà connus de l'appli passent en premier (ex. 了 le, 的 de). */
     private val known: Map<String, String> by lazy {
-        hsk1Lessons.flatMap { it.words }.associate { it.hanzi to it.pinyin }
+        allLessons.flatMap { it.words }.associate { it.hanzi to it.pinyin }
     }
 
     fun of(text: String): String {
@@ -101,7 +101,7 @@ object PinyinAuto {
     /** Sens déjà connu de l'appli : le mot entier, sinon caractère par caractère (« tu + bon »). */
     fun meaningHint(text: String, lang: Lang): String {
         val t = text.trim()
-        hsk1Lessons.flatMap { it.words }.firstOrNull { it.hanzi == t }?.let { return it.meaning(lang) }
+        allLessons.flatMap { it.words }.firstOrNull { it.hanzi == t }?.let { return it.meaning(lang) }
         val parts = t.mapNotNull { charInfos[it]?.meaning?.get(lang)?.substringBefore(",") }
         return if (parts.size == t.length && parts.isNotEmpty()) parts.joinToString(" + ") else ""
     }

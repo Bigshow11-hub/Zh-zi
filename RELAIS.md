@@ -36,6 +36,7 @@
 - 1.8.0 « mes mots » : « Mes mots » (page Leçons, `ui/MyWordsScreen.kt`, `data/MyWords.kt`) : ajouter un mot à la main (pinyin automatique par pinyin4j, sens prérempli s'il est connu) ou depuis une photo (appareil photo ou galerie, lecture du chinois sur le téléphone par ML Kit (version services Google `play-services-mlkit-text-recognition-chinese`, module téléchargé à l'installation : APK léger), on coche les mots, on complète le sens). Les mots entrent dans la révision espacée et la révision du jour. Design plus sobre (guides Refero intégrés + skill « impeccable » installé dans `.agents/skills/impeccable`) : une seule couleur d'accent, fond neutre, plus de couleur par leçon/tuile/notification, ombres neutres, coins 16 dp, barres sans reflet, animations courtes sans rebond. Nouveau logo : deux tiges de bambou modelées sur fond encre + sceau 子 (`tools/logo/build_logo.py` fabrique toutes les icônes).
 - 1.8.2 « logo panda » : nouvelle icône = figurine panda 3D (l'avatar en volume, sweat indigo, tige de bambou) sur fond encre, choisie par le propriétaire (option B). Rendu three.js + icônes par densité : `tools/logo/panda3d/` (voir son README). Monochrome et notification = silhouette du panda. L'ancien générateur bambou est `tools/logo/build_logo_bambou.py` (ne plus le lancer). Page de design des propositions : https://claude.ai/artifact/YPtN7GiP5UWoJe9PnyfLLN
 - 1.9.0 « fêtes et rappel » : fêtes d'étapes (`data/Celebrations.kt`, `ui/Celebration.kt`) : séries 3/7/14/30/50/100/200/365 jours, niveaux 2 à 5, 1/3/5/11 leçons maîtrisées ; panda qui saute, confettis (4 couleurs), repère tamponné ; une seule fête à la fois, chaque étape une fois ; à la première ouverture, les étapes déjà atteintes sont notées sans fête. Heure du rappel au choix (Progrès › Rappel › Heure, cadran Material 3) : `Reminders.time/setTime`, reprogrammation immédiate ; les notifications du jour affichent l'heure choisie.
+- 2.0.0 « HSK 2 » : 148 mots en 10 leçons (ids 12 à 21, `data/Hsk2.kt`), une phrase d'exemple par mot (`Hsk2Examples.kt`), accroches, 16 règles + notes « Le savais-tu ? » (`GrammarHsk2.kt`). `allLessons` = HSK 1 + HSK 2 partout (révisions, compteurs, caractères, Mes mots) ; `Lesson.level` / `Lesson.number` et `lessonName()` (« HSK 2 · Leçon 1 »). Page Leçons : sélecteur HSK 1 / HSK 2. 341 fiches de caractères (167 nouvelles dans `tools/chars/glosses.txt`), traits et police refaits (`build_strokes.py` et `build_chars.py` lisent Hsk1 + Hsk2). Panda : niveaux 6 (180 mots) et 7 (280). Fête « 21 leçons maîtrisées ».
 - Refero : l'abonnement MCP n'est pas actif (« NO_SUBSCRIPTION ») ; on utilise les références intégrées au skill.
 - Higgsfield (génération d'images) : connecté, mais l'offre gratuite ne permet aucune génération (abonnement Basic requis).
 - Lien de téléchargement fixe : https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
@@ -43,7 +44,7 @@
 
 ## Idées de suite
 
-1. HSK 2.
+1. HSK 3.
 
 ## Décisions
 

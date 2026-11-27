@@ -64,7 +64,7 @@ fun PandaAvatar(look: AvatarLook, level: Int, modifier: Modifier = Modifier, wit
         drawOval(Brush.radialGradient(listOf(outfit, outfitDark), center = o(72f, 70f), radius = 14f * u),
             topLeft = o(69f, 66f), size = s(13f, 19f))
         // Tige de bambou tenue à droite (devant le bras) : un segment de plus à chaque niveau
-        drawBamboo(u, segments = level.coerceIn(1, 5) + 1)
+        drawBamboo(u, segments = level.coerceIn(1, 7) + 1)
         // Patte qui tient le bambou
         drawCircle(Brush.radialGradient(listOf(FurDarkLight, FurDark), center = o(86f, 79f), radius = 6f * u),
             radius = 4.6f * u, center = o(87f, 81f))

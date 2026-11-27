@@ -174,3 +174,171 @@
 出|sortir|to go out|выходить|Une pousse 屮 qui sort d'un pot 凵.|A sprout 屮 coming out of a pot 凵.|Росток 屮 выходит из горшка 凵.
 租|louer|to rent|арендовать|Le grain 禾 payé régulièrement 且 : un loyer.|Grain 禾 paid regularly 且: rent.|Зерно 禾, платимое регулярно 且: аренда.
 车|voiture|vehicle|машина|Une charrette vue d'en haut, avec ses roues.|A cart seen from above, with its wheels.|Повозка сверху, с колёсами.
+# ——— HSK 2 ———
+哥|grand frère|older brother|старший брат|Deux 可 empilés : le grand frère qui parle par-dessus.|Two 可 stacked: the big brother talking over you.|Два 可 друг на друге: старший брат говорит поверх тебя.
+弟|petit frère|younger brother|младший брат|Une corde enroulée en ordre : le cadet vient après.|A cord wound in order: the younger one comes after.|Верёвка, намотанная по порядку: младший идёт после.
+妹|petite sœur|younger sister|младшая сестра|Une femme 女 encore jeune, « pas encore » 未 grande.|A woman 女 not yet 未 grown.|Женщина 女, ещё не 未 взрослая.
+丈|homme, mari ; 3 mètres|husband; unit of length|муж; мера длины|Une main 又 qui mesure avec une règle 一.|A hand 又 measuring with a rule 一.|Рука 又 измеряет линейкой 一.
+夫|homme, mari|man, husband|мужчина, муж|Un homme 大 avec l'épingle 一 des adultes dans les cheveux.|A man 大 wearing the adult hairpin 一.|Мужчина 大 со шпилькой 一 взрослого в волосах.
+妻|épouse|wife|жена|Une femme 女 qui tient la maison en main.|A woman 女 running the household by hand.|Женщина 女, которая ведёт дом.
+孩|enfant|child|ребёнок|Un enfant 子 ; 亥 donne le son.|A child 子; 亥 gives the sound.|Ребёнок 子; 亥 даёт звук.
+男|homme|man, male|мужчина|La force 力 qui travaille le champ 田.|Strength 力 working the field 田.|Сила 力, работающая в поле 田.
+您|vous (poli)|you (polite)|Вы|Toi 你 avec le cœur 心 : le « vous » respectueux.|You 你 with the heart 心: the respectful “you”.|Ты 你 с сердцем 心: уважительное «Вы».
+它|il, elle (chose)|it|оно|Un serpent sous un toit 宀 : « ça », une chose.|A snake under a roof 宀: “it”, a thing.|Змея под крышей 宀: «оно», вещь.
+姓|nom de famille|surname|фамилия|Né 生 d'une femme 女 : le nom vient de la mère.|Born 生 of a woman 女: the name came from the mother.|Рождённый 生 женщиной 女: фамилия от матери.
+介|entre, intermédiaire|between, go-between|между, посредник|Une personne 人 entre deux bords 八.|A person 人 between two edges 八.|Человек 人 между двумя краями 八.
+绍|relier, présenter|to connect, introduce|связывать, знакомить|Un fil 纟 qui relie ; 召 donne le son.|A thread 纟 that links; 召 gives the sound.|Нить 纟, которая связывает; 召 даёт звук.
+迎|accueillir|to welcome|встречать|Marcher 辶 à la rencontre de quelqu'un.|Walking 辶 out to meet someone.|Идти 辶 навстречу кому-то.
+身|corps|body|тело|Le dessin d'un corps de profil, le ventre rond.|A body seen from the side, belly round.|Тело в профиль, с круглым животом.
+体|corps|body|тело|La personne 亻 et sa racine 本 : le corps.|A person 亻 and their root 本: the body.|Человек 亻 и его основа 本: тело.
+眼|œil|eye|глаз|L'œil 目 ; 艮 donne le son.|The eye 目; 艮 gives the sound.|Глаз 目; 艮 даёт звук.
+睛|prunelle|eyeball|зрачок|L'œil 目 ; 青 donne le son.|The eye 目; 青 gives the sound.|Глаз 目; 青 даёт звук.
+病|maladie|illness|болезнь|Un lit de malade 疒 ; 丙 donne le son.|A sickbed 疒; 丙 gives the sound.|Больничная кровать 疒; 丙 даёт звук.
+药|médicament|medicine|лекарство|Une plante 艹 qui soigne ; 约 donne le son.|A healing plant 艹; 约 gives the sound.|Лечебное растение 艹; 约 даёт звук.
+累|fatigué|tired|усталый|Le champ 田 et la soie 糸 : un travail qui épuise.|Field 田 and silk 糸: work that wears you out.|Поле 田 и шёлк 糸: изнурительный труд.
+休|se reposer|to rest|отдыхать|Une personne 亻 adossée à un arbre 木.|A person 亻 leaning against a tree 木.|Человек 亻 прислонился к дереву 木.
+息|souffle, repos|breath, rest|дыхание, отдых|Le nez 自 et le cœur 心 : respirer.|The nose 自 and the heart 心: breathing.|Нос 自 и сердце 心: дышать.
+床|lit|bed|кровать|Du bois 木 sous un abri 广 : le lit.|Wood 木 under a shelter 广: a bed.|Дерево 木 под навесом 广: кровать.
+洗|laver|to wash|мыть|L'eau 氵 ; 先 donne le son.|Water 氵; 先 gives the sound.|Вода 氵; 先 даёт звук.
+运|transporter ; chance|to transport; luck|перевозить; удача|Marcher 辶 avec un nuage 云 : ça bouge.|Walking 辶 with a cloud 云: things move.|Идти 辶 с облаком 云: всё движется.
+动|bouger|to move|двигаться|La force 力 qui met en mouvement.|Strength 力 that sets things moving.|Сила 力, приводящая в движение.
+跑|courir|to run|бегать|Le pied 足 ; 包 donne le son.|The foot 足; 包 gives the sound.|Нога 足; 包 даёт звук.
+步|pas|step|шаг|Un pied 止 devant l'autre.|One foot 止 in front of the other.|Одна нога 止 перед другой.
+游|nager, voyager|to swim, to travel|плавать, путешествовать|Flotter librement dans l'eau 氵.|Floating freely in the water 氵.|Свободно плыть по воде 氵.
+泳|nager|to swim|плавать|L'eau 氵 ; 永 donne le son.|Water 氵; 永 gives the sound.|Вода 氵; 永 даёт звук.
+踢|donner un coup de pied|to kick|пинать|Le pied 足 ; 易 donne le son.|The foot 足; 易 gives the sound.|Нога 足; 易 даёт звук.
+足|pied ; assez|foot; enough|нога; достаточно|La jambe et le pied, debout.|A leg and a foot, standing.|Нога и ступня.
+球|balle, ballon|ball|мяч|Le jade 王 bien rond ; 求 donne le son.|Round jade 王; 求 gives the sound.|Круглый нефрит 王; 求 даёт звук.
+篮|panier|basket|корзина|Du bambou 竹 tressé ; 监 donne le son.|Woven bamboo 竹; 监 gives the sound.|Плетёный бамбук 竹; 监 даёт звук.
+跳|sauter|to jump|прыгать|Le pied 足 ; 兆 donne le son.|The foot 足; 兆 gives the sound.|Нога 足; 兆 даёт звук.
+舞|danser|to dance|танцевать|Des pieds 舛 qui tournent en dansant.|Feet 舛 turning in a dance.|Ноги 舛, кружащиеся в танце.
+唱|chanter|to sing|петь|La bouche 口 ; 昌 donne le son.|The mouth 口; 昌 gives the sound.|Рот 口; 昌 даёт звук.
+歌|chanson|song|песня|Ouvrir grand la bouche 欠 ; 哥 donne le son.|Opening the mouth wide 欠; 哥 gives the sound.|Широко открыть рот 欠; 哥 даёт звук.
+早|tôt, matin|early, morning|рано, утро|Le soleil 日 qui se lève au-dessus de l'horizon.|The sun 日 rising over the horizon.|Солнце 日 встаёт над горизонтом.
+晚|soir, tard|evening, late|вечер, поздно|Le soleil 日 qui s'en va ; 免 donne le son.|The sun 日 leaving; 免 gives the sound.|Солнце 日 уходит; 免 даёт звук.
+日|soleil, jour|sun, day|солнце, день|Le soleil, tracé en carré.|The sun, drawn as a square.|Солнце, нарисованное квадратом.
+间|entre, espace|between, room|между, помещение|Le soleil 日 vu par une porte 门 entrouverte.|The sun 日 seen through a door 门.|Солнце 日 видно сквозь дверь 门.
+已|déjà|already|уже|Une forme enroulée, comme 己 : c'est fait.|A coiled shape, like 己: it's done.|Свёрнутая форма, как 己: уже сделано.
+经|passer par ; classique|to undergo; classic|проходить; канон|Le fil 纟 tendu sur le métier : ce qui traverse.|The thread 纟 on the loom: what runs through.|Нить 纟 на станке: то, что проходит насквозь.
+始|commencer|to begin|начинать|Une femme 女 : tout commence par la mère ; 台 donne le son.|A woman 女: all begins with the mother; 台 gives the sound.|Женщина 女: всё начинается с матери; 台 даёт звук.
+完|finir|to finish|заканчивать|Sous un toit 宀 ; 元 donne le son.|Under a roof 宀; 元 gives the sound.|Под крышей 宀; 元 даёт звук.
+正|droit, juste|straight, right|прямой, правильный|Un pied 止 qui s'arrête pile sur la ligne 一.|A foot 止 stopping right on the line 一.|Нога 止 останавливается точно на линии 一.
+着|(en train de)|(ongoing)|(длительность)|Un mouton 羊 qui garde les yeux 目 ouverts.|A sheep 羊 keeping its eyes 目 open.|Овца 羊 держит глаза 目 открытыми.
+过|passer|to pass|проходить|Marcher 辶 au-delà ; 寸 complète.|Walking 辶 past; 寸 completes it.|Идти 辶 мимо; 寸 дополняет.
+次|fois, suivant|time, next|раз, следующий|Une personne qui bâille 欠 encore et encore.|Someone yawning 欠 again and again.|Человек зевает 欠 снова и снова.
+第|rang, numéro|rank, ordinal|порядковый номер|Des lattes de bambou 竹 rangées en ordre ; 弟 donne le son.|Bamboo slips 竹 lined up in order; 弟 gives the sound.|Бамбуковые планки 竹 по порядку; 弟 даёт звук.
+鸡|poulet|chicken|курица|Un oiseau 鸟 ; 又 l'abrège.|A bird 鸟; 又 shortens it.|Птица 鸟; 又 — сокращение.
+蛋|œuf|egg|яйцо|Ce que pondent les petites bêtes 虫.|What small creatures 虫 lay.|То, что откладывают зверьки 虫.
+条|bande, branche|strip, branch|полоса, ветка|Une longue branche d'arbre 木.|A long branch of a tree 木.|Длинная ветка дерева 木.
+牛|bœuf, vache|ox, cow|бык, корова|La tête d'un bœuf avec ses cornes.|An ox's head with its horns.|Голова быка с рогами.
+奶|lait|milk|молоко|La femme 女 qui nourrit ; 乃 donne le son.|The woman 女 who nurses; 乃 gives the sound.|Женщина 女 кормит; 乃 даёт звук.
+羊|mouton|sheep|баран|La tête d'un mouton et ses cornes.|A sheep's head and horns.|Голова барана с рогами.
+肉|viande|meat|мясо|Un morceau de viande avec ses fibres.|A piece of meat with its grain.|Кусок мяса с волокнами.
+鱼|poisson|fish|рыба|Un poisson : la tête, le corps, la queue.|A fish: head, body, tail.|Рыба: голова, тело, хвост.
+瓜|melon|melon|дыня|Un melon qui pend à sa tige.|A melon hanging from its vine.|Дыня свисает с плети.
+咖|(café)|(coffee)|(кофе)|La bouche 口 ; 加 donne le son : kā.|The mouth 口; 加 gives the sound: kā.|Рот 口; 加 даёт звук: kā.
+啡|(café)|(coffee)|(кофе)|La bouche 口 ; 非 donne le son : fēi.|The mouth 口; 非 gives the sound: fēi.|Рот 口; 非 даёт звук: fēi.
+卖|vendre|to sell|продавать|« Acheter » 买 avec un trait 十 de plus : l'inverse.|“Buy” 买 plus one more stroke 十: the opposite.|«Купить» 买 и ещё черта 十: наоборот.
+便|commode|convenient|удобный|Une personne 亻 qui change 更 les choses en plus simple.|A person 亻 changing 更 things to make them easier.|Человек 亻 меняет 更 всё к удобству.
+宜|convenable|suitable|подходящий|Sous un toit 宀, tout est à sa place.|Under a roof 宀, all is in its place.|Под крышей 宀 всё на месте.
+贵|cher|expensive|дорогой|Un coquillage 贝, la monnaie d'autrefois.|A shell 贝, money of old.|Ракушка 贝 — древние деньги.
+千|mille|thousand|тысяча|Dix 十 avec un trait penché en plus.|Ten 十 with an extra slanting stroke.|Десять 十 с косой чертой сверху.
+百|cent|hundred|сто|Un 一 au-dessus de blanc 白 : cent.|One 一 over white 白: a hundred.|Один 一 над белым 白: сто.
+零|zéro|zero|ноль|Des gouttes de pluie 雨 qui tombent ; 令 donne le son.|Raindrops 雨 falling; 令 gives the sound.|Падают капли дождя 雨; 令 даёт звук.
+两|deux|two|два|Deux personnes côte à côte dans un cadre.|Two people side by side in a frame.|Двое рядом в рамке.
+场|place, terrain|field, place|площадка|La terre 土 dégagée pour un lieu.|Earth 土 cleared for a place.|Расчищенная земля 土.
+宾|invité|guest|гость|Un soldat 兵 logé sous ton toit 宀.|A soldier 兵 lodged under your roof 宀.|Солдат 兵 под твоей крышей 宀.
+馆|maison, établissement|building, house|здание, заведение|Un bâtiment public 官 où l'on sert à manger 饣.|A public 官 building serving food 饣.|Общественное здание 官, где кормят 饣.
+教|enseigner|to teach|учить|Une main qui guide 攵 l'enfant 孝.|A guiding hand 攵 for the child 孝.|Рука 攵 направляет ребёнка 孝.
+室|pièce, salle|room|комната|Sous un toit 宀, là où l'on arrive 至.|Under a roof 宀, where you arrive 至.|Под крышей 宀, куда приходишь 至.
+房|maison, pièce|house, room|дом, комната|Une porte 户 ; 方 donne le son.|A door 户; 方 gives the sound.|Дверь 户; 方 даёт звук.
+门|porte|door|дверь|Une porte à deux battants.|A two-leaf door.|Двустворчатая дверь.
+路|route|road|дорога|Le pied 足 qui va dans chaque 各 direction.|The foot 足 going each 各 way.|Нога 足 идёт в каждую 各 сторону.
+旁|côté|side|сторона|Se tenir 立 sur le côté ; 方 donne le son.|Standing 立 aside; 方 gives the sound.|Стоять 立 сбоку; 方 даёт звук.
+边|bord, côté|side, edge|край, сторона|Marcher 辶 le long du bord.|Walking 辶 along the edge.|Идти 辶 вдоль края.
+左|gauche|left|левый|La main gauche qui tient l'équerre 工.|The left hand holding a square 工.|Левая рука держит угольник 工.
+右|droite|right|правый|La main droite qui porte à la bouche 口.|The right hand bringing food to the mouth 口.|Правая рука подносит еду ко рту 口.
+外|dehors|outside|снаружи|Le soir 夕 on consulte les oracles 卜 dehors.|In the evening 夕 oracles 卜 are read outside.|Вечером 夕 гадают 卜 снаружи.
+远|loin|far|далеко|Marcher 辶 longtemps ; 元 donne le son.|Walking 辶 a long way; 元 gives the sound.|Долго идти 辶; 元 даёт звук.
+近|près|near|близко|Marcher 辶 peu ; 斤 donne le son.|Walking 辶 a little; 斤 gives the sound.|Пройти 辶 немного; 斤 даёт звук.
+离|s'éloigner, de|away from|от, отделяться|Un animal debout qui s'en va.|An animal standing up and leaving.|Зверь встаёт и уходит.
+往|vers|towards|к, в сторону|Un pas 彳 en avant, vers quelque part.|A step 彳 forward, towards somewhere.|Шаг 彳 вперёд, куда-то.
+公|public|public|общественный|Partager 八 ce qui est privé 厶.|Sharing 八 what is private 厶.|Делить 八 личное 厶.
+共|ensemble|together|вместе|Deux mains qui tiennent un même objet.|Two hands holding one object.|Две руки держат одну вещь.
+汽|vapeur|steam|пар|L'eau 氵 devenue air 气.|Water 氵 turned into air 气.|Вода 氵, ставшая паром 气.
+司|diriger|to manage|управлять|Une bouche 口 qui donne les ordres.|A mouth 口 giving orders.|Рот 口 отдаёт приказы.
+班|classe, équipe|class, shift|класс, смена|Un couteau 刂 coupe le jade 王 en deux groupes.|A knife 刂 splits jade 王 into two groups.|Нож 刂 делит нефрит 王 на две группы.
+务|affaire, tâche|task, affair|дело|La force 力 qu'on met à la tâche.|The strength 力 put into a task.|Сила 力, вложенная в дело.
+员|membre, employé|member, staff|сотрудник|Une bouche 口 et de l'argent 贝 : celui qu'on paie.|A mouth 口 and money 贝: someone on the payroll.|Рот 口 и деньги 贝: тот, кому платят.
+报|annoncer ; journal|to report; newspaper|сообщать; газета|Une main 扌 qui rapporte les nouvelles.|A hand 扌 reporting the news.|Рука 扌 приносит новости.
+纸|papier|paper|бумага|Des fibres 纟 ; 氏 donne le son.|Fibres 纟; 氏 gives the sound.|Волокна 纟; 氏 даёт звук.
+铅|plomb|lead (metal)|свинец|Un métal 钅 ; la mine du crayon.|A metal 钅; the pencil's lead.|Металл 钅; грифель карандаша.
+笔|pinceau, stylo|pen, brush|кисть, ручка|Du bambou 竹 avec des poils 毛 : un pinceau.|Bamboo 竹 with hair 毛: a brush.|Бамбук 竹 с волосом 毛: кисть.
+课|cours|lesson|урок|La parole 讠 du maître ; 果 donne le son.|The teacher's speech 讠; 果 gives the sound.|Речь 讠 учителя; 果 даёт звук.
+考|examiner|to test|экзаменовать|Le vieil homme 老 qui fait passer l'épreuve.|The old man 老 setting the test.|Старик 老 устраивает испытание.
+试|essayer|to try|пробовать|La parole 讠 ; 式 donne le son.|Speech 讠; 式 gives the sound.|Речь 讠; 式 даёт звук.
+题|sujet, question|topic, question|тема, задание|La tête 页 de la page : le titre.|The head 页 of the page: the title.|Голова 页 страницы: заголовок.
+问|demander|to ask|спрашивать|Une bouche 口 à la porte 门 : on demande.|A mouth 口 at the door 门: asking.|Рот 口 у двери 门: спросить.
+答|répondre|to answer|отвечать|Des lattes de bambou 竹 qui s'accordent 合.|Bamboo slips 竹 that fit together 合.|Бамбуковые планки 竹, которые сходятся 合.
+懂|comprendre|to understand|понимать|Le cœur 忄 qui saisit ; 董 donne le son.|The heart 忄 grasping it; 董 gives the sound.|Сердце 忄 постигает; 董 даёт звук.
+意|idée, sens|idea, meaning|мысль, смысл|Le son 音 du cœur 心 : l'intention.|The sound 音 of the heart 心: intention.|Звук 音 сердца 心: намерение.
+思|penser|to think|думать|La tête (田) et le cœur 心 qui réfléchissent.|The head (田) and the heart 心 thinking.|Голова (田) и сердце 心 думают.
+告|dire, annoncer|to tell|сообщать|Parler 口 avec la force d'un bœuf 牛.|Speaking 口 with the strength of an ox 牛.|Говорить 口 с силой быка 牛.
+诉|raconter, se plaindre|to tell, to complain|рассказывать, жаловаться|Des paroles 讠 ; 斥 donne le son.|Words 讠; 斥 gives the sound.|Слова 讠; 斥 даёт звук.
+准|précis, permettre|accurate, allow|точный, разрешать|L'eau 冫 d'un niveau, bien à plat.|Water 冫 in a spirit level, perfectly flat.|Вода 冫 в уровне, ровно.
+备|préparer|to prepare|готовить|Aller 夂 au champ 田 préparer la récolte.|Going 夂 to the field 田 to prepare the harvest.|Идти 夂 в поле 田 готовить урожай.
+白|blanc|white|белый|Une flamme qui éclaire : la clarté.|A flame giving light: brightness.|Пламя, дающее свет: ясность.
+黑|noir|black|чёрный|Un visage noirci par la suie du feu 灬.|A face blackened by soot from the fire 灬.|Лицо, чёрное от копоти огня 灬.
+红|rouge|red|красный|Un fil de soie 纟 teint ; 工 donne le son.|A dyed silk thread 纟; 工 gives the sound.|Окрашенная шёлковая нить 纟; 工 даёт звук.
+颜|visage, couleur|face, colour|лицо, цвет|La tête 页 ; 彦 donne le son.|The head 页; 彦 gives the sound.|Голова 页; 彦 даёт звук.
+色|couleur|colour|цвет|Une personne penchée sur une autre : l'émotion qui colore.|One person over another: the feeling that colours.|Человек над другим: чувство, которое окрашивает.
+新|nouveau|new|новый|Un arbre fraîchement coupé à la hache 斤.|A tree freshly cut with an axe 斤.|Дерево, только что срубленное топором 斤.
+长|long ; grandir|long; to grow|длинный; расти|Un vieil homme aux très longs cheveux.|An old man with very long hair.|Старик с очень длинными волосами.
+快|rapide|fast|быстрый|Un cœur 忄 décidé 夬 : on va vite.|A decided 夬 heart 忄: you go fast.|Решительное 夬 сердце 忄: быстро.
+慢|lent|slow|медленный|Un cœur 忄 tranquille ; 曼 donne le son.|A calm heart 忄; 曼 gives the sound.|Спокойное сердце 忄; 曼 даёт звук.
+忙|occupé|busy|занятой|Un cœur 忄 qui se perd 亡 dans le travail.|A heart 忄 lost 亡 in work.|Сердце 忄, потерявшееся 亡 в работе.
+真|vrai|true, real|настоящий|Un regard 目 bien droit : ce qui est vrai.|A straight gaze 目: what is true.|Прямой взгляд 目: правда.
+非|non, pas|not|не|Deux ailes qui s'opposent.|Two wings facing away.|Два крыла, обращённые в разные стороны.
+常|souvent|often|часто|Un tissu 巾 qu'on porte tous les jours.|A cloth 巾 worn every day.|Ткань 巾, которую носят каждый день.
+最|le plus|most|самый|Prendre 取 sous le soleil 日 : le meilleur.|Taking 取 under the sun 日: the very best.|Брать 取 под солнцем 日: самое лучшее.
+错|faux, erreur|wrong|ошибка|Un métal 钅 mal travaillé ; 昔 donne le son.|Badly worked metal 钅; 昔 gives the sound.|Плохо обработанный металл 钅; 昔 даёт звук.
+走|marcher|to walk|идти|Une personne qui lève le pied 止 pour marcher.|A person lifting a foot 止 to walk.|Человек поднимает ногу 止, чтобы идти.
+进|entrer, avancer|to enter|входить|Marcher 辶 vers l'avant ; 井 donne le son.|Walking 辶 forward; 井 gives the sound.|Идти 辶 вперёд; 井 даёт звук.
+到|arriver|to arrive|прибывать|Arriver 至 au but ; 刂 donne le son.|Reaching 至 the goal; 刂 gives the sound.|Достичь 至 цели; 刂 даёт звук.
+送|offrir, raccompagner|to give, see off|дарить, провожать|Marcher 辶 avec quelqu'un pour le raccompagner.|Walking 辶 with someone to see them off.|Идти 辶 рядом, провожая.
+给|donner|to give|давать|Un fil 纟 qui unit 合 deux personnes.|A thread 纟 joining 合 two people.|Нить 纟, соединяющая 合 двоих.
+找|chercher|to look for|искать|Une main 扌 armée d'une lance 戈 part chercher.|A hand 扌 with a spear 戈 goes searching.|Рука 扌 с копьём 戈 идёт искать.
+等|attendre ; rang|to wait; rank|ждать; ранг|Des lattes de bambou 竹 rangées : attendre son tour.|Bamboo slips 竹 in rows: waiting your turn.|Бамбуковые планки 竹 рядами: ждать очереди.
+让|laisser, céder|to let, yield|позволять, уступать|Des paroles 讠 qui laissent passer au-dessus 上.|Words 讠 letting someone go above 上.|Слова 讠, пропускающие вперёд 上.
+玩|jouer|to play|играть|Jouer avec un jade 王 ; 元 donne le son.|Playing with jade 王; 元 gives the sound.|Играть с нефритом 王; 元 даёт звук.
+穿|porter, percer|to wear, pierce|носить, пронзать|Une dent 牙 qui perce un trou 穴.|A tooth 牙 boring a hole 穴.|Зуб 牙 прокалывает дыру 穴.
+旅|voyage|journey|путешествие|Une troupe en marche sous sa bannière 方.|A band marching under its banner 方.|Отряд в пути под знаменем 方.
+手|main|hand|рука|Une main aux doigts écartés.|A hand with spread fingers.|Рука с растопыренными пальцами.
+表|montrer ; montre|to show; watch|показывать; часы|Un vêtement 衣 de fourrure qu'on montre dehors.|A fur garment 衣 shown on the outside.|Меховая одежда 衣 напоказ.
+票|billet|ticket|билет|Des flammes au-dessus d'un autel 示 : un papier officiel.|Flames over an altar 示: an official slip.|Пламя над алтарём 示: официальная бумага.
+晴|beau temps|sunny|ясно|Le soleil 日 ; 青 donne le son.|The sun 日; 青 gives the sound.|Солнце 日; 青 даёт звук.
+阴|ombre, couvert|shade, cloudy|тень, пасмурно|Le lieu 阝 de la lune 月 : le côté sombre.|The place 阝 of the moon 月: the dark side.|Место 阝 луны 月: тёмная сторона.
+雪|neige|snow|снег|La pluie 雨 qu'on balaie à la main.|Rain 雨 you sweep up by hand.|Дождь 雨, который сметают рукой.
+笑|rire|to laugh|смеяться|Une personne 夭 qui se plie de rire, comme le bambou 竹.|A person 夭 bending with laughter, like bamboo 竹.|Человек 夭 гнётся от смеха, как бамбук 竹.
+乐|joie ; musique|joy; music|радость; музыка|Un instrument de musique en bois.|A wooden musical instrument.|Деревянный музыкальный инструмент.
+希|espérer ; rare|to hope; rare|надеяться; редкий|Un tissu 巾 brodé, rare et désiré.|An embroidered cloth 巾, rare and longed for.|Вышитая ткань 巾, редкая и желанная.
+望|regarder au loin|to gaze, hope|смотреть вдаль|Un roi 王 qui contemple la lune 月.|A king 王 gazing at the moon 月.|Царь 王 смотрит на луну 月.
+得|obtenir ; (manière)|to get; (degree)|получать; (степень)|Une main 寸 qui saisit un coquillage précieux.|A hand 寸 grabbing a precious shell.|Рука 寸 хватает ценную ракушку.
+可|pouvoir|can|мочь|Une bouche 口 qui dit oui.|A mouth 口 saying yes.|Рот 口 говорит «да».
+以|avec, afin de|with, so as to|с помощью, чтобы|Une personne 人 qui se sert d'un outil.|A person 人 using a tool.|Человек 人 пользуется орудием.
+要|vouloir|to want|хотеть|Une femme 女, les mains sur la taille 覀 : elle exige.|A woman 女, hands on hips 覀: she insists.|Женщина 女 руки в боки 覀: требует.
+别|ne… pas ; autre|don't; other|не; другой|Un couteau 刂 qui sépare : chacun à part.|A knife 刂 that separates: each apart.|Нож 刂 разделяет: каждый отдельно.
+件|(chose, vêtement)|(item, clothing)|(вещь, одежда)|Une personne 亻 qui partage un bœuf 牛 en morceaux.|A person 亻 cutting an ox 牛 into pieces.|Человек 亻 делит быка 牛 на части.
+每|chaque|every|каждый|Une mère 母 qui veille sur chacun.|A mother 母 watching over each one.|Мать 母 заботится о каждом.
+吧|(suggestion)|(suggestion)|(предложение)|La bouche 口 ; 巴 donne le son : ba.|The mouth 口; 巴 gives the sound: ba.|Рот 口; 巴 даёт звук: ba.
+也|aussi|also|тоже|Un trait qui s'ajoute : « moi aussi ».|A stroke added on: “me too”.|Добавленная черта: «я тоже».
+还|encore ; rendre|still; to return|ещё; возвращать|Marcher 辶 en revenant sur ses pas.|Walking 辶 back the way you came.|Идти 辶 обратно.
+就|tout de suite|right away|сразу|Aller vers la capitale 京 : on y est déjà.|Heading to the capital 京: you're nearly there.|Идти в столицу 京: уже почти там.
+从|depuis ; suivre|from; to follow|от; следовать|Une personne 人 qui en suit une autre 人.|One person 人 following another 人.|Человек 人 идёт за другим 人.
+比|comparer|to compare|сравнивать|Deux cuillères 匕 côte à côte qu'on compare.|Two spoons 匕 side by side, compared.|Две ложки 匕 рядом для сравнения.
+因|cause|cause|причина|Une personne 大 sur une natte 囗 : la raison d'être là.|A person 大 on a mat 囗: the reason they're there.|Человек 大 на циновке 囗: причина быть здесь.
+为|pour ; faire|for; to do|для; делать|Une main qui travaille avec force 力.|A hand working with strength 力.|Рука, работающая с силой 力.
+所|lieu, ce que|place, that which|место, то, что|Une hache 斤 à la porte 户 : la maison, le lieu.|An axe 斤 by the door 户: the house, the place.|Топор 斤 у двери 户: дом, место.
+虽|bien que|although|хотя|Une bouche 口 et un insecte 虫 ; c'est le son qui compte.|A mouth 口 and an insect 虫; it's the sound that counts.|Рот 口 и насекомое 虫; важен звук.
+然|ainsi, en effet|so, indeed|так, действительно|De la viande sur le feu 灬 : bien sûr, ça cuit.|Meat over the fire 灬: naturally, it cooks.|Мясо на огне 灬: конечно, жарится.
+但|mais|but|но|Une personne 亻 ; 旦 donne le son.|A person 亻; 旦 gives the sound.|Человек 亻; 旦 даёт звук.

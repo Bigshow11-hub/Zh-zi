@@ -1,5 +1,7 @@
 package com.zhuzi.app.ui
 
+import com.zhuzi.app.data.level
+import com.zhuzi.app.data.number
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -49,7 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zhuzi.app.data.Lesson
 import com.zhuzi.app.data.Word
-import com.zhuzi.app.data.hsk1Lessons
+import com.zhuzi.app.data.allLessons
 import com.zhuzi.app.ui.theme.Ink
 import com.zhuzi.app.ui.theme.InkSoft
 import com.zhuzi.app.ui.theme.Kicker
@@ -74,7 +76,7 @@ fun CharactersScreen(
     contentPadding: PaddingValues,
     startSection: Int = 0,
 ) {
-    val entries = remember { hsk1Lessons.flatMap { l -> l.words.map { it to l } } }
+    val entries = remember { allLessons.flatMap { l -> l.words.map { it to l } } }
     var section by rememberSaveable { mutableIntStateOf(startSection) }
     var query by rememberSaveable { mutableStateOf("") }
     var filter by rememberSaveable { mutableIntStateOf(0) }
@@ -126,9 +128,9 @@ fun CharactersScreen(
                         1 -> tr("${com.zhuzi.app.data.charInfos.size} caractères : sens, clé et astuce pour les retenir",
                             "${com.zhuzi.app.data.charInfos.size} characters: meaning, radical and a tip to remember them",
                             "${com.zhuzi.app.data.charInfos.size} иероглифа: смысл, ключ и подсказка")
-                        else -> tr("${com.zhuzi.app.data.grammarPoints.size} règles du HSK 1, avec des exemples à écouter",
-                            "${com.zhuzi.app.data.grammarPoints.size} HSK 1 rules, with examples to listen to",
-                            "${com.zhuzi.app.data.grammarPoints.size} правила HSK 1 с примерами")
+                        else -> tr("${com.zhuzi.app.data.grammarPoints.size} règles du HSK 1 et 2, avec des exemples à écouter",
+                            "${com.zhuzi.app.data.grammarPoints.size} HSK 1 and 2 rules, with examples to listen to",
+                            "${com.zhuzi.app.data.grammarPoints.size} правил HSK 1 и 2 с примерами")
                     },
                 )
                 Segmented(listOf(tr("Mots", "Words", "Слова"), tr("Caractères", "Characters", "Знаки"),
@@ -223,7 +225,7 @@ private fun WordCard(word: Word, lesson: Lesson, box: Int, modifier: Modifier, o
         Text(word.meaning(currentLang()), fontSize = 13.sp, color = InkSoft, maxLines = 2, minLines = 2,
             overflow = TextOverflow.Ellipsis, lineHeight = 17.sp, modifier = Modifier.padding(horizontal = 2.dp))
         Row(Modifier.padding(top = 6.dp, start = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("L" + lesson.id, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = InkSoft,
+            Text((if (lesson.level == 2) "H2·L" else "L") + lesson.number, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = InkSoft,
                 modifier = Modifier.clip(PillShape).background(Mist)
                     .padding(horizontal = 7.dp, vertical = 2.dp))
             Spacer(Modifier.width(8.dp))
@@ -265,7 +267,7 @@ private fun WordDetail(word: Word, lesson: Lesson, box: Int, speak: (String) -> 
         PinyinText(word.pinyin, 30.sp)
         Text(word.meaning(currentLang()), fontSize = 18.sp, color = InkSoft, textAlign = TextAlign.Center)
         Spacer(Modifier.height(14.dp))
-        Text(tr("LEÇON ", "LESSON ", "УРОК ") + "${lesson.id} · ${lesson.short(currentLang()).uppercase()}", style = Kicker)
+        Text(lessonName(lesson).uppercase() + " · " + lesson.short(currentLang()).uppercase(), style = Kicker)
         Text(
             when {
                 box >= 4 -> tr("Bien retenu", "Well learned", "Хорошо выучено")

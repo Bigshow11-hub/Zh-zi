@@ -1,5 +1,6 @@
 package com.zhuzi.app.ui
 
+import com.zhuzi.app.data.number
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zhuzi.app.data.Lesson
 import com.zhuzi.app.data.QuizMode
-import com.zhuzi.app.data.hsk1Lessons
+import com.zhuzi.app.data.allLessons
+import com.zhuzi.app.data.level
 import com.zhuzi.app.data.lessonIntros
 import com.zhuzi.app.ui.theme.Accent
 import com.zhuzi.app.ui.theme.Accent2
@@ -55,12 +59,15 @@ fun LessonsScreen(
     onMyWords: () -> Unit = {},
 ) {
     val lang = currentLang()
-    val total = hsk1Lessons.sumOf { it.words.size }
-    val known = hsk1Lessons.sumOf { lessonKnown(it) }
+    // La leçon en cours, toutes niveaux confondus ; le niveau affiché part de celui-là
+    val current = allLessons.firstOrNull { lessonKnown(it) < it.words.size }
+    var level by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableIntStateOf(current?.level ?: 1) }
+    val lessons = allLessons.filter { it.level == level }
+    val total = lessons.sumOf { it.words.size }
+    val known = lessons.sumOf { lessonKnown(it) }
     val mastered: (Lesson) -> Boolean = { l -> QuizMode.core.all { bestScore(l.id, it) >= 80 } }
-    val masteredCount = hsk1Lessons.count(mastered)
-    val current = hsk1Lessons.firstOrNull { lessonKnown(it) < it.words.size }
-    val seen = remember { mutableSetOf<Any>() }
+    val masteredCount = lessons.count(mastered)
+    val seen = remember(level) { mutableSetOf<Any>() }
     LazyColumn(
         contentPadding = PaddingValues(
             start = 20.dp, end = 20.dp,
@@ -70,8 +77,11 @@ fun LessonsScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         staggerItem(0, seen) {
-            ScreenTitle(tr("Leçons", "Lessons", "Уроки"),
-                tr("Le parcours HSK 1, thème par thème", "The HSK 1 path, theme by theme", "Путь HSK 1, тема за темой"))
+            Column {
+                ScreenTitle(tr("Leçons", "Lessons", "Уроки"),
+                    tr("Le parcours HSK, thème par thème", "The HSK path, theme by theme", "Путь HSK, тема за темой"))
+                Segmented(listOf("HSK 1", "HSK 2"), level - 1, { level = it + 1 })
+            }
         }
         // Synthèse du parcours
         staggerItem(1, seen) {
@@ -81,21 +91,21 @@ fun LessonsScreen(
             ) {
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text("$known", style = MaterialTheme.typography.displaySmall, color = a)
-                    Text(" / $total " + tr("mots du HSK 1", "HSK 1 words", "слов HSK 1"), color = InkSoft,
+                    Text(" / $total " + tr("mots du HSK $level", "HSK $level words", "слов HSK $level"), color = InkSoft,
                         fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 6.dp))
                 }
                 ProgressBar(known.toFloat() / total, Modifier.padding(top = 10.dp), color = a, height = 8.dp)
                 Text(
-                    tr("$masteredCount leçon${if (masteredCount > 1) "s" else ""} maîtrisée${if (masteredCount > 1) "s" else ""} sur ${hsk1Lessons.size}",
-                        "$masteredCount of ${hsk1Lessons.size} lessons mastered",
-                        "Освоено уроков: $masteredCount из ${hsk1Lessons.size}"),
+                    tr("$masteredCount leçon${if (masteredCount > 1) "s" else ""} maîtrisée${if (masteredCount > 1) "s" else ""} sur ${lessons.size}",
+                        "$masteredCount of ${lessons.size} lessons mastered",
+                        "Освоено уроков: $masteredCount из ${lessons.size}"),
                     color = InkSoft, fontSize = 13.sp, modifier = Modifier.padding(top = 8.dp),
                 )
             }
         }
         // Mes mots : ceux de l'élève, écrits ou pris en photo
         staggerItem(2, seen) { MyWordsEntry(myCount, onMyWords) }
-        hsk1Lessons.forEachIndexed { i, lesson ->
+        lessons.forEachIndexed { i, lesson ->
             staggerItem(i + 3, seen) {
                 LessonCard(lesson, lessonKnown(lesson), mastered(lesson), lesson == current, bestScore, onOpen)
             }
@@ -153,7 +163,7 @@ private fun LessonCard(
                         complete -> Badge(tr("Découverte", "Discovered", "Пройден"), InkSoft)
                     }
                 }
-                Text(tr("Leçon ", "Lesson ", "Урок ") + lesson.id + " · " + wordsCount(lang, lesson.words.size),
+                Text(lessonName(lesson) + " · " + wordsCount(lang, lesson.words.size),
                     fontSize = 12.sp, color = InkSoft, modifier = Modifier.padding(top = 1.dp))
                 lessonIntros[lesson.id]?.let {
                     Text(it.get(lang), fontSize = 14.sp, color = InkSoft, maxLines = 2, overflow = TextOverflow.Ellipsis,

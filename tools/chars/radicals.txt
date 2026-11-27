@@ -80,3 +80,45 @@
 凵|récipient|container|сосуд
 禾|céréale|grain|злак
 车|véhicule|vehicle|повозка
+弓|arc|bow|лук
+田|champ|field|поле
+纟|soie, fil|silk, thread|шёлк, нить
+身|corps|body|тело
+疒|maladie|sickness|болезнь
+力|force|strength|сила
+足|pied|foot|нога
+止|pied, s'arrêter|foot, stop|нога, стоять
+竹|bambou|bamboo|бамбук
+舛|pieds opposés|opposite feet|ноги врозь
+门|porte|door|дверь
+己|soi|self|сам
+鸟|oiseau|bird|птица
+虫|insecte|insect|насекомое
+牛|bœuf|ox|бык
+羊|mouton|sheep|баран
+肉|viande|meat|мясо
+鱼|poisson|fish|рыба
+瓜|melon|melon|дыня
+贝|coquillage, argent|shell, money|раковина, деньги
+攵|frapper, agir|strike, act|удар, действие
+户|porte|door|дверь
+方|carré, direction|square, direction|квадрат, сторона
+禸|empreinte|track|след
+夂|marcher lentement|go slowly|идти медленно
+老|vieux|old|старый
+页|tête, page|head, page|голова, страница
+忄|cœur|heart|сердце
+黑|noir|black|чёрный
+色|couleur|colour|цвет
+斤|hache|axe|топор
+长|long|long|длинный
+非|non|not|не
+穴|trou, grotte|hole, cave|дыра, пещера
+手|main|hand|рука
+示|autel, montrer|altar, show|алтарь, показывать
+覀|couvercle|cover|крышка
+母|mère|mother|мать
+乚|crochet|hook|крюк
+尢|boiteux|lame|хромой
+比|comparer|compare|сравнивать
+丶|point|dot|точка

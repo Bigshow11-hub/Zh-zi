@@ -9,8 +9,11 @@ data class Example(val hanzi: String, val pinyin: String, val french: String, va
     }
 }
 
+/** Les phrases d'exemple de tous les mots (HSK 1 et HSK 2). */
+val examples: Map<String, Example> by lazy { hsk1Examples + hsk2Examples }
+
 /** Une phrase d'exemple pour chaque mot du HSK 1 (clé : les caractères du mot). */
-val examples: Map<String, Example> = mapOf(
+private val hsk1Examples: Map<String, Example> = mapOf(
     "你好" to Example("你好，老师！", "Nǐ hǎo, lǎoshī!", "Bonjour, professeur !", "Hello, teacher!", "Здравствуйте, учитель!"),
     "谢谢" to Example("谢谢你的茶。", "Xièxie nǐ de chá.", "Merci pour ton thé.", "Thanks for your tea.", "Спасибо за твой чай."),
     "不客气" to Example("谢谢！——不客气。", "Xièxie! — Bú kèqi.", "Merci ! — De rien.", "Thank you! — You're welcome.", "Спасибо! — Не за что."),

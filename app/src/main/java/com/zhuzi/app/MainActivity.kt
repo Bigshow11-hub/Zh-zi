@@ -34,7 +34,7 @@ import com.zhuzi.app.data.Progress
 import com.zhuzi.app.data.QuizMode
 import com.zhuzi.app.data.Srs
 import com.zhuzi.app.data.Streak
-import com.zhuzi.app.data.hsk1Lessons
+import com.zhuzi.app.data.allLessons
 import com.zhuzi.app.reminder.Reminders
 import com.zhuzi.app.ui.CharactersScreen
 import com.zhuzi.app.ui.HomeScreen
@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
         val srs = Srs(this)
         val streak = Streak(this)
         val myWords = com.zhuzi.app.data.MyWords(this)
-        val allWords = hsk1Lessons.flatMap { it.words }
+        val allWords = allLessons.flatMap { it.words }
         val total = allWords.size
         val settings = getSharedPreferences("settings", MODE_PRIVATE)
         val wordOfDay = allWords[(LocalDate.now().toEpochDay() % total).toInt()]
@@ -156,11 +156,11 @@ class MainActivity : ComponentActivity() {
                             this@MainActivity,
                             streak = streak.current(),
                             known = srs.knownCount(allWords),
-                            mastered = hsk1Lessons.count { l -> QuizMode.core.all { progress.bestScore(l.id, it) >= 80 } },
+                            mastered = allLessons.count { l -> QuizMode.core.all { progress.bestScore(l.id, it) >= 80 } },
                         )
                     }
                 }
-                val lesson = hsk1Lessons.firstOrNull { it.id == overlay }
+                val lesson = allLessons.firstOrNull { it.id == overlay }
                 val bars = WindowInsets.systemBars.asPaddingValues()
 
                 when {
@@ -174,10 +174,10 @@ class MainActivity : ComponentActivity() {
                             stats = com.zhuzi.app.data.AvatarStats(
                                 known = known,
                                 streak = streak.current(),
-                                lessonsMastered = hsk1Lessons.count { l ->
+                                lessonsMastered = allLessons.count { l ->
                                     QuizMode.core.all { progress.bestScore(l.id, it) >= 80 }
                                 },
-                                listeningPassed = hsk1Lessons.any { progress.bestScore(it.id, QuizMode.LISTENING) >= 80 },
+                                listeningPassed = allLessons.any { progress.bestScore(it.id, QuizMode.LISTENING) >= 80 },
                             ),
                             onChange = setLook,
                             onBack = close,
@@ -261,8 +261,8 @@ class MainActivity : ComponentActivity() {
                             if (srs.dueWords(reviewPool).isNotEmpty()) {
                                 overlay = REVIEW
                             } else {
-                                val nextLesson = hsk1Lessons.firstOrNull { srs.knownCount(it.words) < it.words.size }
-                                    ?: hsk1Lessons.first()
+                                val nextLesson = allLessons.firstOrNull { srs.knownCount(it.words) < it.words.size }
+                                    ?: allLessons.first()
                                 overlay = nextLesson.id
                             }
                         }
@@ -276,8 +276,8 @@ class MainActivity : ComponentActivity() {
                                 label = "tab") { t ->
                                 when (t) {
                                     Tab.HOME -> {
-                                        val next = hsk1Lessons.firstOrNull { lessonKnown(it) < it.words.size }
-                                            ?: hsk1Lessons.last()
+                                        val next = allLessons.firstOrNull { lessonKnown(it) < it.words.size }
+                                            ?: allLessons.last()
                                         HomeScreen(
                                             todayLabel = todayLabel(lang),
                                             greeting = com.zhuzi.app.data.greetingNow(),
@@ -319,10 +319,10 @@ class MainActivity : ComponentActivity() {
                                         masteredCount = srs.masteredCount(allWords),
                                         total = total,
                                         dueTomorrow = srs.dueTomorrow(allWords),
-                                        lessonsMastered = hsk1Lessons.count { l ->
+                                        lessonsMastered = allLessons.count { l ->
                                             QuizMode.core.all { bestScore(l.id, it) >= 80 }
                                         },
-                                        lessonsTotal = hsk1Lessons.size,
+                                        lessonsTotal = allLessons.size,
                                         reminderOn = reminderOn,
                                         reminderTime = reminderAt,
                                         onReminderTime = { h, m ->

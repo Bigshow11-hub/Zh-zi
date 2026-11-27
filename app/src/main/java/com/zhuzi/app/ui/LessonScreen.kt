@@ -90,7 +90,7 @@ fun LessonScreen(
 ) {
     var tab by rememberSaveable { mutableIntStateOf(startTab) }
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
-        TopBar(tr("Leçons", "Lessons", "Уроки"), tr("Leçon ", "Lesson ", "Урок ") + lesson.id, onBack)
+        TopBar(tr("Leçons", "Lessons", "Уроки"), lessonName(lesson), onBack)
         Text(lesson.title(currentLang()), style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(horizontal = 20.dp))
         // L'accroche de la leçon

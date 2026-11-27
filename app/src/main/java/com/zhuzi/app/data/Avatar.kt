@@ -11,6 +11,8 @@ val levels = listOf(
     Level(3, 30, T3("Bambou", "Bamboo", "Бамбук")),
     Level(4, 60, T3("Bosquet", "Grove", "Роща")),
     Level(5, 100, T3("Forêt de bambous", "Bamboo forest", "Бамбуковый лес")),
+    Level(6, 180, T3("Montagne de bambous", "Bamboo mountain", "Бамбуковая гора")),
+    Level(7, 280, T3("Maître du bambou", "Bamboo master", "Мастер бамбука")),
 )
 
 fun levelFor(known: Int): Level = levels.last { known >= it.from }
