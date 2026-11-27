@@ -381,7 +381,7 @@ fun CultureCard(text: T3, modifier: Modifier = Modifier) {
         modifier.fillMaxWidth().heightIn(min = 60.dp).softCard(RoundedCornerShape(16.dp)).padding(16.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        Box(Modifier.size(38.dp).clip(RoundedCornerShape(10.dp)).background(Seal), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(38.dp).clip(com.zhuzi.app.ui.theme.TileShape).background(com.zhuzi.app.ui.theme.AccentFill), contentAlignment = Alignment.Center) {
             Text("知", fontFamily = Kai, fontSize = 22.sp, color = Color.White)
         }
         Spacer(Modifier.width(12.dp))
