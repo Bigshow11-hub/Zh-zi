@@ -182,6 +182,12 @@ private fun CenterButton(modifier: Modifier, onClick: () -> Unit) {
                 topLeft = androidx.compose.ui.geometry.Offset(size.width * 0.1f * lift, 0f),
                 size = androidx.compose.ui.geometry.Size(size.width * (1f - 0.2f * lift), size.height))
         }
+        // halo d'accent derrière la tête : le panda blanc ressort sur la barre claire
+        Box(
+            Modifier.size(66.dp).graphicsLayer { translationY = -lift * 3f * density + 4f * density }
+                .clip(CircleShape)
+                .background(androidx.compose.ui.graphics.Brush.radialGradient(listOf(a.copy(alpha = 0.32f), a.copy(alpha = 0.12f)))),
+        )
         PandaHead(
             Modifier.size(76.dp).graphicsLayer {
                 translationY = -lift * 3f * density
