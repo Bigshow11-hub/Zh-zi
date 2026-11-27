@@ -172,8 +172,9 @@ fun FlipCard(
     )
     // Si on ne touche à rien, la carte se penche un peu pour inviter à la retourner
     val nudge = remember(word) { Animatable(0f) }
+    val still = reduceMotion()
     LaunchedEffect(word, flipped) {
-        if (flipped) { nudge.snapTo(0f); return@LaunchedEffect }
+        if (flipped || still) { nudge.snapTo(0f); return@LaunchedEffect }
         kotlinx.coroutines.delay(4200)
         nudge.animateTo(14f, androidx.compose.animation.core.tween(260, easing = androidx.compose.animation.core.FastOutSlowInEasing))
         nudge.animateTo(0f, spring(dampingRatio = 0.4f, stiffness = Spring.StiffnessLow))
@@ -242,7 +243,7 @@ fun FlipCard(
                     label = "hintAlpha",
                 )
                 Row(
-                    Modifier.align(Alignment.BottomCenter).graphicsLayer { alpha = a }
+                    Modifier.align(Alignment.BottomCenter).graphicsLayer { alpha = if (still) 1f else a }
                         .clip(PillShape).background(Mist).padding(horizontal = 14.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {

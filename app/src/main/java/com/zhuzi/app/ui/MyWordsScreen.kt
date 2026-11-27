@@ -237,7 +237,7 @@ private fun MyWordRow(w: MyWord, speak: (String) -> Unit, onDelete: () -> Unit, 
             Text(w.meaning, fontSize = 13.sp, color = InkSoft, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         if (w.source == "photo") {
-            Text(tr("photo", "photo", "фото"), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = InkSoft,
+            Text(tr("photo", "photo", "фото"), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = InkSoft,
                 modifier = Modifier.clip(PillShape).background(Mist).padding(horizontal = 8.dp, vertical = 2.dp))
         }
         val label = tr("Supprimer", "Delete", "Удалить")
@@ -314,6 +314,14 @@ private fun AddWordForm(onSave: (String, String, String) -> Unit) {
                 if (known != null) meaning = known.meaning(lang)
             }
         }, placeholder = "你好", big = true, font = Kai)
+        // Le mot existe déjà dans une leçon : on le dit (il partage ses révisions avec elle)
+        val inLesson = remember(hanzi) {
+            hanzi.trim().takeIf { it.isNotEmpty() }?.let { h -> com.zhuzi.app.data.allLessons.firstOrNull { l -> l.words.any { it.hanzi == h } } }
+        }
+        if (inLesson != null) {
+            Text(tr("Déjà dans ", "Already in ", "Уже есть: ") + lessonName(inLesson) + " · " + inLesson.title(lang),
+                fontSize = 13.sp, color = InkSoft, modifier = Modifier.padding(top = 2.dp))
+        }
         ZField(tr("Pinyin (rempli tout seul, modifiable)", "Pinyin (filled in for you, editable)", "Пиньинь (заполняется сам)"),
             pinyin, { pinyin = it; pinyinEdited = true }, placeholder = "nǐ hǎo", font = PinyinFont)
         ZField(tr("Sens", "Meaning", "Значение"), meaning, { meaning = it },

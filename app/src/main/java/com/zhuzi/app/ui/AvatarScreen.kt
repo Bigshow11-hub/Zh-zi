@@ -171,7 +171,7 @@ private fun Section(title: String) {
 @Composable
 private fun Swatch(brush: Brush, selected: Boolean, onClick: () -> Unit) {
     Box(
-        Modifier.size(44.dp).clip(CircleShape)
+        Modifier.size(48.dp).clip(CircleShape)
             .then(if (selected) Modifier.border(3.dp, Accent, CircleShape) else Modifier.border(1.dp, Mist, CircleShape))
             .clickable(onClick = onClick)
             .padding(5.dp).clip(CircleShape).background(brush),

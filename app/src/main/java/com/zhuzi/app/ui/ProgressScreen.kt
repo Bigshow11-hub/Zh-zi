@@ -416,7 +416,7 @@ private fun WeekChart(days: List<Pair<java.time.LocalDate, Int>>, modifier: Modi
                 }
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                     // Place toujours réservée au chiffre, pour que toutes les barres partent du même niveau
-                    Text(if (n > 0) "$n" else " ", fontSize = 10.sp, color = InkSoft, fontWeight = FontWeight.Bold)
+                    Text(if (n > 0) "$n" else " ", fontSize = 11.sp, color = InkSoft, fontWeight = FontWeight.Bold)
                     Box(
                         Modifier.padding(top = 4.dp).width(20.dp)
                             .height(androidx.compose.ui.unit.max(6.dp, 72.dp * anim.value))

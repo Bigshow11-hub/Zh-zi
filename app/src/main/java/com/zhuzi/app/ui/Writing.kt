@@ -274,7 +274,9 @@ fun WritingPractice(word: Word, onWordDone: () -> Unit, modifier: Modifier = Mod
     val tones = Tones.forWord(word.hanzi, word.pinyin)
     var index by remember(word) { mutableIntStateOf(0) }
     val finished = remember(word) { mutableStateListOf<Int>() }
+    val skipped = remember(word) { mutableStateListOf<Int>() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     LaunchedEffect(finished.size) { if (finished.size == chars.size && chars.isNotEmpty()) onWordDone() }
 
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -302,8 +304,30 @@ fun WritingPractice(word: Word, onWordDone: () -> Unit, modifier: Modifier = Mod
                 // On laisse voir le caractère réussi un instant avant le suivant
                 if (index + 1 < chars.size) scope.launch { kotlinx.coroutines.delay(900); index++ }
             })
-            if (finished.size == chars.size && chars.isNotEmpty()) {
+            if (finished.size == chars.size && chars.isNotEmpty() && skipped.isEmpty()) {
                 SealStamp("好", 64.dp, Modifier.align(Alignment.TopEnd).padding(4.dp))
+            }
+        }
+        // Nombre de traits (lu par TalkBack) et alternative pour qui ne peut pas tracer au doigt
+        val strokes = remember(chars[index]) { StrokeData.get(context, chars[index])?.outlines?.size ?: 0 }
+        Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (strokes > 0) Text(
+                chars[index] + " · " + countOf(currentLang(), strokes, "trait" to "traits", "stroke" to "strokes",
+                    Triple("черта", "черты", "черт")),
+                fontSize = 13.sp, color = InkSoft,
+            )
+            if (index !in finished) {
+                Text(
+                    tr("Passer ce caractère", "Skip this character", "Пропустить иероглиф"),
+                    fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Accent,
+                    modifier = Modifier.padding(start = 12.dp).clip(PillShape)
+                        .clickable(role = androidx.compose.ui.semantics.Role.Button) {
+                            skipped.add(index)
+                            if (index !in finished) finished.add(index)
+                            if (index + 1 < chars.size) index++
+                        }
+                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                )
             }
         }
     }

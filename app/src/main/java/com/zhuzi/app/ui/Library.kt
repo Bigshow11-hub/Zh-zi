@@ -112,7 +112,7 @@ fun CharCard(info: CharInfo, modifier: Modifier = Modifier, onClick: () -> Unit)
         Text(info.meaning.get(lang), fontSize = 11.sp, color = InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center)
         Text(countOf(lang, info.strokes, "trait" to "traits", "stroke" to "strokes", Triple("черта", "черты", "черт")),
-            fontSize = 10.sp, color = InkSoft.copy(alpha = 0.8f), fontWeight = FontWeight.Bold,
+            fontSize = 11.sp, color = InkSoft.copy(alpha = 0.8f), fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 2.dp))
     }
 }
@@ -326,7 +326,7 @@ fun GrammarDetail(point: GrammarPoint, speak: (String) -> Unit, modifier: Modifi
                 .background(Brush.linearGradient(listOf(a, Accent2))).padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
             Column {
-                Text(tr("STRUCTURE", "PATTERN", "СТРУКТУРА"), color = Color.White.copy(alpha = 0.75f), fontSize = 10.sp,
+                Text(tr("STRUCTURE", "PATTERN", "СТРУКТУРА"), color = Color.White.copy(alpha = 0.8f), fontSize = 11.sp,
                     fontWeight = FontWeight.ExtraBold, letterSpacing = 1.4.sp)
                 Text(point.pattern.get(lang), color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp,
                     modifier = Modifier.padding(top = 4.dp))

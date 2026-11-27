@@ -104,10 +104,12 @@ fun BellButton(pending: Int, onClick: () -> Unit) {
     val ink = Ink
     val seal = Seal
     val swing = remember { Animatable(0f) }
+    val still = reduceMotion()
     LaunchedEffect(pending) {
-        if (pending == 0) return@LaunchedEffect
+        if (pending == 0 || still) return@LaunchedEffect
         delay(1200)
-        while (true) {
+        // Trois balancements puis la cloche se tient tranquille (batterie, calme)
+        repeat(3) {
             swing.animateTo(0f, keyframes {
                 durationMillis = 800
                 14f at 90; -12f at 200; 8f at 320; -5f at 440; 2f at 560
@@ -130,8 +132,13 @@ fun BellButton(pending: Int, onClick: () -> Unit) {
                 pop.snapTo(0.3f)
                 pop.animateTo(1f, spring(dampingRatio = 0.5f, stiffness = Spring.StiffnessMedium))
             }
-            val pulse = rememberInfiniteTransition(label = "badge")
-            val ring by pulse.animateFloat(0f, 1f, infiniteRepeatable(tween(1800), RepeatMode.Restart), label = "ring")
+            // Halo : trois fois, puis il s'arrête (pas d'animation sans fin)
+            val ringAnim = remember { Animatable(1f) }
+            LaunchedEffect(pending) {
+                if (still) return@LaunchedEffect
+                repeat(3) { ringAnim.snapTo(0f); ringAnim.animateTo(1f, tween(1800)) }
+            }
+            val ring = ringAnim.value
             Box(
                 Modifier.align(Alignment.TopEnd).offset(x = (-3).dp, y = 3.dp).size(18.dp),
                 contentAlignment = Alignment.Center,
@@ -321,7 +328,9 @@ private fun InfoRow(note: DayNote, onClick: () -> Unit) {
 @Composable
 fun PandaHead(modifier: Modifier = Modifier, float: Boolean = true) {
     val blink = remember { Animatable(0f) }
+    val still = reduceMotion()
     LaunchedEffect(Unit) {
+        if (still) return@LaunchedEffect
         while (true) {
             delay(2600L + (0..2200).random())
             blink.snapTo(1f); delay(130); blink.snapTo(0f)
@@ -335,7 +344,7 @@ fun PandaHead(modifier: Modifier = Modifier, float: Boolean = true) {
         painterResource(if (blink.value > 0.5f) R.drawable.panda_head_blink else R.drawable.panda_head),
         contentDescription = null,
         modifier = modifier.graphicsLayer {
-            if (float) {
+            if (float && !still) {
                 translationY = y * 2.5f * density
                 rotationZ = tilt
             }
