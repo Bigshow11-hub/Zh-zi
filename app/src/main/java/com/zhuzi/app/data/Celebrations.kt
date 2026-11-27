@@ -11,7 +11,7 @@ data class Milestone(val key: String, val badge: String, val title: T3, val body
  */
 object Celebrations {
     private val streaks = listOf(3, 7, 14, 30, 50, 100, 200, 365)
-    private val masteredSteps = listOf(1, 3, 5, 11, 21, 31)
+    private val masteredSteps = listOf(1, 3, 5, 11, 21, 31, 41)
 
     private fun prefs(context: Context) = context.getSharedPreferences("celebrations", Context.MODE_PRIVATE)
 

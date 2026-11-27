@@ -204,7 +204,7 @@ val hsk2Lessons = listOf(
 )
 
 /** Toutes les leçons, HSK 1, 2 puis 3. */
-val allLessons: List<Lesson> by lazy { hsk1Lessons + hsk2Lessons + hsk3Lessons }
+val allLessons: List<Lesson> by lazy { hsk1Lessons + hsk2Lessons + hsk3Lessons + hsk3bLessons }
 
 /** Les accroches des leçons du HSK 2. */
 val hsk2Intros: Map<Int, T3> = mapOf(

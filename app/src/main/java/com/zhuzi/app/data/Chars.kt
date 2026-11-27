@@ -19,10 +19,10 @@ data class CharInfo(
     val radicalMeaning: T3,
 )
 
-/** Les 510 caractères de l'appli, dans l'ordre où ils apparaissent dans les leçons. */
+/** Les 621 caractères de l'appli, dans l'ordre où ils apparaissent dans les leçons. */
 val charInfos: Map<Char, CharInfo> by lazy {
     val m = LinkedHashMap<Char, CharInfo>()
-    part0(m); part1(m); part2(m); part3(m); part4(m); part5(m); part6(m);
+    part0(m); part1(m); part2(m); part3(m); part4(m); part5(m); part6(m); part7(m);
     m
 }
 
@@ -1200,7 +1200,7 @@ private fun part3(m: MutableMap<Char, CharInfo>) {
         T3("couleur", "colour", "цвет"),
         T3("Une personne penchée sur une autre : l'émotion qui colore.", "One person over another: the feeling that colours.", "Человек над другим: чувство, которое окрашивает."),
         T3("couleur", "colour", "цвет"))
-    m['新'] = CharInfo('新', "xīn", 13, 2, "斤", "斤",
+    m['新'] = CharInfo('新', "xīn", 13, 2, "斤", "亲斤",
         T3("nouveau", "new", "новый"),
         T3("Un arbre fraîchement coupé à la hache 斤.", "A tree freshly cut with an axe 斤.", "Дерево, только что срубленное топором 斤."),
         T3("hache", "axe", "топор"))
@@ -1220,7 +1220,7 @@ private fun part3(m: MutableMap<Char, CharInfo>) {
         T3("occupé", "busy", "занятой"),
         T3("Un cœur 忄 qui se perd 亡 dans le travail.", "A heart 忄 lost 亡 in work.", "Сердце 忄, потерявшееся 亡 в работе."),
         T3("cœur", "heart", "сердце"))
-    m['真'] = CharInfo('真', "zhēn", 10, 2, "目", "几",
+    m['真'] = CharInfo('真', "zhēn", 10, 2, "目", "直几",
         T3("vrai", "true, real", "настоящий"),
         T3("Un regard 目 bien droit : ce qui est vrai.", "A straight gaze 目: what is true.", "Прямой взгляд 目: правда."),
         T3("œil", "eye", "глаз"))
@@ -1264,7 +1264,7 @@ private fun part3(m: MutableMap<Char, CharInfo>) {
         T3("chercher", "to look for", "искать"),
         T3("Une main 扌 armée d'une lance 戈 part chercher.", "A hand 扌 with a spear 戈 goes searching.", "Рука 扌 с копьём 戈 идёт искать."),
         T3("main", "hand", "рука"))
-    m['等'] = CharInfo('等', "děng", 12, 2, "竹", "竹",
+    m['等'] = CharInfo('等', "děng", 12, 2, "竹", "竹寺",
         T3("attendre ; rang", "to wait; rank", "ждать; ранг"),
         T3("Des lattes de bambou 竹 rangées : attendre son tour.", "Bamboo slips 竹 in rows: waiting your turn.", "Бамбуковые планки 竹 рядами: ждать очереди."),
         T3("bambou", "bamboo", "бамбук"))
@@ -1319,7 +1319,7 @@ private fun part3(m: MutableMap<Char, CharInfo>) {
 }
 
 private fun part4(m: MutableMap<Char, CharInfo>) {
-    m['希'] = CharInfo('希', "xī", 7, 0, "巾", "",
+    m['希'] = CharInfo('希', "xī", 7, 0, "巾", "乂",
         T3("espérer ; rare", "to hope; rare", "надеяться; редкий"),
         T3("Un tissu 巾 brodé, rare et désiré.", "An embroidered cloth 巾, rare and longed for.", "Вышитая ткань 巾, редкая и желанная."),
         T3("tissu", "cloth", "ткань"))
@@ -1850,7 +1850,7 @@ private fun part5(m: MutableMap<Char, CharInfo>) {
         T3("racler ; souffler", "to scrape; to blow", "скоблить; дуть"),
         T3("Le couteau 刂 qui racle ; 舌 donne le son.", "The knife 刂 scraping; 舌 gives the sound.", "Нож 刂 скоблит; 舌 даёт звук."),
         T3("couteau", "knife", "нож"))
-    m['风'] = CharInfo('风', "fēng", 4, 0, "风", "几",
+    m['风'] = CharInfo('风', "fēng", 4, 0, "风", "几乂",
         T3("vent", "wind", "ветер"),
         T3("Une voile 几 qui gonfle.", "A sail 几 billowing.", "Парус 几 надувается."),
         T3("vent", "wind", "ветер"))
@@ -1938,7 +1938,7 @@ private fun part5(m: MutableMap<Char, CharInfo>) {
         T3("passer ; calendrier", "to go through; calendar", "проходить; календарь"),
         T3("La force 力 du temps sous un abri 厂.", "The force 力 of time under a shelter 厂.", "Сила 力 времени под навесом 厂."),
         T3("abri, falaise", "shelter, cliff", "навес, утёс"))
-    m['史'] = CharInfo('史', "shǐ", 5, 2, "口", "口",
+    m['史'] = CharInfo('史', "shǐ", 5, 2, "口", "口乂",
         T3("histoire", "history", "история"),
         T3("Une main qui tient le pinceau du chroniqueur.", "A hand holding the chronicler's brush.", "Рука с кистью летописца."),
         T3("bouche", "mouth", "рот"))
@@ -1981,7 +1981,7 @@ private fun part6(m: MutableMap<Char, CharInfo>) {
         T3("entendre, nouvelle", "to hear, news", "слышать, новость"),
         T3("Une oreille 耳 à la porte 门.", "An ear 耳 at the door 门.", "Ухо 耳 у двери 门."),
         T3("porte", "door", "дверь"))
-    m['网'] = CharInfo('网', "wǎng", 6, 1, "网", "冂",
+    m['网'] = CharInfo('网', "wǎng", 6, 1, "网", "冂乂乂",
         T3("filet, réseau", "net, network", "сеть"),
         T3("Un filet de pêche.", "A fishing net.", "Рыболовная сеть."),
         T3("filet", "net", "сеть"))
@@ -2084,5 +2084,452 @@ private fun part6(m: MutableMap<Char, CharInfo>) {
     m['惯'] = CharInfo('惯', "guàn", 11, 3, "忄", "忄贯",
         T3("habitude", "habit", "привычка"),
         T3("Le cœur 忄 enfilé 贯 dans la routine.", "The heart 忄 threaded 贯 into routine.", "Сердце 忄, нанизанное 贯 на рутину."),
+        T3("cœur", "heart", "сердце"))
+    m['办'] = CharInfo('办', "bàn", 4, 3, "力", "力八",
+        T3("faire, gérer", "to do, handle", "делать, вести дела"),
+        T3("La force 力 mise au travail.", "Strength 力 put to work.", "Сила 力, вложенная в работу."),
+        T3("force", "strength", "сила"))
+    m['议'] = CharInfo('议', "yì", 5, 3, "讠", "讠义",
+        T3("discuter", "to discuss", "обсуждать"),
+        T3("La parole 讠 ; 义 donne le son.", "Speech 讠; 义 gives the sound.", "Речь 讠; 义 даёт звук."),
+        T3("parole", "speech", "речь"))
+    m['解'] = CharInfo('解', "jiě", 13, 2, "角", "角刀牛",
+        T3("défaire, comprendre", "to untie, understand", "развязывать, понимать"),
+        T3("Un couteau 刀 qui détache la corne 角 du bœuf 牛.", "A knife 刀 removing the horn 角 from an ox 牛.", "Нож 刀 отделяет рог 角 быка 牛."),
+        T3("corne", "horn", "рог"))
+    m['法'] = CharInfo('法', "fǎ", 8, 2, "氵", "氵去",
+        T3("loi, méthode", "law, method", "закон, способ"),
+        T3("Le cours 去 que suit l'eau 氵.", "The course 去 water 氵 follows.", "Путь 去, по которому течёт вода 氵."),
+        T3("eau", "water", "вода"))
+    m['需'] = CharInfo('需', "xū", 14, 2, "雨", "雨而",
+        T3("avoir besoin", "to need", "нуждаться"),
+        T3("La pluie 雨 dont les cultures ont besoin.", "The rain 雨 crops need.", "Дождь 雨, нужный посевам."),
+        T3("pluie", "rain", "дождь"))
+    m['求'] = CharInfo('求', "qiú", 7, 0, "氺", "一氺",
+        T3("demander, chercher", "to seek, request", "просить, искать"),
+        T3("Une fourrure qu'on demande pour l'hiver.", "A fur coat asked for in winter.", "Шуба, которую просят на зиму."),
+        T3("eau", "water", "вода"))
+    m['重'] = CharInfo('重', "zhòng", 9, 2, "里", "千里",
+        T3("lourd, important", "heavy, important", "тяжёлый, важный"),
+        T3("Un fardeau porté sur mille 千 li 里.", "A load carried a thousand 千 li 里.", "Груз, несённый тысячу 千 ли 里."),
+        T3("village", "village", "деревня"))
+    m['主'] = CharInfo('主', "zhǔ", 5, 1, "丶", "丶王",
+        T3("maître, principal", "master, main", "хозяин, главный"),
+        T3("Une lampe 王 et sa flamme 丶 : ce qui éclaire tout.", "A lamp 王 and its flame 丶: what lights everything.", "Лампа 王 и её пламя 丶: то, что освещает всё."),
+        T3("point", "dot", "точка"))
+    m['选'] = CharInfo('选', "xuǎn", 9, 3, "辶", "辶先",
+        T3("choisir", "to choose", "выбирать"),
+        T3("Marcher 辶 en tête 先 : le choisi.", "Walking 辶 in front 先: the chosen one.", "Идти 辶 первым 先: избранный."),
+        T3("marcher", "walk", "идти"))
+    m['择'] = CharInfo('择', "zé", 8, 0, "扌", "扌",
+        T3("choisir", "to select", "отбирать"),
+        T3("La main 扌 qui trie.", "The hand 扌 that sorts.", "Рука 扌 отбирает."),
+        T3("main", "hand", "рука"))
+    m['响'] = CharInfo('响', "xiǎng", 9, 3, "口", "口向",
+        T3("résonner", "to sound", "звучать"),
+        T3("La bouche 口 ; 向 donne le son.", "The mouth 口; 向 gives the sound.", "Рот 口; 向 даёт звук."),
+        T3("bouche", "mouth", "рот"))
+    m['根'] = CharInfo('根', "gēn", 10, 3, "木", "木艮",
+        T3("racine", "root", "корень"),
+        T3("L'arbre 木 ; 艮 donne le son.", "The tree 木; 艮 gives the sound.", "Дерево 木; 艮 даёт звук."),
+        T3("arbre, bois", "tree, wood", "дерево"))
+    m['据'] = CharInfo('据', "jù", 11, 3, "扌", "扌居",
+        T3("selon ; s'appuyer", "according to; rely on", "согласно; опираться"),
+        T3("La main 扌 qui s'appuie ; 居 donne le son.", "The hand 扌 leaning on; 居 gives the sound.", "Рука 扌 опирается; 居 даёт звук."),
+        T3("main", "hand", "рука"))
+    m['刚'] = CharInfo('刚', "gāng", 6, 3, "刂", "冈刂",
+        T3("à l'instant ; dur", "just now; hard", "только что; твёрдый"),
+        T3("Le couteau 刂 tranchant ; 冈 donne le son.", "The sharp knife 刂; 冈 gives the sound.", "Острый нож 刂; 冈 даёт звук."),
+        T3("couteau", "knife", "нож"))
+    m['才'] = CharInfo('才', "cái", 3, 2, "扌", "扌",
+        T3("talent ; seulement alors", "talent; only then", "талант; только тогда"),
+        T3("Une pousse qui perce à peine la terre.", "A sprout just breaking through the soil.", "Росток, едва пробившийся из земли."),
+        T3("main", "hand", "рука"))
+    m['终'] = CharInfo('终', "zhōng", 8, 3, "纟", "纟冬",
+        T3("fin", "end", "конец"),
+        T3("Le fil 纟 qui arrive à l'hiver 冬 : la fin.", "The thread 纟 reaching winter 冬: the end.", "Нить 纟 доходит до зимы 冬: конец."),
+        T3("soie, fil", "silk, thread", "шёлк, нить"))
+    m['于'] = CharInfo('于', "yú", 3, 0, "二", "二亅",
+        T3("à, dans", "at, in", "в, на"),
+        T3("Un souffle qui s'élève.", "A breath rising.", "Поднимающееся дыхание."),
+        T3("deux", "two", "два"))
+    m['突'] = CharInfo('突', "tū", 9, 2, "穴", "穴犬",
+        T3("soudain", "sudden", "внезапный"),
+        T3("Un chien 犬 qui jaillit de sa grotte 穴.", "A dog 犬 bursting out of its den 穴.", "Собака 犬 выскакивает из норы 穴."),
+        T3("trou, grotte", "hole, cave", "дыра, пещера"))
+    m['直'] = CharInfo('直', "zhí", 8, 2, "目", "十目一",
+        T3("droit", "straight", "прямой"),
+        T3("Un œil 目 qui regarde bien droit.", "An eye 目 looking straight ahead.", "Глаз 目 смотрит прямо."),
+        T3("œil", "eye", "глаз"))
+    m['总'] = CharInfo('总', "zǒng", 9, 2, "心", "丷口心",
+        T3("toujours ; total", "always; total", "всегда; общий"),
+        T3("Plusieurs bouches 口 d'un même cœur 心.", "Many mouths 口 of one heart 心.", "Много ртов 口 с одним сердцем 心."),
+        T3("cœur", "heart", "сердце"))
+    m['周'] = CharInfo('周', "zhōu", 8, 2, "口", "冂土口",
+        T3("semaine ; tour", "week; circuit", "неделя; круг"),
+        T3("Une enceinte 冂 autour d'un champ et d'un puits.", "A wall 冂 around a field and a well.", "Ограда 冂 вокруг поля и колодца."),
+        T3("bouche", "mouth", "рот"))
+    m['末'] = CharInfo('末', "mò", 5, 2, "木", "木一",
+        T3("fin, bout", "end, tip", "конец, верхушка"),
+        T3("Le haut 一 d'un arbre 木 : le bout.", "The top 一 of a tree 木: the tip.", "Верх 一 дерева 木: конец."),
+        T3("arbre, bois", "tree, wood", "дерево"))
+    m['久'] = CharInfo('久', "jiǔ", 3, 0, "丿", "勹",
+        T3("longtemps", "long time", "долго"),
+        T3("Quelqu'un retenu par derrière : ça dure.", "Someone held back from behind: it lasts.", "Человека держат сзади: это надолго."),
+        T3("trait tombant", "falling stroke", "откидная черта"))
+    m['刻'] = CharInfo('刻', "kè", 8, 3, "刂", "亥刂",
+        T3("graver ; quart d'heure", "to carve; quarter", "вырезать; четверть часа"),
+        T3("Le couteau 刂 qui grave ; 亥 donne le son.", "The knife 刂 carving; 亥 gives the sound.", "Нож 刂 вырезает; 亥 даёт звук."),
+        T3("couteau", "knife", "нож"))
+    m['半'] = CharInfo('半', "bàn", 5, 2, "十", "丷牛",
+        T3("moitié", "half", "половина"),
+        T3("Un bœuf 牛 coupé en deux 丷.", "An ox 牛 split in two 丷.", "Бык 牛, разделённый надвое 丷."),
+        T3("dix", "ten", "десять"))
+    m['斤'] = CharInfo('斤', "jīn", 4, 0, "斤", "厂下",
+        T3("livre (500 g) ; hache", "catty (500 g); axe", "цзинь (500 г); топор"),
+        T3("Une hache pour peser et couper.", "An axe used to weigh and cut.", "Топор, чтобы рубить и взвешивать."),
+        T3("hache", "axe", "топор"))
+    m['元'] = CharInfo('元', "yuán", 4, 1, "儿", "二儿",
+        T3("yuan ; premier", "yuan; first", "юань; первый"),
+        T3("Une personne 儿 avec une grosse tête 二 : le premier.", "A person 儿 with a big head 二: the first.", "Человек 儿 с большой головой 二: первый."),
+        T3("jambes, enfant", "legs, child", "ноги, ребёнок"))
+    m['万'] = CharInfo('万', "wàn", 3, 0, "一", "一",
+        T3("dix mille", "ten thousand", "десять тысяч"),
+        T3("Un scorpion autrefois : il en grouille des milliers.", "Once a scorpion: they swarm by thousands.", "Когда-то скорпион: их тысячи."),
+        T3("un", "one", "один"))
+    m['角'] = CharInfo('角', "jiǎo", 7, 1, "角", "用",
+        T3("corne ; angle", "horn; corner", "рог; угол"),
+        T3("Une corne d'animal.", "An animal's horn.", "Рог животного."),
+        T3("corne", "horn", "рог"))
+    m['段'] = CharInfo('段', "duàn", 9, 2, "殳", "殳",
+        T3("section", "section", "отрезок"),
+        T3("Une main 殳 qui taille la pierre en morceaux.", "A hand 殳 cutting stone into pieces.", "Рука 殳 раскалывает камень на куски."),
+        T3("arme, frapper", "weapon, strike", "оружие, удар"))
+    m['张'] = CharInfo('张', "zhāng", 7, 3, "弓", "弓长",
+        T3("tendre ; (objets plats)", "to stretch; (flat things)", "натягивать; (плоское)"),
+        T3("Tendre un arc 弓 ; 长 donne le son.", "Drawing a bow 弓; 长 gives the sound.", "Натянуть лук 弓; 长 даёт звук."),
+        T3("arc", "bow", "лук"))
+    m['位'] = CharInfo('位', "wèi", 7, 2, "亻", "亻立",
+        T3("place, siège", "place, seat", "место"),
+        T3("L'endroit où se tient 立 une personne 亻.", "The spot where a person 亻 stands 立.", "Место, где стоит 立 человек 亻."),
+        T3("personne", "person", "человек"))
+    m['种'] = CharInfo('种', "zhǒng", 9, 3, "禾", "禾中",
+        T3("espèce ; semer", "kind; to plant", "вид; сеять"),
+        T3("La céréale 禾 ; 中 donne le son.", "Grain 禾; 中 gives the sound.", "Злак 禾; 中 даёт звук."),
+        T3("céréale", "grain", "злак"))
+    m['差'] = CharInfo('差', "chà", 9, 2, "工", "羊工",
+        T3("écart ; mauvais", "difference; poor", "разница; плохой"),
+        T3("Le travail 工 d'un mouton 羊 : pas fameux.", "Work 工 done by a sheep 羊: not great.", "Работа 工 барана 羊: так себе."),
+        T3("travail", "work", "работа"))
+    m['更'] = CharInfo('更', "gèng", 7, 0, "曰", "一曰乂",
+        T3("encore plus ; changer", "even more; to change", "ещё; менять"),
+        T3("Dire 曰 en frappant 乂 : changer l'heure du guet.", "Speaking 曰 while striking 乂: changing the watch.", "Говорить 曰 с ударом 乂: смена стражи."),
+        T3("dire", "say", "говорить"))
+    m['极'] = CharInfo('极', "jí", 7, 3, "木", "木及",
+        T3("extrême", "extreme", "крайний"),
+        T3("Le faîte de la maison en bois 木 ; 及 donne le son.", "The ridgepole of a wooden 木 house; 及 gives the sound.", "Конёк деревянного 木 дома; 及 даёт звук."),
+        T3("arbre, bois", "tree, wood", "дерево"))
+    m['结'] = CharInfo('结', "jié", 9, 3, "纟", "纟吉",
+        T3("nouer", "to tie", "завязывать"),
+        T3("Un fil 纟 noué ; 吉 donne le son (et la chance).", "A knotted thread 纟; 吉 gives the sound (and luck).", "Завязанная нить 纟; 吉 даёт звук (и удачу)."),
+        T3("soie, fil", "silk, thread", "шёлк, нить"))
+    m['婚'] = CharInfo('婚', "hūn", 11, 3, "女", "女昏",
+        T3("mariage", "marriage", "брак"),
+        T3("Une femme 女 ; 昏 (le crépuscule) : on se mariait le soir.", "A woman 女; 昏 (dusk): weddings were held at dusk.", "Женщина 女; 昏 (сумерки): свадьбы играли вечером."),
+        T3("femme", "woman", "женщина"))
+    m['礼'] = CharInfo('礼', "lǐ", 5, 3, "礻", "礻乚",
+        T3("politesse, cadeau", "courtesy, gift", "вежливость, подарок"),
+        T3("L'autel 礻 : le respect qu'on rend.", "The altar 礻: the respect you pay.", "Алтарь 礻: уважение, которое выказывают."),
+        T3("autel, esprit", "altar, spirit", "алтарь, дух"))
+    m['祝'] = CharInfo('祝', "zhù", 9, 2, "礻", "礻兄",
+        T3("souhaiter", "to wish", "желать"),
+        T3("Une personne 兄 qui prie devant l'autel 礻.", "A person 兄 praying at the altar 礻.", "Человек 兄 молится у алтаря 礻."),
+        T3("autel, esprit", "altar, spirit", "алтарь, дух"))
+    m['参'] = CharInfo('参', "cān", 8, 3, "厶", "厶大彡",
+        T3("participer", "to take part", "участвовать"),
+        T3("Plusieurs têtes qui se joignent ; 彡 complète.", "Several heads joining in; 彡 completes it.", "Несколько голов присоединяются; 彡 дополняет."),
+        T3("privé", "private", "частный"))
+    m['加'] = CharInfo('加', "jiā", 5, 2, "力", "力口",
+        T3("ajouter", "to add", "добавлять"),
+        T3("La force 力 de la bouche 口 : ajouter sa voix.", "The strength 力 of the mouth 口: adding your voice.", "Сила 力 рта 口: добавить свой голос."),
+        T3("force", "strength", "сила"))
+    m['举'] = CharInfo('举', "jǔ", 9, 3, "丶", "兴扌",
+        T3("lever", "to raise", "поднимать"),
+        T3("Des mains 扌 qui soulèvent ensemble.", "Hands 扌 lifting together.", "Руки 扌 поднимают вместе."),
+        T3("point", "dot", "точка"))
+    m['束'] = CharInfo('束', "shù", 7, 2, "木", "木口",
+        T3("lier ; fin", "to bind; end", "связывать; конец"),
+        T3("Du bois 木 attaché d'une corde 口.", "Wood 木 tied with rope 口.", "Дерево 木, связанное верёвкой 口."),
+        T3("arbre, bois", "tree, wood", "дерево"))
+    m['赛'] = CharInfo('赛', "sài", 14, 3, "贝", "宀贝",
+        T3("compétition", "contest", "состязание"),
+        T3("Sous un toit 宀, on se dispute l'argent 贝.", "Under a roof 宀, people compete for money 贝.", "Под крышей 宀 соревнуются за деньги 贝."),
+        T3("coquillage, argent", "shell, money", "раковина, деньги"))
+    m['顾'] = CharInfo('顾', "gù", 10, 3, "页", "页",
+        T3("veiller sur", "to look after", "присматривать"),
+        T3("La tête 页 qui se retourne pour veiller.", "The head 页 turning to watch over.", "Голова 页 оборачивается присмотреть."),
+        T3("tête, page", "head, page", "голова, страница"))
+    m['帮'] = CharInfo('帮', "bāng", 9, 2, "巾", "邦巾",
+        T3("aider", "to help", "помогать"),
+        T3("Le drapeau 巾 d'un pays 邦 : on se serre les coudes.", "A nation's 邦 flag 巾: pulling together.", "Флаг 巾 страны 邦: держаться вместе."),
+        T3("tissu", "cloth", "ткань"))
+    m['借'] = CharInfo('借', "jiè", 10, 3, "亻", "亻昔",
+        T3("emprunter, prêter", "to borrow, lend", "одалживать"),
+        T3("Une personne 亻 ; 昔 donne le son.", "A person 亻; 昔 gives the sound.", "Человек 亻; 昔 даёт звук."),
+        T3("personne", "person", "человек"))
+    m['讲'] = CharInfo('讲', "jiǎng", 6, 3, "讠", "讠井",
+        T3("parler, expliquer", "to speak, explain", "говорить, объяснять"),
+        T3("La parole 讠 ; 井 donne le son.", "Speech 讠; 井 gives the sound.", "Речь 讠; 井 даёт звук."),
+        T3("parole", "speech", "речь"))
+    m['世'] = CharInfo('世', "shì", 5, 1, "一", "",
+        T3("génération, monde", "generation, world", "поколение, мир"),
+        T3("Trois feuilles sur une branche : les générations.", "Three leaves on a branch: generations.", "Три листа на ветке: поколения."),
+        T3("un", "one", "один"))
+}
+
+private fun part7(m: MutableMap<Char, CharInfo>) {
+    m['界'] = CharInfo('界', "jiè", 9, 3, "田", "田介",
+        T3("frontière", "boundary", "граница"),
+        T3("Des champs 田 séparés 介 par des limites.", "Fields 田 divided 介 by boundaries.", "Поля 田, разделённые 介 межами."),
+        T3("champ", "field", "поле"))
+    m['文'] = CharInfo('文', "wén", 4, 1, "文", "亠乂",
+        T3("écriture, culture", "writing, culture", "письменность, культура"),
+        T3("Une poitrine tatouée : les premiers signes.", "A tattooed chest: the first signs.", "Татуированная грудь: первые знаки."),
+        T3("écriture", "writing", "письмо"))
+    m['化'] = CharInfo('化', "huà", 4, 0, "匕", "亻匕",
+        T3("transformer", "to change", "превращать"),
+        T3("Une personne 亻 qui se retourne 匕 : le changement.", "A person 亻 turning over 匕: change.", "Человек 亻 переворачивается 匕: перемена."),
+        T3("cuillère", "spoon", "ложка"))
+    m['黄'] = CharInfo('黄', "huáng", 11, 1, "黄", "由八",
+        T3("jaune", "yellow", "жёлтый"),
+        T3("Un pendentif de jade jaune.", "A yellow jade pendant.", "Подвеска из жёлтого нефрита."),
+        T3("jaune", "yellow", "жёлтый"))
+    m['河'] = CharInfo('河', "hé", 8, 3, "氵", "氵可",
+        T3("rivière", "river", "река"),
+        T3("L'eau 氵 ; 可 donne le son.", "Water 氵; 可 gives the sound.", "Вода 氵; 可 даёт звук."),
+        T3("eau", "water", "вода"))
+    m['南'] = CharInfo('南', "nán", 9, 1, "十", "十冂丷干",
+        T3("sud", "south", "юг"),
+        T3("Une cloche de musique, suspendue côté sud.", "A musical bell, hung on the south side.", "Музыкальный колокол с южной стороны."),
+        T3("dix", "ten", "десять"))
+    m['站'] = CharInfo('站', "zhàn", 10, 3, "立", "立占",
+        T3("se tenir ; station", "to stand; station", "стоять; станция"),
+        T3("Se tenir debout 立 ; 占 donne le son.", "Standing 立; 占 gives the sound.", "Стоять 立; 占 даёт звук."),
+        T3("se tenir debout", "stand", "стоять"))
+    m['鲜'] = CharInfo('鲜', "xiān", 14, 3, "鱼", "鱼羊",
+        T3("frais", "fresh", "свежий"),
+        T3("Le poisson 鱼 et le mouton 羊 : ce qu'il y a de plus frais.", "Fish 鱼 and mutton 羊: the freshest fare.", "Рыба 鱼 и баранина 羊: самое свежее."),
+        T3("poisson", "fish", "рыба"))
+    m['普'] = CharInfo('普', "pǔ", 12, 2, "日", "並日",
+        T3("universel", "universal", "всеобщий"),
+        T3("Tout le monde 並 sous le même soleil 日.", "Everyone 並 under the same sun 日.", "Все 並 под одним солнцем 日."),
+        T3("soleil, jour", "sun, day", "солнце, день"))
+    m['通'] = CharInfo('通', "tōng", 10, 3, "辶", "辶甬",
+        T3("traverser, passer", "to go through", "проходить насквозь"),
+        T3("Marcher 辶 tout du long ; 甬 donne le son.", "Walking 辶 all the way; 甬 gives the sound.", "Идти 辶 насквозь; 甬 даёт звук."),
+        T3("marcher", "walk", "идти"))
+    m['熊'] = CharInfo('熊', "xióng", 14, 2, "灬", "能灬",
+        T3("ours", "bear", "медведь"),
+        T3("Un ours 能 et ses empreintes 灬.", "A bear 能 and its paw prints 灬.", "Медведь 能 и его следы 灬."),
+        T3("feu", "fire", "огонь"))
+    m['刷'] = CharInfo('刷', "shuā", 8, 2, "刂", "尸巾刂",
+        T3("brosser", "to brush", "чистить щёткой"),
+        T3("Un tissu 巾 qu'on frotte ; 刂 donne le son.", "A cloth 巾 rubbed; 刂 gives the sound.", "Ткань 巾 трут; 刂 даёт звук."),
+        T3("couteau", "knife", "нож"))
+    m['牙'] = CharInfo('牙', "yá", 4, 0, "牙", "",
+        T3("dent", "tooth", "зуб"),
+        T3("Une dent de côté.", "A tooth seen from the side.", "Зуб сбоку."),
+        T3("dent", "tooth", "зуб"))
+    m['拿'] = CharInfo('拿', "ná", 10, 3, "手", "合手",
+        T3("prendre", "to take", "брать"),
+        T3("La main 手 qui se referme 合.", "The hand 手 closing 合.", "Рука 手 сжимается 合."),
+        T3("main", "hand", "рука"))
+    m['忘'] = CharInfo('忘', "wàng", 7, 3, "心", "亡心",
+        T3("oublier", "to forget", "забывать"),
+        T3("Le cœur 心 qui perd 亡 un souvenir.", "The heart 心 losing 亡 a memory.", "Сердце 心 теряет 亡 воспоминание."),
+        T3("cœur", "heart", "сердце"))
+    m['注'] = CharInfo('注', "zhù", 8, 3, "氵", "氵主",
+        T3("verser ; noter", "to pour; to note", "лить; отмечать"),
+        T3("L'eau 氵 qu'on verse ; 主 donne le son.", "Water 氵 being poured; 主 gives the sound.", "Льющаяся вода 氵; 主 даёт звук."),
+        T3("eau", "water", "вода"))
+    m['假'] = CharInfo('假', "jiǎ", 11, 2, "亻", "亻叚",
+        T3("faux ; congé", "false; holiday", "ложный; отпуск"),
+        T3("Une personne 亻 qui emprunte 叚 un rôle.", "A person 亻 borrowing 叚 a role.", "Человек 亻, взявший 叚 чужую роль."),
+        T3("personne", "person", "человек"))
+    m['嘴'] = CharInfo('嘴', "zuǐ", 16, 3, "口", "口觜",
+        T3("bouche", "mouth", "рот"),
+        T3("La bouche 口 ; 觜 (le bec) donne le son.", "The mouth 口; 觜 (beak) gives the sound.", "Рот 口; 觜 (клюв) даёт звук."),
+        T3("bouche", "mouth", "рот"))
+    m['声'] = CharInfo('声', "shēng", 7, 2, "士", "士",
+        T3("son, voix", "sound, voice", "звук, голос"),
+        T3("Une pierre musicale qui résonne.", "A ringing musical stone.", "Звучащий музыкальный камень."),
+        T3("lettré", "scholar", "учёный муж"))
+    m['算'] = CharInfo('算', "suàn", 14, 2, "竹", "竹",
+        T3("calculer", "to calculate", "считать"),
+        T3("Un boulier en bambou 竹.", "A bamboo 竹 abacus.", "Бамбуковые 竹 счёты."),
+        T3("bambou", "bamboo", "бамбук"))
+    m['应'] = CharInfo('应', "yīng", 7, 0, "广", "广一",
+        T3("devoir ; répondre", "should; respond", "следует; отвечать"),
+        T3("Sous un abri 广, on répond à l'appel.", "Under a shelter 广, answering the call.", "Под навесом 广 отвечают на зов."),
+        T3("abri", "shelter", "навес"))
+    m['该'] = CharInfo('该', "gāi", 8, 3, "讠", "讠亥",
+        T3("devoir", "should", "следует"),
+        T3("La parole 讠 ; 亥 donne le son.", "Speech 讠; 亥 gives the sound.", "Речь 讠; 亥 даёт звук."),
+        T3("parole", "speech", "речь"))
+    m['必'] = CharInfo('必', "bì", 5, 0, "心", "心丿",
+        T3("absolument", "must", "обязательно"),
+        T3("Un cœur 心 traversé d'un trait : c'est obligé.", "A heart 心 crossed by a stroke: it's a must.", "Сердце 心, пересечённое чертой: обязательно."),
+        T3("cœur", "heart", "сердце"))
+    m['须'] = CharInfo('须', "xū", 9, 2, "彡", "彡页",
+        T3("devoir ; barbe", "must; beard", "должен; борода"),
+        T3("Des poils 彡 sur le visage 页.", "Hair 彡 on the face 页.", "Волосы 彡 на лице 页."),
+        T3("poils, rayons", "hair, rays", "волосы, лучи"))
+    m['敢'] = CharInfo('敢', "gǎn", 11, 2, "攵", "耳攵",
+        T3("oser", "to dare", "сметь"),
+        T3("Une main 攵 armée qui attaque une bête.", "An armed hand 攵 attacking a beast.", "Вооружённая рука 攵 нападает на зверя."),
+        T3("frapper, agir", "strike, act", "удар, действие"))
+    m['清'] = CharInfo('清', "qīng", 11, 3, "氵", "氵青",
+        T3("clair, pur", "clear, pure", "чистый, ясный"),
+        T3("L'eau 氵 limpide ; 青 donne le son.", "Clear water 氵; 青 gives the sound.", "Прозрачная вода 氵; 青 даёт звук."),
+        T3("eau", "water", "вода"))
+    m['楚'] = CharInfo('楚', "chǔ", 13, 0, "木", "林疋",
+        T3("net, clair", "clear", "ясный"),
+        T3("Des arbres 林 bien distincts ; 疋 complète.", "Distinct trees 林; 疋 completes it.", "Отчётливые деревья 林; 疋 дополняет."),
+        T3("arbre, bois", "tree, wood", "дерево"))
+    m['其'] = CharInfo('其', "qí", 8, 0, "八", "甘一八",
+        T3("son, ce", "its, that", "его, тот"),
+        T3("Un panier à vanner : « celui-là ».", "A winnowing basket: “that one”.", "Веялка: «тот самый»."),
+        T3("huit, partager", "eight, divide", "восемь, делить"))
+    m['实'] = CharInfo('实', "shí", 8, 0, "宀", "宀头",
+        T3("réel", "real", "настоящий"),
+        T3("Sous un toit 宀, ce qui est vraiment là 头.", "Under a roof 宀, what is really there 头.", "Под крышей 宀 то, что есть на самом деле 头."),
+        T3("toit", "roof", "крыша"))
+    m['当'] = CharInfo('当', "dāng", 6, 0, "小", "小彐",
+        T3("servir de ; devoir", "to serve as", "служить, быть"),
+        T3("Un petit 小 balai 彐 : ce qui convient.", "A small 小 broom 彐: what fits.", "Маленькая 小 метла 彐: что подходит."),
+        T3("petit", "small", "маленький"))
+    m['简'] = CharInfo('简', "jiǎn", 13, 3, "竹", "竹间",
+        T3("simple", "simple", "простой"),
+        T3("Des lattes de bambou 竹 : les premiers livres, tout simples.", "Bamboo slips 竹: the first, simple books.", "Бамбуковые планки 竹: первые простые книги."),
+        T3("bambou", "bamboo", "бамбук"))
+    m['容'] = CharInfo('容', "róng", 10, 3, "宀", "宀谷",
+        T3("contenir ; visage", "to contain; face", "вмещать; облик"),
+        T3("Une maison 宀 qui accueille une vallée 谷.", "A house 宀 holding a valley 谷.", "Дом 宀, вмещающий долину 谷."),
+        T3("toit", "roof", "крыша"))
+    m['易'] = CharInfo('易', "yì", 8, 0, "日", "日勿",
+        T3("facile ; changer", "easy; to change", "лёгкий; менять"),
+        T3("Un lézard qui change de couleur au soleil 日.", "A lizard changing colour in the sun 日.", "Ящерица меняет цвет на солнце 日."),
+        T3("soleil, jour", "sun, day", "солнце, день"))
+    m['般'] = CharInfo('般', "bān", 10, 2, "舟", "舟殳",
+        T3("sorte, comme", "kind, like", "вид, как"),
+        T3("Un outil 殳 qui range les objets sur un plateau 舟.", "A tool 殳 sorting items on a tray 舟.", "Орудие 殳 раскладывает вещи на подносе 舟."),
+        T3("barque", "boat", "лодка"))
+    m['特'] = CharInfo('特', "tè", 10, 3, "牛", "牛寺",
+        T3("spécial", "special", "особый"),
+        T3("Un bœuf 牛 hors du commun ; 寺 donne le son.", "An extraordinary ox 牛; 寺 gives the sound.", "Необыкновенный бык 牛; 寺 даёт звук."),
+        T3("bœuf", "ox", "бык"))
+    m['较'] = CharInfo('较', "jiào", 10, 3, "车", "车交",
+        T3("comparer", "to compare", "сравнивать"),
+        T3("Comparer des charrettes 车 ; 交 donne le son.", "Comparing carts 车; 交 gives the sound.", "Сравнивать повозки 车; 交 даёт звук."),
+        T3("véhicule", "vehicle", "повозка"))
+    m['被'] = CharInfo('被', "bèi", 10, 3, "衤", "衤皮",
+        T3("couverture ; (passif)", "quilt; (passive)", "одеяло; (пассив)"),
+        T3("Un tissu 衤 qui recouvre : on subit.", "A cloth 衤 covering you: undergoing.", "Ткань 衤 накрывает: подвергаться."),
+        T3("vêtement", "clothes", "одежда"))
+    m['把'] = CharInfo('把', "bǎ", 7, 3, "扌", "扌巴",
+        T3("tenir ; (objet)", "to hold; (object)", "держать; (объект)"),
+        T3("La main 扌 qui saisit ; 巴 donne le son.", "The hand 扌 gripping; 巴 gives the sound.", "Рука 扌 хватает; 巴 даёт звук."),
+        T3("main", "hand", "рука"))
+    m['跟'] = CharInfo('跟', "gēn", 13, 3, "足", "足艮",
+        T3("suivre ; avec", "to follow; with", "следовать; с"),
+        T3("Le pied 足 qui suit ; 艮 donne le son.", "The foot 足 following; 艮 gives the sound.", "Нога 足 следует; 艮 даёт звук."),
+        T3("pied", "foot", "нога"))
+    m['除'] = CharInfo('除', "chú", 9, 2, "阝", "阝余",
+        T3("enlever ; sauf", "to remove; except", "убирать; кроме"),
+        T3("Les déchets 余 qu'on sort de la ville 阝.", "Waste 余 taken out of the city 阝.", "Мусор 余, вынесенный из города 阝."),
+        T3("ville, colline", "town, hill", "город, холм"))
+    m['或'] = CharInfo('或', "huò", 8, 2, "戈", "戈口一",
+        T3("ou", "or", "или"),
+        T3("Défendre son territoire 口 à la lance 戈 : l'un ou l'autre.", "Defending your land 口 with a spear 戈: one or the other.", "Защищать землю 口 копьём 戈: то или другое."),
+        T3("hallebarde", "halberd", "алебарда"))
+    m['者'] = CharInfo('者', "zhě", 8, 0, "老", "老日",
+        T3("celui qui", "one who", "тот, кто"),
+        T3("Un vieil homme 老 qui parle 日 : « celui qui ».", "An old man 老 speaking 日: “the one who”.", "Старик 老 говорит 日: «тот, кто»."),
+        T3("vieux", "old", "старый"))
+    m['而'] = CharInfo('而', "ér", 6, 0, "而", "",
+        T3("et, mais", "and, but", "и, но"),
+        T3("Une barbe : ce qui relie le haut et le bas.", "A beard: what links top and bottom.", "Борода: то, что связывает верх и низ."),
+        T3("barbe", "beard", "борода"))
+    m['且'] = CharInfo('且', "qiě", 5, 1, "一", "月一",
+        T3("de plus", "moreover", "к тому же"),
+        T3("Un autel de pierre, posé l'un sur l'autre.", "A stone altar, stacked up.", "Каменный алтарь, сложенный ярусами."),
+        T3("un", "one", "один"))
+    m['只'] = CharInfo('只', "zhī", 5, 2, "口", "口八",
+        T3("seulement", "only", "только"),
+        T3("Quelques mots 八 qui sortent de la bouche 口.", "A few words 八 coming from the mouth 口.", "Немного слов 八 изо рта 口."),
+        T3("bouche", "mouth", "рот"))
+    m['如'] = CharInfo('如', "rú", 6, 2, "女", "女口",
+        T3("comme, si", "like, if", "как, если"),
+        T3("Une femme 女 qui suit les paroles 口.", "A woman 女 following the words 口.", "Женщина 女 следует словам 口."),
+        T3("femme", "woman", "женщина"))
+    m['坏'] = CharInfo('坏', "huài", 7, 3, "土", "土不",
+        T3("mauvais, cassé", "bad, broken", "плохой, сломанный"),
+        T3("La terre 土 qui ne 不 tient plus.", "Earth 土 that no longer 不 holds.", "Земля 土, которая больше не 不 держит."),
+        T3("terre", "earth", "земля"))
+    m['乎'] = CharInfo('乎', "hū", 5, 0, "丿", "丿丷",
+        T3("(particule)", "(particle)", "(частица)"),
+        T3("Un souffle qui monte en hésitant.", "A breath rising hesitantly.", "Нерешительно поднимающееся дыхание."),
+        T3("trait tombant", "falling stroke", "откидная черта"))
+    m['越'] = CharInfo('越', "yuè", 12, 3, "走", "走戉",
+        T3("dépasser ; plus", "to exceed; the more", "превосходить; чем"),
+        T3("Courir 走 au-delà ; 戉 donne le son.", "Running 走 beyond; 戉 gives the sound.", "Бежать 走 дальше; 戉 даёт звук."),
+        T3("marcher", "walk", "идти"))
+    m['又'] = CharInfo('又', "yòu", 2, 1, "又", "",
+        T3("de nouveau", "again", "снова"),
+        T3("Une main droite : on recommence.", "A right hand: doing it again.", "Правая рука: снова за дело."),
+        T3("main", "hand", "рука"))
+    m['变'] = CharInfo('变', "biàn", 8, 0, "又", "又",
+        T3("changer", "to change", "менять"),
+        T3("Une main 又 qui transforme les choses.", "A hand 又 transforming things.", "Рука 又 преображает вещи."),
+        T3("main", "hand", "рука"))
+    m['遇'] = CharInfo('遇', "yù", 12, 3, "辶", "辶禺",
+        T3("rencontrer", "to meet", "встречать"),
+        T3("Marcher 辶 et tomber sur quelqu'un ; 禺 donne le son.", "Walking 辶 and bumping into someone; 禺 gives the sound.", "Идти 辶 и встретить кого-то; 禺 даёт звук."),
+        T3("marcher", "walk", "идти"))
+    m['句'] = CharInfo('句', "jù", 5, 2, "口", "勹口",
+        T3("phrase", "sentence", "фраза"),
+        T3("Des paroles 口 bien enveloppées 勹.", "Words 口 neatly wrapped 勹.", "Слова 口, аккуратно обёрнутые 勹."),
+        T3("bouche", "mouth", "рот"))
+    m['啊'] = CharInfo('啊', "a", 10, 3, "口", "口阿",
+        T3("(exclamation)", "(exclamation)", "(восклицание)"),
+        T3("La bouche 口 ; 阿 donne le son : a !", "The mouth 口; 阿 gives the sound: ah!", "Рот 口; 阿 даёт звук: а!"),
+        T3("bouche", "mouth", "рот"))
+    m['口'] = CharInfo('口', "kǒu", 3, 1, "口", "冂一",
+        T3("bouche", "mouth", "рот"),
+        T3("Une bouche ouverte.", "An open mouth.", "Открытый рот."),
+        T3("bouche", "mouth", "рот"))
+    m['迟'] = CharInfo('迟', "chí", 7, 3, "辶", "辶尺",
+        T3("en retard", "late", "поздний"),
+        T3("Marcher 辶 à petits pas 尺.", "Walking 辶 in short steps 尺.", "Идти 辶 мелкими шажками 尺."),
+        T3("marcher", "walk", "идти"))
+    m['葡'] = CharInfo('葡', "pú", 12, 3, "艹", "艹匍",
+        T3("raisin (葡萄)", "grape (葡萄)", "виноград (葡萄)"),
+        T3("Une plante 艹 ; 匍 donne le son.", "A plant 艹; 匍 gives the sound.", "Растение 艹; 匍 даёт звук."),
+        T3("herbe, plante", "grass, plant", "трава, растение"))
+    m['萄'] = CharInfo('萄', "táo", 11, 3, "艹", "艹匋",
+        T3("raisin (葡萄)", "grape (葡萄)", "виноград (葡萄)"),
+        T3("Une plante 艹 ; 匋 donne le son.", "A plant 艹; 匋 gives the sound.", "Растение 艹; 匋 даёт звук."),
+        T3("herbe, plante", "grass, plant", "трава, растение"))
+    m['澡'] = CharInfo('澡', "zǎo", 16, 3, "氵", "氵",
+        T3("se laver", "to bathe", "мыться"),
+        T3("L'eau 氵 qui lave tout le corps.", "Water 氵 washing the whole body.", "Вода 氵 омывает всё тело."),
+        T3("eau", "water", "вода"))
+    m['向'] = CharInfo('向', "xiàng", 6, 0, "口", "口",
+        T3("vers", "towards", "к"),
+        T3("Une fenêtre tournée vers le nord.", "A window facing north.", "Окно, обращённое на север."),
+        T3("bouche", "mouth", "рот"))
+    m['急'] = CharInfo('急', "jí", 9, 3, "心", "刍心",
+        T3("pressé, inquiet", "urgent, anxious", "срочный, тревожный"),
+        T3("Le cœur 心 qui s'emballe ; 刍 donne le son.", "The heart 心 racing; 刍 gives the sound.", "Сердце 心 колотится; 刍 даёт звук."),
         T3("cœur", "heart", "сердце"))
 }

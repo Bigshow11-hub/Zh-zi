@@ -154,3 +154,13 @@
 音|son|sound|звук
 网|filet|net|сеть
 青|vert-bleu|blue-green|сине-зелёный
+角|corne|horn|рог
+氺|eau|water|вода
+殳|arme, frapper|weapon, strike|оружие, удар
+礻|autel, esprit|altar, spirit|алтарь, дух
+文|écriture|writing|письмо
+黄|jaune|yellow|жёлтый
+立|se tenir debout|stand|стоять
+牙|dent|tooth|зуб
+士|lettré|scholar|учёный муж
+而|barbe|beard|борода

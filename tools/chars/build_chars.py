@@ -11,7 +11,7 @@ for line in open(sys.argv[1], encoding='utf-8'):
     j = json.loads(line)
     dic[j['character']] = j
 
-src = ''.join(open(f'app/src/main/java/com/zhuzi/app/data/{n}.kt', encoding='utf-8').read() for n in ('Hsk1', 'Hsk2', 'Hsk3'))
+src = ''.join(open(f'app/src/main/java/com/zhuzi/app/data/{n}.kt', encoding='utf-8').read() for n in ('Hsk1', 'Hsk2', 'Hsk3', 'Hsk3b'))
 chars = []
 for h in re.findall(r'w\("([^"]+)"', src):
     for c in h:
@@ -34,7 +34,7 @@ strokes = json.load(open('app/src/main/assets/strokes.json', encoding='utf-8'))
 # Les signes absents de la police pinceau (forme réduite d'une clé) sont remplacés ou laissés de côté
 from fontTools.ttLib import TTFont
 cmap = TTFont('app/src/main/res/font/wenkai.ttf').getBestCmap()
-swap = {'⺼': '月', '⺮': '竹', '耂': '老', '⺀': '冫'}
+swap = {'⺼': '月', '⺮': '竹', '耂': '老', '⺀': '冫', '⺌': '小'}
 pinyin_fix = {'呢': 'ne', '子': 'zǐ', '了': 'le', '长': 'cháng', '得': 'de', '吧': 'ba', '着': 'zhe'}
 kinds = {'pictographic': 1, 'ideographic': 2, 'pictophonetic': 3}
 
