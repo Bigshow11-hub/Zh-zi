@@ -22,11 +22,13 @@ import java.util.Locale
 /** Langue choisie, gardée sur le téléphone (par défaut : celle du téléphone si c'est en ou ru, sinon fr). */
 object LangPref {
     fun get(context: Context): Lang {
+        com.zhuzi.app.data.Bn.init(context)
         val saved = context.getSharedPreferences("settings", Context.MODE_PRIVATE).getString("lang", null)
         Lang.entries.firstOrNull { it.code == saved }?.let { return it }
         return when (Locale.getDefault().language) {
             "en" -> Lang.EN
             "ru" -> Lang.RU
+            "bn" -> Lang.BN
             else -> Lang.FR
         }
     }
@@ -47,6 +49,7 @@ fun tr(lang: Lang, fr: String, en: String, ru: String): String = when (lang) {
     Lang.FR -> fr
     Lang.EN -> en
     Lang.RU -> ru
+    Lang.BN -> com.zhuzi.app.data.Bn.t(en)
 }
 
 /** Forme russe selon le nombre : 1 слово, 2 слова, 5 слов. */
@@ -67,6 +70,7 @@ fun countOf(lang: Lang, n: Int, fr: Pair<String, String>, en: Pair<String, Strin
         Lang.FR -> if (n > 1) fr.second else fr.first
         Lang.EN -> if (n == 1) en.first else en.second
         Lang.RU -> ruPlural(n, ru.first, ru.second, ru.third)
+        Lang.BN -> com.zhuzi.app.data.Bn.t(en.second) // pas de pluriel en bengali
     }
 
 fun wordsCount(lang: Lang, n: Int) = countOf(lang, n, "mot" to "mots", "word" to "words", Triple("слово", "слова", "слов"))
@@ -97,6 +101,11 @@ fun Flag(lang: Lang, modifier: Modifier = Modifier, width: Dp = 30.dp) {
                 drawRect(Color.White, Offset(0f, 0f), Size(w, h / 3))
                 drawRect(Color(0xFF0039A6), Offset(0f, h / 3), Size(w, h / 3))
                 drawRect(Color(0xFFD52B1E), Offset(0f, 2 * h / 3), Size(w, h / 3))
+            }
+            Lang.BN -> {
+                // Drapeau du Bangladesh : disque rouge sur fond vert, un peu à gauche
+                drawRect(Color(0xFF006A4E))
+                drawCircle(Color(0xFFF42A41), radius = h * 0.3f, center = Offset(w * 0.45f, h / 2))
             }
             Lang.EN -> {
                 // Drapeau britannique, simplifié

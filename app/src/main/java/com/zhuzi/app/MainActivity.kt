@@ -563,6 +563,7 @@ private fun todayLabel(lang: Lang): String {
         Lang.FR -> Locale.FRENCH
         Lang.EN -> Locale.ENGLISH
         Lang.RU -> Locale.forLanguageTag("ru")
+        Lang.BN -> Locale.forLanguageTag("bn")
     }
     val pattern = if (lang == Lang.RU) "EEEE, d MMMM" else "EEEE d MMMM"
     return LocalDate.now().format(DateTimeFormatter.ofPattern(pattern, locale)).replaceFirstChar { it.titlecase(locale) }

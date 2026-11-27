@@ -9,6 +9,7 @@ data class T3(val fr: String, val en: String, val ru: String) {
         Lang.FR -> fr
         Lang.EN -> en
         Lang.RU -> ru
+        Lang.BN -> Bn.t(en)
     }
 }
 

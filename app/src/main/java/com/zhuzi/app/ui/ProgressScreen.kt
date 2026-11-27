@@ -382,6 +382,7 @@ private fun WeekChart(days: List<Pair<java.time.LocalDate, Int>>, modifier: Modi
         com.zhuzi.app.data.Lang.FR -> java.util.Locale.FRENCH
         com.zhuzi.app.data.Lang.EN -> java.util.Locale.ENGLISH
         com.zhuzi.app.data.Lang.RU -> java.util.Locale.forLanguageTag("ru")
+        com.zhuzi.app.data.Lang.BN -> java.util.Locale.forLanguageTag("bn")
     }
     val top = maxOf(days.maxOf { it.second }, 10)
     val total = days.sumOf { it.second }

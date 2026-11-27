@@ -6,6 +6,7 @@ data class Example(val hanzi: String, val pinyin: String, val french: String, va
         Lang.FR -> french
         Lang.EN -> english
         Lang.RU -> russian
+        Lang.BN -> Bn.t(english)
     }
 }
 

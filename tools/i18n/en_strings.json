@@ -2952,6 +2952,7 @@
 "No words of your own yet": "com/zhuzi/app/ui/MyWordsScreen.kt",
 "Photograph a page of your textbook or the board: Zhúzi finds the characters and prepares the cards.": "com/zhuzi/app/ui/MyWordsScreen.kt",
 "New word": "com/zhuzi/app/ui/MyWordsScreen.kt",
+"Already in ": "com/zhuzi/app/ui/MyWordsScreen.kt",
 "Pinyin (filled in for you, editable)": "com/zhuzi/app/ui/MyWordsScreen.kt",
 "Add to my words": "com/zhuzi/app/ui/MyWordsScreen.kt",
 "Getting the Chinese reader ready…": "com/zhuzi/app/ui/MyWordsScreen.kt",
@@ -3089,5 +3090,6 @@
 "No mistakes at all.": "com/zhuzi/app/ui/Writing.kt",
 "Mistakes: ": "com/zhuzi/app/ui/Writing.kt",
 " · follow the hint": "com/zhuzi/app/ui/Writing.kt",
-"Guide": "com/zhuzi/app/ui/Writing.kt"
+"Guide": "com/zhuzi/app/ui/Writing.kt",
+"Skip this character": "com/zhuzi/app/ui/Writing.kt"
 }

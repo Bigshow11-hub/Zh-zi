@@ -5,6 +5,7 @@ enum class Lang(val code: String, val nativeName: String) {
     FR("fr", "Français"),
     EN("en", "English"),
     RU("ru", "Русский"),
+    BN("bn", "বাংলা"),
 }
 
 /** Un mot à apprendre : caractères, prononciation (pinyin) et traductions. */
@@ -19,6 +20,7 @@ data class Word(
         Lang.FR -> french
         Lang.EN -> english
         Lang.RU -> russian
+        Lang.BN -> Bn.t(english)
     }
 }
 
@@ -36,12 +38,14 @@ data class Lesson(
         Lang.FR -> title
         Lang.EN -> en.first
         Lang.RU -> ru.first
+        Lang.BN -> Bn.t(en.first)
     }
 
     fun short(lang: Lang): String = when (lang) {
         Lang.FR -> short
         Lang.EN -> en.second
         Lang.RU -> ru.second
+        Lang.BN -> Bn.t(en.second)
     }
 }
 

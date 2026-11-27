@@ -13,6 +13,7 @@ enum class QuizMode(private val fr: String, private val en: String, private val 
         Lang.FR -> fr
         Lang.EN -> en
         Lang.RU -> ru
+        Lang.BN -> Bn.t(en)
     }
 
     companion object {
