@@ -51,6 +51,7 @@ object Push {
     fun scheduleAll(context: Context) {
         Reminders.schedule(context)
         DailyWord.schedule(context)
+        Alarms.scheduleAll(context)
         Updates.schedule(context)
     }
 
@@ -88,6 +89,7 @@ object DailyWord {
     fun isEnabled(context: Context) = Push.settings(context).getBoolean("word_enabled", true)
     fun setEnabled(context: Context, on: Boolean) {
         Push.settings(context).edit().putBoolean("word_enabled", on).apply()
+        Alarms.scheduleAll(context)
     }
 
     fun time(context: Context): Pair<Int, Int> =
@@ -96,6 +98,7 @@ object DailyWord {
     fun setTime(context: Context, hour: Int, minute: Int) {
         Push.settings(context).edit().putInt("word_hour", hour).putInt("word_minute", minute).apply()
         schedule(context, replace = true)
+        Alarms.scheduleAll(context)
     }
 
     fun schedule(context: Context, replace: Boolean = false) {
@@ -110,11 +113,13 @@ object DailyWord {
         )
     }
 
-    fun show(context: Context) {
-        if (!isEnabled(context) || !Reminders.canNotify(context)) return
+    /** `test` : notification d'essai, envoyée tout de suite (même si celle du jour est déjà partie). */
+    fun show(context: Context, test: Boolean = false) {
+        if (!Reminders.canNotify(context)) return
+        if (!test && !isEnabled(context)) return
         val p = Push.settings(context)
         val today = LocalDate.now().toEpochDay()
-        if (p.getLong("word_shown_day", -1) == today) return
+        if (!test && p.getLong("word_shown_day", -1) == today) return
         val lang = LangPref.get(context)
         val word = WordOfDay.today(context)
         val meaning = word.meaning(lang)
@@ -141,7 +146,7 @@ object DailyWord {
             .setAutoCancel(true)
             .build()
         context.getSystemService(NotificationManager::class.java).notify(Push.ID_WORD, notification)
-        p.edit().putLong("word_shown_day", today).apply()
+        if (!test) p.edit().putLong("word_shown_day", today).apply()
     }
 }
 

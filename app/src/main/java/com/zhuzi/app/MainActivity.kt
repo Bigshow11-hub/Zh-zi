@@ -69,6 +69,17 @@ class MainActivity : ComponentActivity() {
     }
 
     private lateinit var speaker: Speaker
+    // Réglages Android pour les notifications appli fermée (relus à chaque retour dans l'appli)
+    private var exactOk by mutableStateOf(true)
+    private var batteryOk by mutableStateOf(true)
+
+    override fun onResume() {
+        super.onResume()
+        exactOk = com.zhuzi.app.reminder.Alarms.canExact(this)
+        batteryOk = com.zhuzi.app.reminder.Alarms.batteryFree(this)
+        // L'accord « heure exacte » vient peut-être d'être donné : on reprogramme les alarmes
+        com.zhuzi.app.reminder.Alarms.scheduleAll(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -401,6 +412,24 @@ class MainActivity : ComponentActivity() {
                                             if (on) needPermission()
                                         },
                                         updateName = updateName,
+                                        exactOk = exactOk,
+                                        batteryOk = batteryOk,
+                                        onExact = {
+                                            runCatching { startActivity(com.zhuzi.app.reminder.Alarms.exactSettings(this@MainActivity)) }
+                                        },
+                                        onBattery = {
+                                            runCatching { startActivity(com.zhuzi.app.reminder.Alarms.batterySettings(this@MainActivity)) }
+                                                .onFailure {
+                                                    runCatching { startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }
+                                                }
+                                        },
+                                        onTest = {
+                                            if (Reminders.canNotify(this@MainActivity)) {
+                                                com.zhuzi.app.reminder.DailyWord.show(this@MainActivity, test = true)
+                                            } else {
+                                                needPermission()
+                                            }
+                                        },
                                         onUpdate = {
                                             startActivity(Intent(Intent.ACTION_VIEW,
                                                 android.net.Uri.parse(com.zhuzi.app.reminder.Updates.APK_URL)))

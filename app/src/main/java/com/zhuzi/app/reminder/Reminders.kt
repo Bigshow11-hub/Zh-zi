@@ -47,6 +47,7 @@ object Reminders {
     fun setTime(context: Context, hour: Int, minute: Int) {
         prefs(context).edit().putInt("reminder_hour", hour).putInt("reminder_minute", minute).apply()
         schedule(context, replace = true)
+        Alarms.scheduleAll(context)
     }
 
     fun schedule(context: Context, replace: Boolean = false) {
@@ -77,6 +78,17 @@ object Reminders {
     fun setEnabled(context: Context, enabled: Boolean) {
         context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit()
             .putBoolean("reminder_enabled", enabled).apply()
+        Alarms.scheduleAll(context)
+    }
+
+    /** Envoie le rappel du jour s'il y a lieu, une seule fois par jour (alarme ou WorkManager, le premier qui passe). */
+    fun fire(context: Context) {
+        val today = java.time.LocalDate.now().toEpochDay()
+        val p = prefs(context)
+        if (p.getLong("reminder_shown_day", -1) == today) return
+        val text = message(context) ?: return
+        show(context, text)
+        p.edit().putLong("reminder_shown_day", today).apply()
     }
 
     fun message(context: Context): String? {
@@ -136,7 +148,7 @@ object Reminders {
 
 class ReminderWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        Reminders.message(applicationContext)?.let { Reminders.show(applicationContext, it) }
+        Reminders.fire(applicationContext)
         return Result.success()
     }
 }

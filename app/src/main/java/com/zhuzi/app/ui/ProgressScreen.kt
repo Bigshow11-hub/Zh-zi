@@ -80,6 +80,11 @@ fun ProgressScreen(
     onUpdatesChange: (Boolean) -> Unit = {},
     updateName: String? = null,
     onUpdate: () -> Unit = {},
+    exactOk: Boolean = true,
+    batteryOk: Boolean = true,
+    onExact: () -> Unit = {},
+    onBattery: () -> Unit = {},
+    onTest: () -> Unit = {},
     contentPadding: PaddingValues,
 ) {
     var pickTime by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
@@ -250,6 +255,44 @@ fun ProgressScreen(
                 icon = { IconTile(Glyph.INFO) },
                 modifier = Modifier.toggleable(value = updatesOn, role = Role.Switch) { onUpdatesChange(it) },
                 trailing = { ZSwitch(updatesOn) },
+            )
+        }
+
+        // Appli fermée : ce qu'Android doit autoriser pour que les notifications arrivent à l'heure
+        GroupedSection(
+            Modifier.padding(top = 28.dp),
+            header = tr("APPLI FERMÉE", "APP CLOSED", "ПРИЛОЖЕНИЕ ЗАКРЫТО"),
+            footer = tr("Les notifications arrivent même quand Zhúzi est fermée. Pour qu'elles soient à l'heure, autorise ces deux réglages (surtout sur Samsung).",
+                "Notifications arrive even when Zhúzi is closed. To get them on time, allow these two settings (especially on Samsung).",
+                "Уведомления приходят, даже когда Zhúzi закрыта. Чтобы они приходили вовремя, разреши эти два пункта (особенно на Samsung)."),
+        ) {
+            val ok = tr("Autorisé", "Allowed", "Разрешено")
+            val todo = tr("Autoriser", "Allow", "Разрешить")
+            GroupedRow(
+                title = tr("Heure exacte", "Exact time", "Точное время"),
+                subtitle = tr("Alarmes et rappels", "Alarms & reminders", "Будильники и напоминания"),
+                icon = { IconTile(Glyph.CLOCK) },
+                value = if (exactOk) ok else todo,
+                chevron = !exactOk,
+                onClick = if (exactOk) null else onExact,
+                role = if (exactOk) null else Role.Button,
+            )
+            RowDivider(RowIconInset)
+            GroupedRow(
+                title = tr("Batterie sans restriction", "Unrestricted battery", "Батарея без ограничений"),
+                subtitle = tr("Pour ne pas être mise en veille", "So it isn't put to sleep", "Чтобы не засыпало"),
+                icon = { IconTile(Glyph.CONTRAST) },
+                value = if (batteryOk) ok else todo,
+                chevron = !batteryOk,
+                onClick = if (batteryOk) null else onBattery,
+                role = if (batteryOk) null else Role.Button,
+            )
+            RowDivider(RowIconInset)
+            GroupedRow(
+                title = tr("Envoyer une notification d'essai", "Send a test notification", "Отправить тестовое уведомление"),
+                icon = { IconTile(Glyph.BELL) },
+                chevron = true,
+                onClick = onTest,
             )
         }
 
