@@ -91,6 +91,33 @@ class ScreenshotTest {
     }
 
     @Test
+    fun accueilBengali() {
+        com.zhuzi.app.data.Bn.init(org.robolectric.RuntimeEnvironment.getApplication())
+        inTab(Tab.HOME, lang = Lang.BN) { home(it) }
+        shot("52-accueil-bengali")
+    }
+
+    @Test
+    fun leconBengali() {
+        com.zhuzi.app.data.Bn.init(org.robolectric.RuntimeEnvironment.getApplication())
+        compose.setContent {
+            CompositionLocalProvider(LocalLang provides Lang.BN) {
+                ZhuziTheme {
+                    Surface {
+                        LessonScreen(
+                            lesson = hsk1Lessons[0], speak = {}, onBack = {}, onQuizDone = { _, _ -> },
+                            onSeen = {}, onQuizAnswer = { _, _ -> }, contentPadding = bars,
+                        )
+                    }
+                }
+            }
+        }
+        compose.onNodeWithText("উল্টাতে ট্যাপ করো").performClick()
+        compose.waitForIdle()
+        shot("53-carte-bengali")
+    }
+
+    @Test
     fun caracteresRusse() {
         inTab(Tab.CHARS, lang = Lang.RU) { CharactersScreen(boxOf = boxes, speak = {}, contentPadding = it) }
         shot("16-caracteres-russe")
