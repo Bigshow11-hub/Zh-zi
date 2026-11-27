@@ -333,7 +333,6 @@ class ScreenshotTest {
 
     @Test
     fun fete() {
-        inTab(Tab.HOME) { home(it) }
         compose.setContent {
             ZhuziTheme {
                 Surface {
