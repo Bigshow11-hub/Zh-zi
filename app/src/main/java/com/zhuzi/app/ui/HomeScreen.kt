@@ -90,12 +90,13 @@ fun HomeScreen(
     reminderOn: Boolean = true,
     hour: Int = java.time.LocalTime.now().hour,
     startWithNotes: Boolean = false,
+    reminderAt: Pair<Int, Int> = 19 to 0,
 ) {
     val lang = currentLang()
     val seen = remember { mutableSetOf<Any>() }
     var showNotes by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(startWithNotes) }
     val notes = dayNotes(activeToday, streakDays, dueWords.size, dueTomorrow, reminderOn, hour, next, nextKnown, wordOfDay,
-        onReview, onOpen, onReminder, speak)
+        onReview, onOpen, onReminder, speak, reminderAt)
     if (showNotes) NotificationsSheet(notes, todayLabel) { showNotes = false }
     LazyColumn(
         contentPadding = PaddingValues(

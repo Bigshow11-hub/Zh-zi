@@ -119,6 +119,7 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf(Reminders.isEnabled(this@MainActivity) && Reminders.canNotify(this@MainActivity))
                 }
                 var fromButton by remember { mutableStateOf(false) }
+                var reminderAt by remember { mutableStateOf(Reminders.time(this@MainActivity)) }
                 val askPermission = rememberLauncherForActivityResult(
                     ActivityResultContracts.RequestPermission(),
                 ) { granted ->
@@ -146,6 +147,18 @@ class MainActivity : ComponentActivity() {
                 val addMine: (List<Triple<String, String, String>>, String) -> Unit = { items, source ->
                     myWords.add(items, source).forEach { srs.learn(it.toWord()) }
                     mine = myWords.all()
+                }
+                // Fêtes d'étapes : vérifiées à chaque retour sur les onglets
+                var celebration by remember { mutableStateOf<com.zhuzi.app.data.Milestone?>(null) }
+                LaunchedEffect(overlay, version) {
+                    if (overlay == NONE) {
+                        celebration = com.zhuzi.app.data.Celebrations.pending(
+                            this@MainActivity,
+                            streak = streak.current(),
+                            known = srs.knownCount(allWords),
+                            mastered = hsk1Lessons.count { l -> QuizMode.core.all { progress.bestScore(l.id, it) >= 80 } },
+                        )
+                    }
                 }
                 val lesson = hsk1Lessons.firstOrNull { it.id == overlay }
                 val bars = WindowInsets.systemBars.asPaddingValues()
@@ -290,6 +303,7 @@ class MainActivity : ComponentActivity() {
                                             contentPadding = padding,
                                             activeToday = streak.activeToday(),
                                             reminderOn = reminderOn,
+                                            reminderAt = reminderAt,
                                         )
                                     }
                                     Tab.LESSONS -> LessonsScreen(bestScore, lessonKnown, openLesson, padding,
@@ -310,6 +324,11 @@ class MainActivity : ComponentActivity() {
                                         },
                                         lessonsTotal = hsk1Lessons.size,
                                         reminderOn = reminderOn,
+                                        reminderTime = reminderAt,
+                                        onReminderTime = { h, m ->
+                                            Reminders.setTime(this@MainActivity, h, m)
+                                            reminderAt = h to m
+                                        },
                                         onReminderChange = { on ->
                                             Reminders.setEnabled(this@MainActivity, on)
                                             if (!on) {
@@ -341,6 +360,14 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
+                }
+                // La fête d'une étape, par-dessus tout le reste
+                celebration?.let { m ->
+                    com.zhuzi.app.ui.CelebrationOverlay(
+                        milestone = m, look = look,
+                        level = com.zhuzi.app.data.levelFor(srs.knownCount(allWords)).number,
+                        onDone = { celebration = null },
+                    )
                 }
             }
             }

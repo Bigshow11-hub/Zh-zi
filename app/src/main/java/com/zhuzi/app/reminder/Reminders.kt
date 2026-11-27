@@ -28,21 +28,40 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
-/** Rappel quotidien : une notification chaque soir vers 19 h, si on n'a pas encore étudié. */
+/** Rappel quotidien : une notification chaque jour à l'heure choisie (19 h par défaut), si on n'a pas encore étudié. */
 object Reminders {
     const val HOUR = 19
     private const val CHANNEL = "daily_reminder"
     private const val WORK = "daily_reminder"
 
-    fun schedule(context: Context) {
+    private fun prefs(context: Context) = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+
+    /** L'heure du rappel choisie : (heure, minute). */
+    fun time(context: Context): Pair<Int, Int> =
+        prefs(context).getInt("reminder_hour", HOUR) to prefs(context).getInt("reminder_minute", 0)
+
+    /** « 19:00 ». */
+    fun label(context: Context): String = time(context).let { (h, m) -> "%02d:%02d".format(h, m) }
+
+    /** Change l'heure du rappel et reprogramme tout de suite. */
+    fun setTime(context: Context, hour: Int, minute: Int) {
+        prefs(context).edit().putInt("reminder_hour", hour).putInt("reminder_minute", minute).apply()
+        schedule(context, replace = true)
+    }
+
+    fun schedule(context: Context, replace: Boolean = false) {
+        val (h, m) = time(context)
         val now = LocalDateTime.now()
-        var next = now.toLocalDate().atTime(HOUR, 0)
+        var next = now.toLocalDate().atTime(h, m)
         if (!next.isAfter(now)) next = next.plusDays(1)
         val request = PeriodicWorkRequestBuilder<ReminderWorker>(24, TimeUnit.HOURS)
             .setInitialDelay(Duration.between(now, next).toMinutes(), TimeUnit.MINUTES)
             .build()
-        WorkManager.getInstance(context)
-            .enqueueUniquePeriodicWork(WORK, ExistingPeriodicWorkPolicy.KEEP, request)
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            WORK,
+            if (replace) ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE else ExistingPeriodicWorkPolicy.KEEP,
+            request,
+        )
     }
 
     fun canNotify(context: Context): Boolean =

@@ -35,6 +35,7 @@
 - 1.7.0 « bibliothèque » : la cloche de l'accueil ouvre le panneau des notifications du jour (`ui/Notifications.kt` : journée à valider, série en jeu, révisions, rappel de 19 h, leçon, mot du jour ; pastille rouge = choses à faire, la cloche se balance). Onglet Caractères en 3 parties : Mots (cartes 2 par ligne), Caractères (174 fiches `data/Chars.kt` : traits animés, clé, composants, type, astuce, mots ; données `tools/chars/`), Grammaire (24 règles `data/Grammar.kt`). Leçons : onglet « Grammaire » (règles + « Le savais-tu ? », `lessonCulture`), cartes en pile qu'on glisse, sens de chaque caractère au dos. La police pinceau inclut aussi les caractères des écrans (`ui/*.kt`).
 - 1.8.0 « mes mots » : « Mes mots » (page Leçons, `ui/MyWordsScreen.kt`, `data/MyWords.kt`) : ajouter un mot à la main (pinyin automatique par pinyin4j, sens prérempli s'il est connu) ou depuis une photo (appareil photo ou galerie, lecture du chinois sur le téléphone par ML Kit (version services Google `play-services-mlkit-text-recognition-chinese`, module téléchargé à l'installation : APK léger), on coche les mots, on complète le sens). Les mots entrent dans la révision espacée et la révision du jour. Design plus sobre (guides Refero intégrés + skill « impeccable » installé dans `.agents/skills/impeccable`) : une seule couleur d'accent, fond neutre, plus de couleur par leçon/tuile/notification, ombres neutres, coins 16 dp, barres sans reflet, animations courtes sans rebond. Nouveau logo : deux tiges de bambou modelées sur fond encre + sceau 子 (`tools/logo/build_logo.py` fabrique toutes les icônes).
 - 1.8.2 « logo panda » : nouvelle icône = figurine panda 3D (l'avatar en volume, sweat indigo, tige de bambou) sur fond encre, choisie par le propriétaire (option B). Rendu three.js + icônes par densité : `tools/logo/panda3d/` (voir son README). Monochrome et notification = silhouette du panda. L'ancien générateur bambou est `tools/logo/build_logo_bambou.py` (ne plus le lancer). Page de design des propositions : https://claude.ai/artifact/YPtN7GiP5UWoJe9PnyfLLN
+- 1.9.0 « fêtes et rappel » : fêtes d'étapes (`data/Celebrations.kt`, `ui/Celebration.kt`) : séries 3/7/14/30/50/100/200/365 jours, niveaux 2 à 5, 1/3/5/11 leçons maîtrisées ; panda qui saute, confettis (4 couleurs), repère tamponné ; une seule fête à la fois, chaque étape une fois ; à la première ouverture, les étapes déjà atteintes sont notées sans fête. Heure du rappel au choix (Progrès › Rappel › Heure, cadran Material 3) : `Reminders.time/setTime`, reprogrammation immédiate ; les notifications du jour affichent l'heure choisie.
 - Refero : l'abonnement MCP n'est pas actif (« NO_SUBSCRIPTION ») ; on utilise les références intégrées au skill.
 - Higgsfield (génération d'images) : connecté, mais l'offre gratuite ne permet aucune génération (abonnement Basic requis).
 - Lien de téléchargement fixe : https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
@@ -42,9 +43,7 @@
 
 ## Idées de suite
 
-1. Fêter les étapes (7/30/100 jours, niveau supérieur, animation du panda).
-2. HSK 2.
-3. Choisir l'heure du rappel.
+1. HSK 2.
 
 ## Décisions
 

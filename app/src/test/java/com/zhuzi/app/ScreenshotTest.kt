@@ -332,6 +332,26 @@ class ScreenshotTest {
     }
 
     @Test
+    fun fete() {
+        inTab(Tab.HOME) { home(it) }
+        compose.setContent {
+            ZhuziTheme {
+                Surface {
+                    androidx.compose.foundation.layout.Box {
+                        home(bars)
+                        com.zhuzi.app.ui.CelebrationOverlay(
+                            milestone = com.zhuzi.app.data.Celebrations.reached(streak = 7, known = 0, mastered = 0).last(),
+                            look = com.zhuzi.app.data.AvatarLook(0, com.zhuzi.app.data.Accessory.SCARF, 0),
+                            level = 3, onDone = {}, animate = false,
+                        )
+                    }
+                }
+            }
+        }
+        shot("29-fete-serie")
+    }
+
+    @Test
     fun ecrire() {
         lesson(1)
         shot("19-ecrire")

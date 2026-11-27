@@ -22,6 +22,8 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -66,8 +68,13 @@ fun ProgressScreen(
     week: List<Pair<java.time.LocalDate, Int>> = emptyList(),
     themeMode: Int = 0,
     onThemeChange: (Int) -> Unit = {},
+    reminderTime: Pair<Int, Int> = Reminders.HOUR to 0,
+    onReminderTime: (Int, Int) -> Unit = { _, _ -> },
     contentPadding: PaddingValues,
 ) {
+    var pickTime by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    val timeLabel = "%02d:%02d".format(reminderTime.first, reminderTime.second)
+    if (pickTime) ReminderTimeDialog(reminderTime, { h, m -> onReminderTime(h, m); pickTime = false }) { pickTime = false }
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
             .padding(start = 20.dp, end = 20.dp,
@@ -170,10 +177,10 @@ fun ProgressScreen(
         SectionLabel(tr("RAPPEL", "REMINDER", "НАПОМИНАНИЕ"))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(tr("Rappel du soir", "Evening reminder", "Вечернее напоминание"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(tr("Vers ${Reminders.HOUR} h, seulement si tu n'as pas encore étudié ce jour-là.",
-                    "Around ${Reminders.HOUR}:00, only if you haven't studied yet that day.",
-                    "Около ${Reminders.HOUR}:00, только если ты ещё не занимался в этот день."),
+                Text(tr("Rappel quotidien", "Daily reminder", "Ежедневное напоминание"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(tr("À $timeLabel, seulement si tu n'as pas encore étudié ce jour-là.",
+                    "At $timeLabel, only if you haven't studied yet that day.",
+                    "В $timeLabel, только если ты ещё не занимался в этот день."),
                     color = InkSoft, fontSize = 13.sp)
             }
             Spacer(Modifier.width(12.dp))
@@ -185,6 +192,18 @@ fun ProgressScreen(
                     uncheckedTrackColor = Mist, uncheckedThumbColor = InkSoft, uncheckedBorderColor = Rule,
                 ),
             )
+        }
+        // L'heure, au choix
+        Row(
+            Modifier.padding(top = 12.dp).fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Mist)
+                .clickable(enabled = reminderOn) { pickTime = true }.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(tr("Heure du rappel", "Reminder time", "Время напоминания"), fontSize = 15.sp,
+                color = if (reminderOn) com.zhuzi.app.ui.theme.Ink else InkSoft, modifier = Modifier.weight(1f))
+            Text(timeLabel, fontSize = 17.sp, fontWeight = FontWeight.Bold,
+                color = if (reminderOn) com.zhuzi.app.ui.theme.Accent else InkSoft)
+            Text("  ›", fontSize = 18.sp, color = InkSoft)
         }
 
         // À propos
@@ -286,4 +305,38 @@ private fun WeekChart(days: List<Pair<java.time.LocalDate, Int>>, modifier: Modi
             }
         }
     }
+}
+
+/** Choisir l'heure du rappel : le cadran d'Android (Material 3). */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun ReminderTimeDialog(initial: Pair<Int, Int>, onPick: (Int, Int) -> Unit, onDismiss: () -> Unit) {
+    val state = androidx.compose.material3.rememberTimePickerState(initial.first, initial.second, is24Hour = true)
+    val accent = com.zhuzi.app.ui.theme.Accent
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = com.zhuzi.app.ui.theme.Paper,
+        title = { Text(tr("Heure du rappel", "Reminder time", "Время напоминания")) },
+        text = {
+            androidx.compose.material3.TimePicker(
+                state,
+                colors = androidx.compose.material3.TimePickerDefaults.colors(
+                    clockDialColor = Mist, selectorColor = accent,
+                    timeSelectorSelectedContainerColor = accent.copy(alpha = 0.14f),
+                    timeSelectorSelectedContentColor = accent,
+                    timeSelectorUnselectedContainerColor = Mist,
+                ),
+            )
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = { onPick(state.hour, state.minute) }) {
+                Text(tr("Valider", "Save", "Сохранить"), color = accent, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                Text(tr("Annuler", "Cancel", "Отмена"), color = InkSoft)
+            }
+        },
+    )
 }

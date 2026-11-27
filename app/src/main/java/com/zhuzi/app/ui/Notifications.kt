@@ -227,7 +227,10 @@ fun dayNotes(
     onOpen: (com.zhuzi.app.data.Lesson) -> Unit,
     onReminder: () -> Unit,
     speak: (String) -> Unit,
+    reminderAt: Pair<Int, Int> = 19 to 0,
 ): List<DayNote> {
+    val at = "%02d:%02d".format(reminderAt.first, reminderAt.second)
+    val passed = hour * 60 >= reminderAt.first * 60 + reminderAt.second
     val lang = currentLang()
     val accent = Accent
     // Une seule couleur pour l'action ; le reste en encre neutre, le rouge pour la série
@@ -266,23 +269,23 @@ fun dayNotes(
         if (dueTomorrow > 0) tr("Demain : ", "Tomorrow: ", "Завтра: ") + wordsCount(lang, dueTomorrow)
         else tr("Rien à revoir pour l'instant.", "Nothing to review for now.", "Пока нечего повторять."),
         tr("Aujourd'hui", "Today", "Сегодня"), pending = false, done = true)
-    // 4. Le rappel de 19 h
+    // 4. Le rappel quotidien, à l'heure choisie
     notes += when {
         !reminderOn -> DayNote("钟", InkSoft, tr("Rappel désactivé", "Reminder off", "Напоминание выключено"),
-            tr("Active-le pour recevoir un petit mot chaque soir à 19 h.",
-                "Turn it on to get a little nudge every evening at 7 pm.",
-                "Включи его, чтобы каждый вечер в 19:00 получать напоминание."),
-            "19:00", pending = false, action = tr("Régler", "Settings", "Настроить"), onClick = onReminder)
-        hour >= 19 -> DayNote("钟", amber, tr("Rappel de 19 h", "7 pm reminder", "Напоминание в 19:00"),
+            tr("Active-le pour recevoir un petit mot chaque jour à l'heure de ton choix.",
+                "Turn it on to get a little nudge every day at the time you choose.",
+                "Включи его, чтобы каждый день получать напоминание в удобное время."),
+            at, pending = false, action = tr("Régler", "Settings", "Настроить"), onClick = onReminder)
+        passed -> DayNote("钟", amber, tr("Rappel de $at", "$at reminder", "Напоминание в $at"),
             tr("« 学习时间到了 » : c'est l'heure de ton chinois du jour.",
                 "“学习时间到了”: it's time for your daily Chinese.",
                 "«学习时间到了»: время для китайского."),
-            "19:00", pending = false, action = tr("Régler", "Settings", "Настроить"), onClick = onReminder)
-        else -> DayNote("钟", amber, tr("Prochain rappel à 19 h", "Next reminder at 7 pm", "Следующее напоминание в 19:00"),
-            tr("Un petit mot ce soir si tu n'as pas encore étudié.",
-                "A little nudge tonight if you haven't studied yet.",
-                "Сегодня вечером, если ты ещё не занимался."),
-            "19:00", pending = false, action = tr("Régler", "Settings", "Настроить"), onClick = onReminder)
+            at, pending = false, action = tr("Régler", "Settings", "Настроить"), onClick = onReminder)
+        else -> DayNote("钟", amber, tr("Prochain rappel à $at", "Next reminder at $at", "Следующее напоминание в $at"),
+            tr("Un petit mot si tu n'as pas encore étudié d'ici là.",
+                "A little nudge if you haven't studied by then.",
+                "Напомню, если ты к тому времени ещё не позанимаешься."),
+            at, pending = false, action = tr("Régler", "Settings", "Настроить"), onClick = onReminder)
     }
     // 5. La leçon en cours
     notes += DayNote(next.symbol, green, tr("Leçon ", "Lesson ", "Урок ") + next.id + " · " + next.title(lang),
