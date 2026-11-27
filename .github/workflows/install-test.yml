@@ -78,6 +78,8 @@ jobs:
       - name: Installer et lancer sur Android 17
         run: |
           SDK=$ANDROID_HOME/cmdline-tools/latest/bin
+          export PATH=$ANDROID_HOME/platform-tools:$PATH
+          export ANDROID_AVD_HOME=$HOME/.android/avd; mkdir -p $ANDROID_AVD_HOME
           IMG=$($SDK/sdkmanager --list 2>/dev/null | grep -oE "system-images;android-37[.0-9]*;${{ matrix.target }};x86_64" | sort -u | head -1)
           echo "image: $IMG"
           yes | $SDK/sdkmanager "$IMG" emulator platform-tools >/dev/null
