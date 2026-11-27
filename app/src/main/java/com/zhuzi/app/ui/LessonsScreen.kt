@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -70,18 +71,24 @@ fun LessonsScreen(
     val mastered: (Lesson) -> Boolean = { l -> QuizMode.core.all { bestScore(l.id, it) >= 80 } }
     val masteredCount = lessons.count(mastered)
     val seen = remember(level) { mutableSetOf<Any>() }
+    val list = androidx.compose.foundation.lazy.rememberLazyListState()
+    val compact by remember {
+        androidx.compose.runtime.derivedStateOf { list.firstVisibleItemIndex > 0 || list.firstVisibleItemScrollOffset > 140 }
+    }
+    Box(Modifier.fillMaxSize()) {
     LazyColumn(
+        state = list,
         contentPadding = PaddingValues(
-            start = 20.dp, end = 20.dp,
-            top = contentPadding.calculateTopPadding() + 16.dp,
-            bottom = contentPadding.calculateBottomPadding() + 24.dp,
+            start = 16.dp, end = 16.dp,
+            top = contentPadding.calculateTopPadding() + 12.dp,
+            bottom = contentPadding.calculateBottomPadding() + 32.dp,
         ),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         staggerItem(0, seen) {
             Column {
-                ScreenTitle(tr("Leçons", "Lessons", "Уроки"),
-                    tr("Le parcours HSK, thème par thème", "The HSK path, theme by theme", "Путь HSK, тема за темой"))
+                LargeTitle(tr("Leçons", "Lessons", "Уроки"),
+                    subtitle = tr("Le parcours HSK, thème par thème", "The HSK path, theme by theme", "Путь HSK, тема за темой"))
                 Segmented(listOf("HSK 1", "HSK 2", "HSK 3"), level - 1, { level = it + 1 })
             }
         }
@@ -89,41 +96,37 @@ fun LessonsScreen(
         staggerItem(1, seen) {
             val a = Accent
             Column(
-                Modifier.fillMaxWidth().softCard(RoundedCornerShape(16.dp)).padding(20.dp),
+                Modifier.fillMaxWidth().softCard().padding(20.dp),
             ) {
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text("$known", style = MaterialTheme.typography.displaySmall, color = a)
                     Text(" / $total " + tr("mots du HSK $level", "HSK $level words", "слов HSK $level"), color = InkSoft,
-                        fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 6.dp))
+                        style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(bottom = 6.dp))
                 }
-                ProgressBar(known.toFloat() / total, Modifier.padding(top = 10.dp), color = a, height = 8.dp)
+                ProgressBar(known.toFloat() / total, Modifier.padding(top = 12.dp), color = a, height = 6.dp)
                 Text(
                     tr("$masteredCount leçon${if (masteredCount > 1) "s" else ""} maîtrisée${if (masteredCount > 1) "s" else ""} sur ${lessons.size}",
                         "$masteredCount of ${lessons.size} lessons mastered",
                         "Освоено уроков: $masteredCount из ${lessons.size}"),
-                    color = InkSoft, fontSize = 13.sp, modifier = Modifier.padding(top = 8.dp),
+                    color = InkSoft, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp),
                 )
             }
         }
-        // Mes mots : ceux de l'élève, écrits ou pris en photo
-        staggerItem(2, seen) { MyWordsEntry(myCount, onMyWords) }
-        // Examen blanc du niveau affiché
-        staggerItem(3, seen) { ExamEntry(level, bestExam(level)) { onExam(level) } }
+        // Mes mots et l'examen blanc : une petite liste groupée
+        staggerItem(2, seen) {
+            Column(Modifier.fillMaxWidth().clip(com.zhuzi.app.ui.theme.GroupShape).background(Paper)) {
+                MyWordsEntry(myCount, onMyWords)
+                RowDivider(78.dp)
+                ExamEntry(level, bestExam(level)) { onExam(level) }
+            }
+        }
         lessons.forEachIndexed { i, lesson ->
-            staggerItem(i + 4, seen) {
+            staggerItem(i + 3, seen) {
                 LessonCard(lesson, lessonKnown(lesson), mastered(lesson), lesson == current, bestScore, onOpen)
             }
         }
     }
-}
-
-/** Titre d'onglet : grand titre et sous-titre. */
-@Composable
-fun ScreenTitle(title: String, subtitle: String) {
-    Column(Modifier.padding(bottom = 8.dp)) {
-        Text(title, style = MaterialTheme.typography.headlineMedium)
-        Text(subtitle, style = MaterialTheme.typography.bodySmall, color = InkSoft,
-            modifier = Modifier.padding(top = 2.dp))
+    CompactTitleBar(tr("Leçons", "Lessons", "Уроки"), compact, contentPadding.calculateTopPadding())
     }
 }
 
@@ -140,26 +143,27 @@ private fun LessonCard(
     val lang = currentLang()
     val interaction = remember { MutableInteractionSource() }
     val tint = Accent
-    val shape = RoundedCornerShape(16.dp)
+    val shape = com.zhuzi.app.ui.theme.PanelShape
     val complete = known >= lesson.words.size
     Column(
         Modifier.fillMaxWidth()
             .pressScale(interaction)
             .softCard(shape)
-            .then(if (isCurrent) Modifier.border(2.dp, Accent, shape) else Modifier)
-            .clickable(interactionSource = interaction, indication = null) { onOpen(lesson) }
+            .then(if (isCurrent) Modifier.border(1.5.dp, tint, shape) else Modifier)
+            .clickable(interactionSource = interaction, indication = null,
+                role = androidx.compose.ui.semantics.Role.Button) { onOpen(lesson) }
             .padding(16.dp),
     ) {
         Row(verticalAlignment = Alignment.Top) {
             // Le caractère symbole de la leçon, sur fond neutre (accent seulement pour la leçon en cours)
             Box(
-                Modifier.size(54.dp).clip(RoundedCornerShape(16.dp)).background(if (isCurrent) tint.copy(alpha = 0.10f) else Mist),
+                Modifier.size(52.dp).clip(com.zhuzi.app.ui.theme.TileShape).background(if (isCurrent) tint.copy(alpha = 0.12f) else Mist),
                 contentAlignment = Alignment.Center,
             ) { Text(lesson.symbol, fontFamily = Kai, fontSize = 30.sp, color = if (isCurrent) tint else com.zhuzi.app.ui.theme.Ink) }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.Top) {
-                    Text(lesson.title(lang), fontWeight = FontWeight.Bold, fontSize = 17.sp, maxLines = 2,
+                    Text(lesson.title(lang), style = MaterialTheme.typography.titleMedium, maxLines = 2,
                         overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                     when {
                         isMastered -> SealStamp("记", 24.dp, animate = false)
@@ -168,16 +172,16 @@ private fun LessonCard(
                     }
                 }
                 Text(lessonName(lesson) + " · " + wordsCount(lang, lesson.words.size),
-                    fontSize = 12.sp, color = InkSoft, modifier = Modifier.padding(top = 1.dp))
+                    style = MaterialTheme.typography.bodySmall, color = InkSoft, modifier = Modifier.padding(top = 1.dp))
                 lessonIntros[lesson.id]?.let {
-                    Text(it.get(lang), fontSize = 14.sp, color = InkSoft, maxLines = 2, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 6.dp))
+                    Text(it.get(lang), style = MaterialTheme.typography.bodyMedium, color = InkSoft, maxLines = 2,
+                        overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 6.dp))
                 }
             }
         }
         Row(Modifier.padding(top = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-            ProgressBar(known.toFloat() / lesson.words.size, Modifier.weight(1f), color = if (complete) InkSoft else tint, height = 6.dp)
-            Text("  $known/${lesson.words.size}", fontSize = 12.sp, color = InkSoft, fontWeight = FontWeight.Bold)
+            ProgressBar(known.toFloat() / lesson.words.size, Modifier.weight(1f), color = if (complete) InkSoft else tint, height = 4.dp)
+            Text("  $known/${lesson.words.size}", style = MaterialTheme.typography.labelMedium, color = InkSoft)
         }
         // Les quiz, en pilules : pleines quand le score atteint 80 % (passent à la ligne si besoin)
         androidx.compose.foundation.layout.FlowRow(
@@ -187,12 +191,14 @@ private fun LessonCard(
         ) {
             QuizMode.entries.forEach { m ->
                 val done = bestScore(lesson.id, m) >= 80
-                Box(
-                    Modifier.clip(PillShape).background(if (done) com.zhuzi.app.ui.theme.Ink else Mist)
-                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                Row(
+                    Modifier.clip(PillShape).background(if (done) tint.copy(alpha = 0.12f) else Mist)
+                        .padding(start = if (done) 7.dp else 10.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text((if (done) "✓ " else "") + m.label(lang), fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                        color = if (done) Paper else InkSoft)
+                    if (done) ZIcon(Glyph.CHECK, tint, size = 13.dp, weight = 1.8f, modifier = Modifier.padding(end = 3.dp))
+                    Text(m.label(lang), style = MaterialTheme.typography.labelMedium, fontSize = 12.sp,
+                        color = if (done) tint else InkSoft)
                 }
             }
         }
@@ -206,30 +212,17 @@ private fun Badge(text: String, color: Color) {
     }
 }
 
-/** Entrée « Mes mots » : ajouter ses propres mots ou les prendre en photo. */
+/** Entrée « Mes mots » : ajouter ses propres mots ou les prendre en photo (ligne de liste groupée). */
 @Composable
 private fun MyWordsEntry(count: Int, onClick: () -> Unit) {
     val lang = currentLang()
-    val interaction = remember { MutableInteractionSource() }
-    Row(
-        Modifier.fillMaxWidth().pressScale(interaction).softCard()
-            .clickable(interactionSource = interaction, indication = null, onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(Modifier.size(54.dp).clip(RoundedCornerShape(16.dp)).background(Accent), contentAlignment = Alignment.Center) {
-            Text("词", fontFamily = Kai, fontSize = 30.sp, color = Color.White)
-        }
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text(tr("Mes mots", "My words", "Мои слова"), fontWeight = FontWeight.Bold, fontSize = 17.sp)
-            Text(
-                if (count == 0) tr("Ajoute les mots de tes cours, ou prends une page en photo",
-                    "Add words from your classes, or snap a page", "Добавь слова с занятий или сфотографируй страницу")
-                else wordsCount(lang, count) + tr(" · ajouter ou photographier", " · add or snap more", " · добавить или сфотографировать"),
-                fontSize = 13.sp, color = InkSoft, maxLines = 2,
-            )
-        }
-        Text("›", fontSize = 22.sp, color = InkSoft)
-    }
+    GroupedRow(
+        title = tr("Mes mots", "My words", "Мои слова"),
+        subtitle = if (count == 0) tr("Ajoute les mots de tes cours, ou prends une page en photo",
+            "Add words from your classes, or snap a page", "Добавь слова с занятий или сфотографируй страницу")
+        else wordsCount(lang, count) + tr(" · ajouter ou photographier", " · add or snap more", " · добавить или сфотографировать"),
+        icon = { KaiTile("词", size = 48.dp) },
+        chevron = true,
+        onClick = onClick,
+    )
 }

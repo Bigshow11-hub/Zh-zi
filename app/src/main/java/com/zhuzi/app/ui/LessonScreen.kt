@@ -46,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -92,17 +93,17 @@ fun LessonScreen(
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         TopBar(tr("Leçons", "Lessons", "Уроки"), lessonName(lesson), onBack)
         Text(lesson.title(currentLang()), style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(horizontal = 20.dp))
+            modifier = Modifier.padding(horizontal = 16.dp))
         // L'accroche de la leçon
         com.zhuzi.app.data.lessonIntros[lesson.id]?.let { intro ->
             Text(intro.get(currentLang()), style = MaterialTheme.typography.bodyMedium, color = InkSoft,
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp))
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp))
         }
         // Choix Cartes / Quiz en pilules
         Segmented(listOf(tr("Cartes", "Cards", "Карточки"), tr("Écrire", "Write", "Писать"),
             tr("Grammaire", "Grammar", "Грамматика"), tr("Quiz", "Quiz", "Тест")),
             tab, { tab = it },
-            Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp))
+            Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp))
         Box(Modifier.weight(1f)) {
             when (tab) {
                 0 -> Flashcards(lesson.words, speak, onSeen, contentPadding)
@@ -114,55 +115,22 @@ fun LessonScreen(
     }
 }
 
-/** Barre du haut : retour à gauche, repère à droite. */
-@Composable
-fun TopBar(back: String, right: String, onBack: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        TextButton(onClick = onBack) { Text("‹  $back", color = Ink, fontWeight = FontWeight.Bold) }
-        Spacer(Modifier.weight(1f))
-        Text(right, color = InkSoft, style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(end = 12.dp))
-    }
-}
-
-/** Sélecteur en pilules : le choix actif est à l'encre. */
-@Composable
-fun Segmented(labels: List<String>, selected: Int, onSelect: (Int) -> Unit, modifier: Modifier = Modifier) {
-    Row(modifier.fillMaxWidth().clip(PillShape).background(Mist).padding(4.dp)) {
-        labels.forEachIndexed { i, label ->
-            val on = i == selected
-            Box(
-                Modifier.weight(1f).clip(PillShape).background(if (on) com.zhuzi.app.ui.theme.Accent else Mist)
-                    .clickable { onSelect(i) }.padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(label, color = if (on) androidx.compose.ui.graphics.Color.White else Ink, fontWeight = FontWeight.Bold,
-                    fontSize = if (labels.size >= 4) 13.sp else 14.sp, maxLines = 1, softWrap = false,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-            }
-        }
-    }
-}
-
-/** Lien souligné « Écouter ». */
+/** Lien « Écouter » : haut-parleur + libellé en accent. */
 @Composable
 fun ListenLink(onClick: () -> Unit) {
-    TextButton(onClick = onClick) {
-        Text(tr("Écouter", "Listen", "Слушать"), color = Ink, fontWeight = FontWeight.Bold,
-            textDecoration = TextDecoration.Underline)
-    }
+    ActionLink(tr("Écouter", "Listen", "Слушать"), Glyph.SPEAKER, onClick)
 }
 
 /** Barre d'actions fixée en bas de l'écran, à portée du pouce. */
 @Composable
 fun BottomActions(contentPadding: PaddingValues, content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
+    val line = Rule
     Row(
-        Modifier.fillMaxWidth().background(Paper)
-            .padding(start = 20.dp, end = 20.dp, top = 12.dp,
-                bottom = contentPadding.calculateBottomPadding() + 16.dp),
+        Modifier.fillMaxWidth()
+            .drawBehind { drawLine(line, androidx.compose.ui.geometry.Offset(0f, 0f), androidx.compose.ui.geometry.Offset(size.width, 0f), 1f) }
+            .background(com.zhuzi.app.ui.theme.BgTop.copy(alpha = 0.96f))
+            .padding(start = 16.dp, end = 16.dp, top = 12.dp,
+                bottom = contentPadding.calculateBottomPadding() + 12.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         content = content,
     )
@@ -205,7 +173,7 @@ fun FlipCard(
                 val lift = kotlin.math.sin(Math.toRadians(rotation.toDouble())).toFloat().let { kotlin.math.abs(it) }
                 scaleX = 1f + 0.06f * lift; scaleY = 1f + 0.06f * lift
                 shadowElevation = (2f + 22f * lift) * density
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                shape = PanelShape
                 clip = false
             }
             .softCard()
@@ -264,7 +232,7 @@ private fun WritingTab(
     Column(Modifier.fillMaxSize()) {
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState())
-                .padding(start = 20.dp, end = 20.dp, top = 18.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             StepProgress(index + 1, words.size)
@@ -300,7 +268,7 @@ private fun GrammarTab(lesson: Lesson, speak: (String) -> Unit, contentPadding: 
     val seen = remember { mutableSetOf<Any>() }
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, top = 18.dp, bottom = contentPadding.calculateBottomPadding() + 24.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = contentPadding.calculateBottomPadding() + 24.dp),
     ) {
         com.zhuzi.app.data.lessonCulture[lesson.id]?.let { CultureCard(it, Modifier.staggerIn("culture", 0, seen)) }
         points.forEachIndexed { i, p ->
@@ -330,7 +298,7 @@ private fun Flashcards(
     Column(Modifier.fillMaxSize()) {
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState())
-                .padding(start = 20.dp, end = 20.dp, top = 18.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             StepProgress(index + 1, words.size)
@@ -453,7 +421,7 @@ private fun Quiz(
     Box(Modifier.fillMaxSize()) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-                .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = bottom + 220.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = bottom + 220.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             modeSelector()
@@ -571,7 +539,7 @@ private fun ChoiceTile(choice: Word, asHanzi: Boolean, state: Int, enabled: Bool
             pop.animateTo(1f, spring(dampingRatio = 0.5f))
         }
     }
-    val border = when (state) { 1 -> Right; 2 -> Wrong; else -> Rule }
+    val border = when (state) { 1 -> Right; 2 -> Wrong; else -> androidx.compose.ui.graphics.Color.Transparent }
     val bg = when (state) { 1 -> RightBg; 2 -> WrongBg; else -> Paper }
     Box(
         Modifier.fillMaxWidth().padding(vertical = 5.dp)
@@ -584,15 +552,16 @@ private fun ChoiceTile(choice: Word, asHanzi: Boolean, state: Int, enabled: Bool
             .heightIn(min = 60.dp)
             .clip(TileShape)
             .background(bg)
-            .border(if (state == 1 || state == 2) 2.dp else 1.dp, border, TileShape)
-            .clickable(interactionSource = interaction, indication = null, enabled = enabled, onClick = onClick)
+            .border(2.dp, border, TileShape)
+            .clickable(interactionSource = interaction, indication = null, enabled = enabled,
+                role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
             .padding(horizontal = 18.dp, vertical = 10.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
         if (asHanzi) {
             Text(choice.hanzi, fontFamily = Kai, fontSize = 32.sp, color = Ink)
         } else {
-            Text(choice.meaning(currentLang()), fontSize = 17.sp, color = Ink, fontWeight = FontWeight.Medium)
+            Text(choice.meaning(currentLang()), style = MaterialTheme.typography.bodyLarge, color = Ink, fontWeight = FontWeight.Medium)
         }
     }
 }

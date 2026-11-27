@@ -24,6 +24,9 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -106,13 +109,19 @@ fun CharactersScreen(
     }
     val known = entries.count { boxOf(it.first) > 0 }
 
+    val grid = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
+    val compact by remember {
+        androidx.compose.runtime.derivedStateOf { grid.firstVisibleItemIndex > 0 || grid.firstVisibleItemScrollOffset > 140 }
+    }
+    Box(Modifier.fillMaxSize()) {
     // 6 colonnes : les mots en prennent 3 (2 par ligne), les caractères 2 (3 par ligne), la grammaire 6
     LazyVerticalGrid(
         columns = GridCells.Fixed(6),
+        state = grid,
         contentPadding = PaddingValues(
-            start = 20.dp, end = 20.dp,
-            top = contentPadding.calculateTopPadding() + 16.dp,
-            bottom = contentPadding.calculateBottomPadding() + 24.dp,
+            start = 16.dp, end = 16.dp,
+            top = contentPadding.calculateTopPadding() + 12.dp,
+            bottom = contentPadding.calculateBottomPadding() + 32.dp,
         ),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -135,20 +144,20 @@ fun CharactersScreen(
                 )
                 Segmented(listOf(tr("Mots", "Words", "Слова"), tr("Caractères", "Characters", "Знаки"),
                     tr("Grammaire", "Grammar", "Грамматика")), section, { section = it; filter = 0 })
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(4.dp))
                 SearchField(query) { query = it }
                 if (section == 0) {
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(4.dp))
                     Segmented(listOf(tr("Tous", "All", "Все"), tr("Vus", "Seen", "Видел"), tr("Retenus", "Learned", "Выучено"),
                         tr("Nouveaux", "New", "Новые")), filter, { filter = it })
-                    Spacer(Modifier.height(12.dp))
-                    ToneLegend()
+                    Spacer(Modifier.height(4.dp))
+                    ToneLegend(Modifier.padding(start = 4.dp))
                 }
                 if (section == 1) {
                     Spacer(Modifier.height(12.dp))
-                    ToneLegend()
+                    ToneLegend(Modifier.padding(start = 4.dp))
                 }
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(6.dp))
             }
         }
         val empty = when (section) { 0 -> shown.isEmpty(); 1 -> chars.isEmpty(); else -> points.isEmpty() }
@@ -171,33 +180,59 @@ fun CharactersScreen(
         }
     }
 
+    CompactTitleBar(tr("Caractères", "Characters", "Иероглифы"), compact, contentPadding.calculateTopPadding())
+    }
+
     selected?.let { (w, l) ->
-        ModalBottomSheet(onDismissRequest = { selected = null }, containerColor = Paper) {
+        ZhuziSheet({ selected = null }) {
             WordDetail(w, l, boxOf(w), speak)
         }
     }
     selectedChar?.let { c ->
-        ModalBottomSheet(onDismissRequest = { selectedChar = null }, containerColor = Paper) { CharDetail(c, speak) }
+        ZhuziSheet({ selectedChar = null }) { CharDetail(c, speak) }
     }
     selectedPoint?.let { p ->
-        ModalBottomSheet(onDismissRequest = { selectedPoint = null }, containerColor = Paper) { GrammarSheetContent(p, speak) }
+        ZhuziSheet({ selectedPoint = null }) { GrammarSheetContent(p, speak) }
     }
 }
 
+/** Champ de recherche façon iOS : loupe, fond gris translucide, croix pour effacer. Zone tactile de 48 dp. */
 @Composable
 private fun SearchField(value: String, onChange: (String) -> Unit) {
+    val soft = InkSoft
     BasicTextField(
         value = value,
         onValueChange = onChange,
         singleLine = true,
-        textStyle = TextStyle(color = Ink, fontSize = 16.sp),
-        cursorBrush = SolidColor(Ink),
-        modifier = Modifier.fillMaxWidth().clip(PillShape).background(Mist)
-            .padding(horizontal = 20.dp, vertical = 15.dp),
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = Ink),
+        cursorBrush = SolidColor(com.zhuzi.app.ui.theme.Accent),
+        modifier = Modifier.fillMaxWidth().height(48.dp),
         decorationBox = { inner ->
-            Box {
-                if (value.isEmpty()) Text(tr("Chercher : ni hao, merci, 你…", "Search: ni hao, thanks, 你…", "Поиск: ni hao, спасибо, 你…"), color = InkSoft, fontSize = 16.sp)
-                inner()
+            Row(
+                Modifier.fillMaxWidth().height(40.dp).clip(RoundedCornerShape(12.dp)).background(Mist)
+                    .padding(start = 10.dp, end = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ZIcon(Glyph.SEARCH, soft, size = 18.dp, weight = 1.2f)
+                Spacer(Modifier.width(8.dp))
+                Box(Modifier.weight(1f)) {
+                    if (value.isEmpty()) Text(tr("Chercher : ni hao, merci, 你…", "Search: ni hao, thanks, 你…", "Поиск: ni hao, спасибо, 你…"),
+                        color = soft, style = MaterialTheme.typography.bodyLarge, maxLines = 1,
+                        overflow = TextOverflow.Ellipsis)
+                    inner()
+                }
+                if (value.isNotEmpty()) {
+                    // Effacer : rond gris avec une croix (cible de 40 dp)
+                    Box(
+                        Modifier.size(40.dp).clip(CircleShape).clickable(role = androidx.compose.ui.semantics.Role.Button) { onChange("") }
+                            .semantics { contentDescription = tr("Effacer", "Clear", "Очистить") },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Box(Modifier.size(18.dp).clip(CircleShape).background(soft.copy(alpha = 0.6f)), contentAlignment = Alignment.Center) {
+                            ZIcon(Glyph.CLOSE, Paper, size = 12.dp, weight = 2f)
+                        }
+                    }
+                }
             }
         },
     )
@@ -208,13 +243,14 @@ private fun WordCard(word: Word, lesson: Lesson, box: Int, modifier: Modifier, o
     val interaction = remember { MutableInteractionSource() }
     Column(
         modifier.fillMaxWidth().pressScale(interaction)
-            .softCard(RoundedCornerShape(16.dp))
-            .clickable(interactionSource = interaction, indication = null, onClick = onClick)
+            .softCard()
+            .clickable(interactionSource = interaction, indication = null,
+                role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
             .padding(10.dp),
     ) {
         // Le mot posé sur un fond doux, comme une feuille sur le bureau
         Box(
-            Modifier.fillMaxWidth().height(78.dp).clip(RoundedCornerShape(14.dp)).background(Mist)
+            Modifier.fillMaxWidth().height(78.dp).clip(com.zhuzi.app.ui.theme.TileShape).background(Mist)
                 .padding(horizontal = 6.dp),
             contentAlignment = Alignment.Center,
         ) {

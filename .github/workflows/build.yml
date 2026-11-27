@@ -38,6 +38,20 @@ jobs:
           name: zhuzi-ecrans
           path: app/build/screens/*.png
           if-no-files-found: ignore
+      # Branche de design : les photos vont dans une préversion à part (pas dans « dernière version »),
+      # pour pouvoir les regarder depuis une session cloud (les artefacts n'y sont pas accessibles).
+      - name: Publier les photos de la branche design-ios
+        if: github.ref == 'refs/heads/design-ios'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ls app/build/screens/*.png >/dev/null 2>&1; then
+            gh release view ecrans-design-ios >/dev/null 2>&1 || \
+              gh release create ecrans-design-ios --prerelease --target "$GITHUB_SHA" \
+                --title "Photos d'écran (branche design-ios)" --notes "Préversion de travail : photos d'écran de la branche design-ios."
+            gh release upload ecrans-design-ios app/build/screens/*.png --clobber
+          fi
       # Sur main : remplace le fichier du lien fixe
       # https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
       - name: Publier la dernière version

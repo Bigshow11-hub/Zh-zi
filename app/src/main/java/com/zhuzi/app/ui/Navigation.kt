@@ -51,12 +51,15 @@ import com.zhuzi.app.ui.theme.Paper
 import com.zhuzi.app.ui.theme.PillShape
 import com.zhuzi.app.ui.theme.Rule
 
-/** Les onglets du bas. Chaque icône est un caractère : 家 maison, 学 apprendre, 字 caractère, 记 retenir. */
-enum class Tab(private val fr: String, private val en: String, private val ru: String, val glyph: String) {
-    HOME("Accueil", "Home", "Главная", "家"),
-    LESSONS("Leçons", "Lessons", "Уроки", "学"),
-    CHARS("Caractères", "Characters", "Иероглифы", "字"),
-    PROGRESS("Progrès", "Progress", "Успехи", "记");
+/**
+ * Les onglets du bas. Icônes dessinées au trait (maison, livre, case d'écriture 田字格, barres) ;
+ * le caractère reste en `glyph` (fiches, notifications).
+ */
+enum class Tab(private val fr: String, private val en: String, private val ru: String, val glyph: String, val icon: Glyph) {
+    HOME("Accueil", "Home", "Главная", "家", Glyph.HOME),
+    LESSONS("Leçons", "Lessons", "Уроки", "学", Glyph.BOOK),
+    CHARS("Caractères", "Characters", "Иероглифы", "字", Glyph.GRID),
+    PROGRESS("Progrès", "Progress", "Успехи", "记", Glyph.CHART);
 
     fun label(lang: com.zhuzi.app.data.Lang) = tr(lang, fr, en, ru)
 }
@@ -86,23 +89,33 @@ fun MainFrame(
     }
 }
 
-/** Barre du bas flottante : deux onglets, le bouton central « séance du jour », deux onglets. */
+/**
+ * Barre du bas flottante, en « matière » translucide (fond de carte à 90 %, filet clair, ombre douce),
+ * en pilule comme la barre d'onglets d'iOS : deux onglets, le panda (séance du jour), deux onglets.
+ * Le rond du panda (60 dp) tient DANS la barre (68 dp).
+ */
 @Composable
 fun ZhuziBottomBar(selected: Tab, onSelect: (Tab) -> Unit, onCenter: () -> Unit = {}) {
     val haptic = LocalHapticFeedback.current
     val bg = com.zhuzi.app.ui.theme.BgBottom
+    val material = Paper.copy(alpha = 0.90f)
+    val edge = Rule.copy(alpha = 0.7f)
+    val barShape = PillShape
     Box(
         Modifier.fillMaxWidth()
             // Fond sous la barre : le contenu ne défile plus jusqu'aux boutons du téléphone
             .background(androidx.compose.ui.graphics.Brush.verticalGradient(
-                0f to Color.Transparent, 0.45f to bg.copy(alpha = 0.92f), 1f to bg,
+                0f to Color.Transparent, 0.5f to bg.copy(alpha = 0.85f), 1f to bg,
             ))
             .navigationBarsPadding()
-            .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
-        contentAlignment = Alignment.BottomCenter,
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Row(
-            Modifier.fillMaxWidth().height(72.dp).softCard(androidx.compose.foundation.shape.RoundedCornerShape(30.dp)),
+            Modifier.fillMaxWidth().height(68.dp)
+                .shadow(14.dp, barShape, ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.12f))
+                .clip(barShape).background(material).border(1.dp, edge, barShape)
+                .padding(horizontal = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val tabs = Tab.entries
@@ -114,7 +127,7 @@ fun ZhuziBottomBar(selected: Tab, onSelect: (Tab) -> Unit, onCenter: () -> Unit 
                 }
             }
         }
-        CenterButton(Modifier.align(Alignment.BottomCenter).offset(y = (-6).dp)) {
+        CenterButton(Modifier.align(Alignment.Center)) {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             onCenter()
         }
@@ -124,11 +137,11 @@ fun ZhuziBottomBar(selected: Tab, onSelect: (Tab) -> Unit, onCenter: () -> Unit 
 @Composable
 private fun TabItem(t: Tab, on: Boolean, modifier: Modifier, onClick: () -> Unit) {
     val accent = com.zhuzi.app.ui.theme.Accent
-    val pillBg by animateColorAsState(if (on) accent.copy(alpha = 0.13f) else Color.Transparent, label = "tabBg")
-    val glyphColor by animateColorAsState(if (on) accent else InkSoft, label = "tabGlyph")
-    val pillWidth by animateDpAsState(if (on) 52.dp else 40.dp, zhuziSpring(), label = "tabPill")
+    val pillBg by animateColorAsState(if (on) com.zhuzi.app.ui.theme.Mist else Color.Transparent, label = "tabBg")
+    val tint by animateColorAsState(if (on) accent else InkSoft, label = "tabTint")
+    val lang = currentLang()
     Column(
-        modifier.fillMaxHeight().selectable(
+        modifier.height(56.dp).clip(PillShape).background(pillBg).selectable(
             selected = on,
             role = Role.Tab,
             interactionSource = remember { MutableInteractionSource() },
@@ -137,19 +150,18 @@ private fun TabItem(t: Tab, on: Boolean, modifier: Modifier, onClick: () -> Unit
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
     ) {
-        Box(
-            Modifier.width(pillWidth).height(30.dp).clip(PillShape).background(pillBg),
-            contentAlignment = Alignment.Center,
-        ) { Text(t.glyph, fontFamily = Kai, fontSize = 20.sp, color = glyphColor) }
+        ZIcon(t.icon, tint, size = 24.dp, weight = if (on) 1.25f else 1f, filled = on)
         Spacer(Modifier.height(3.dp))
         Text(
-            t.label(currentLang()),
-            fontSize = if (currentLang() == com.zhuzi.app.data.Lang.RU) 10.sp else 11.sp,
-            letterSpacing = if (currentLang() == com.zhuzi.app.data.Lang.RU) (-0.2).sp else 0.sp,
+            t.label(lang),
+            fontSize = if (lang == com.zhuzi.app.data.Lang.RU) 10.sp else 11.sp,
+            letterSpacing = if (lang == com.zhuzi.app.data.Lang.RU) (-0.2).sp else 0.sp,
             softWrap = false,
             fontWeight = if (on) FontWeight.Bold else FontWeight.Medium,
-            color = if (on) accent else InkSoft,
+            color = tint,
             maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Clip,
+            fontFamily = com.zhuzi.app.ui.theme.Manrope,
         )
     }
 }
@@ -173,7 +185,7 @@ private fun CenterButton(modifier: Modifier, onClick: () -> Unit) {
             .graphicsLayer { scaleX = squash; scaleY = squash }
             .clip(CircleShape)
             .background(a.copy(alpha = 0.12f))
-            .border(1.5.dp, a.copy(alpha = 0.35f), CircleShape)
+            .border(1.dp, a.copy(alpha = 0.30f), CircleShape)
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .semantics { contentDescription = desc },
         contentAlignment = Alignment.Center,

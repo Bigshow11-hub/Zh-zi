@@ -12,6 +12,8 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -440,5 +442,116 @@ class ScreenshotTest {
         compose.onNodeWithText("Je savais").performClick()
         compose.waitForIdle()
         shot("8-revision-terminee")
+    }
+
+    // --- Design iOS : les mêmes écrans la nuit, et les nouveaux états (barre compacte, recherche) ---
+
+    private fun lessonsTab(night: Boolean) = inTab(Tab.LESSONS, night = night) {
+        LessonsScreen(
+            bestScore = { id, m -> scores[id]?.get(m) ?: -1 },
+            lessonKnown = { l -> known[l.id] ?: 0 },
+            onOpen = {},
+            contentPadding = it,
+        )
+    }
+
+    @Composable
+    private fun progress(p: PaddingValues) = ProgressScreen(
+        streakDays = 12, knownCount = 37, masteredCount = 20, total = all.size, dueTomorrow = 5,
+        lessonsMastered = 1, lessonsTotal = hsk1Lessons.size, reminderOn = true,
+        onReminderChange = {}, versionName = "2.4.1", lang = Lang.FR, onLangChange = {},
+        week = listOf(4, 12, 0, 7, 18, 9, 14).mapIndexed { i, n -> java.time.LocalDate.of(2026, 11, 20 + i) to n },
+        look = com.zhuzi.app.data.AvatarLook(1, com.zhuzi.app.data.Accessory.STRAW_HAT, 1), onAvatar = {},
+        contentPadding = p,
+    )
+
+    @Test
+    fun leconsNuit() {
+        lessonsTab(night = true)
+        shot("40-lecons-nuit")
+    }
+
+    @Test
+    fun progresNuit() {
+        inTab(Tab.PROGRESS, night = true) { progress(it) }
+        shot("41-progres-nuit")
+    }
+
+    @Test
+    fun progresReglages() {
+        inTab(Tab.PROGRESS) { progress(it) }
+        // On descend jusqu'aux réglages : la barre compacte « Progrès » apparaît en haut
+        repeat(2) {
+            compose.onRoot().performTouchInput { swipeUp(startY = bottom - 300f, endY = top + 100f) }
+            compose.waitForIdle()
+        }
+        shot("42-progres-reglages")
+    }
+
+    @Test
+    fun progresReglagesNuit() {
+        inTab(Tab.PROGRESS, night = true) { progress(it) }
+        repeat(2) {
+            compose.onRoot().performTouchInput { swipeUp(startY = bottom - 300f, endY = top + 100f) }
+            compose.waitForIdle()
+        }
+        shot("43-progres-reglages-nuit")
+    }
+
+    @Test
+    fun notificationsNuit() {
+        inTab(Tab.HOME, night = true) {
+            HomeScreen(
+                todayLabel = "Mercredi 26 novembre",
+                greeting = com.zhuzi.app.data.greetingNow(java.time.LocalTime.of(20, 0)),
+                proverb = com.zhuzi.app.data.proverbs[2], streakDays = 12, dueWords = all.take(8), dueTomorrow = 5,
+                knownCount = 37, masteredCount = 12, total = all.size, next = hsk1Lessons[2], nextKnown = 9,
+                wordOfDay = all[40], wordOfDayKnown = true, speak = {}, onReview = {}, onOpen = {}, onSearch = {},
+                onReminder = {}, onSeeAll = {}, look = com.zhuzi.app.data.AvatarLook(0, com.zhuzi.app.data.Accessory.SCARF, 0),
+                onAvatar = {}, contentPadding = it, activeToday = false, reminderOn = true, hour = 20,
+            )
+        }
+        compose.onNodeWithContentDescription("Notifications", substring = true).performClick()
+        compose.waitForIdle()
+        captureScreenRoboImage("build/screens/44-notifications-nuit.png")
+    }
+
+    @Test
+    fun caracteresRecherche() {
+        inTab(Tab.CHARS) { CharactersScreen(boxOf = boxes, speak = {}, contentPadding = it) }
+        compose.onNode(hasSetTextAction()).performTextInput("merci")
+        compose.waitForIdle()
+        shot("45-caracteres-recherche")
+    }
+
+    @Test
+    fun caracteresNuit() {
+        inTab(Tab.CHARS, night = true) { CharactersScreen(boxOf = boxes, speak = {}, contentPadding = it) }
+        shot("46-caracteres-nuit")
+    }
+
+    @Test
+    fun carteNuit() {
+        compose.setContent {
+            ZhuziTheme(darkTheme = true) {
+                Surface {
+                    LessonScreen(
+                        lesson = hsk1Lessons[0], speak = {}, onBack = {}, onQuizDone = { _, _ -> },
+                        onSeen = {}, onQuizAnswer = { _, _ -> }, contentPadding = bars,
+                    )
+                }
+            }
+        }
+        compose.onNodeWithText("Touche la carte pour la retourner").performClick()
+        compose.waitForIdle()
+        shot("47-carte-verso-nuit")
+    }
+
+    @Test
+    fun accueilBasNuit() {
+        inTab(Tab.HOME, night = true) { home(it) }
+        compose.onRoot().performTouchInput { swipeUp(startY = bottom - 300f, endY = top + 100f) }
+        compose.waitForIdle()
+        shot("48-accueil-bas-nuit")
     }
 }
