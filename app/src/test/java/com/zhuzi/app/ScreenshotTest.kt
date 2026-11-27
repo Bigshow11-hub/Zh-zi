@@ -363,6 +363,9 @@ class ScreenshotTest {
         compose.onNodeWithText("HSK 2").performClick()
         compose.waitForIdle()
         shot("30-lecons-hsk2")
+        compose.onNodeWithText("HSK 3").performClick()
+        compose.waitForIdle()
+        shot("35-lecons-hsk3")
     }
 
     @Test

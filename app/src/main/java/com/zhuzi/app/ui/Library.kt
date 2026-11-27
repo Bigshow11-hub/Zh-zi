@@ -412,7 +412,7 @@ fun PlayIcon(color: Color, size: androidx.compose.ui.unit.Dp) {
 /** « Leçon 3 » (HSK 1) ou « HSK 2 · Leçon 1 ». */
 @Composable
 fun lessonName(lesson: com.zhuzi.app.data.Lesson): String =
-    (if (lesson.level == 2) "HSK 2 · " else "") + tr("Leçon ", "Lesson ", "Урок ") + lesson.number
+    (if (lesson.level > 1) "HSK ${lesson.level} · " else "") + tr("Leçon ", "Lesson ", "Урок ") + lesson.number
 
 /** Même chose à partir du numéro global (règles de grammaire). */
 @Composable

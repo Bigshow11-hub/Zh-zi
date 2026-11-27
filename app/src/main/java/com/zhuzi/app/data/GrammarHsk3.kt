@@ -1,0 +1,161 @@
+package com.zhuzi.app.data
+
+private fun ex(hanzi: String, pinyin: String, fr: String, en: String, ru: String) = Example(hanzi, pinyin, fr, en, ru)
+
+/** Les règles du HSK 3, partie 1 (leçons 22 à 31). */
+val hsk3Grammar: List<GrammarPoint> = listOf(
+    GrammarPoint(
+        41, 22, "越来越",
+        T3("De plus en plus : 越来越", "More and more: 越来越", "Всё более: 越来越"),
+        T3("Sujet + 越来越 + adjectif / verbe", "Subject + 越来越 + adjective / verb", "Подлежащее + 越来越 + прилагательное / глагол"),
+        T3("越来越 (yuè lái yuè) dit qu'une qualité augmente avec le temps : « de plus en plus ». Pas besoin de 很 devant l'adjectif.",
+            "越来越 (yuè lái yuè) says a quality keeps growing over time: “more and more”. No 很 before the adjective.",
+            "越来越 (yuè lái yuè) — «всё более и более». Перед прилагательным 很 не нужно."),
+        listOf(
+            ex("天气越来越热了。", "Tiānqì yuè lái yuè rè le.", "Il fait de plus en plus chaud.", "It's getting hotter and hotter.", "Становится всё жарче."),
+            ex("你的汉语越来越好了！", "Nǐ de Hànyǔ yuè lái yuè hǎo le!", "Ton chinois est de mieux en mieux !", "Your Chinese is getting better and better!", "Твой китайский всё лучше!"),
+        ),
+    ),
+    GrammarPoint(
+        42, 23, "有点儿",
+        T3("Un peu trop : 有点儿 ou 一点儿 ?", "A bit: 有点儿 or 一点儿?", "Немного: 有点儿 или 一点儿?"),
+        T3("有点儿 + adjectif · adjectif + 一点儿", "有点儿 + adjective · adjective + 一点儿", "有点儿 + прилагательное · прилагательное + 一点儿"),
+        T3("有点儿 devant l'adjectif exprime une gêne (« un peu trop ») : 有点儿疼. 一点儿 après l'adjectif compare ou demande (« un peu plus ») : 便宜一点儿.",
+            "有点儿 before an adjective expresses a complaint (“a bit too”): 有点儿疼. 一点儿 after the adjective compares or asks (“a bit more”): 便宜一点儿.",
+            "有点儿 перед прилагательным выражает недовольство («немного слишком»): 有点儿疼. 一点儿 после прилагательного — сравнение или просьба: 便宜一点儿."),
+        listOf(
+            ex("我今天有点儿累。", "Wǒ jīntiān yǒudiǎnr lèi.", "Je suis un peu fatigué aujourd'hui.", "I'm a bit tired today.", "Я сегодня немного устал."),
+            ex("能便宜一点儿吗？", "Néng piányi yìdiǎnr ma?", "Vous pouvez faire un peu moins cher ?", "Could it be a bit cheaper?", "Можно чуть подешевле?"),
+        ),
+    ),
+    GrammarPoint(
+        43, 24, "又又",
+        T3("À la fois… et… : 又…又…", "Both… and…: 又…又…", "И… и…: 又…又…"),
+        T3("又 + adjectif 1 + 又 + adjectif 2", "又 + adjective 1 + 又 + adjective 2", "又 + прилагательное 1 + 又 + прилагательное 2"),
+        T3("又…又… réunit deux qualités du même côté (deux bonnes ou deux mauvaises) : « à la fois beau et pas cher ».",
+            "又…又… joins two qualities on the same side (both good or both bad): “both nice and cheap”.",
+            "又…又… соединяет два однородных качества (оба хороших или оба плохих): «и красивый, и дешёвый»."),
+        listOf(
+            ex("这件衬衫又好看又便宜。", "Zhè jiàn chènshān yòu hǎokàn yòu piányi.", "Cette chemise est jolie et pas chère.", "This shirt is both nice and cheap.", "Эта рубашка и красивая, и недорогая."),
+            ex("我又饿又累。", "Wǒ yòu è yòu lèi.", "J'ai faim et je suis fatigué.", "I'm both hungry and tired.", "Я и голоден, и устал."),
+        ),
+    ),
+    GrammarPoint(
+        44, 25, "先然后",
+        T3("D'abord… ensuite… : 先…然后…", "First… then…: 先…然后…", "Сначала… потом…: 先…然后…"),
+        T3("先 + action 1，然后 + action 2", "先 + action 1，然后 + action 2", "先 + действие 1，然后 + действие 2"),
+        T3("先 (xiān) se place devant le premier verbe, 然后 (ránhòu) annonce la suite. Utile pour raconter sa journée ou une recette.",
+            "先 (xiān) goes before the first verb, 然后 (ránhòu) introduces the next step. Handy for describing your day or a recipe.",
+            "先 (xiān) ставят перед первым глаголом, 然后 (ránhòu) вводит следующее действие. Удобно, чтобы рассказать о дне или рецепте."),
+        listOf(
+            ex("我们先吃饭，然后去看电影。", "Wǒmen xiān chīfàn, ránhòu qù kàn diànyǐng.", "On mange d'abord, puis on va au cinéma.", "First we eat, then we go to the cinema.", "Сначала поедим, потом пойдём в кино."),
+            ex("先洗手，然后吃饭。", "Xiān xǐ shǒu, ránhòu chīfàn.", "Lave-toi les mains, ensuite on mange.", "Wash your hands first, then eat.", "Сначала помой руки, потом ешь."),
+        ),
+    ),
+    GrammarPoint(
+        45, 26, "有",
+        T3("Il y a… : lieu + 有 + chose", "There is…: place + 有 + thing", "Есть…: место + 有 + предмет"),
+        T3("Lieu (+ 上 / 里 / 附近) + 有 + chose", "Place (+ 上 / 里 / 附近) + 有 + thing", "Место (+ 上 / 里 / 附近) + 有 + предмет"),
+        T3("Pour dire « il y a », on commence par le lieu, puis 有, puis la chose. C'est l'ordre inverse de 在 : 银行在附近 / 附近有银行.",
+            "To say “there is”, start with the place, then 有, then the thing. It's the reverse of 在: 银行在附近 / 附近有银行.",
+            "Чтобы сказать «есть», начинают с места, затем 有 и предмет. Порядок обратный 在: 银行在附近 / 附近有银行."),
+        listOf(
+            ex("附近有一个超市。", "Fùjìn yǒu yí ge chāoshì.", "Il y a un supermarché pas loin.", "There's a supermarket nearby.", "Поблизости есть супермаркет."),
+            ex("桌子上有一本词典。", "Zhuōzi shang yǒu yì běn cídiǎn.", "Il y a un dictionnaire sur la table.", "There's a dictionary on the table.", "На столе лежит словарь."),
+        ),
+    ),
+    GrammarPoint(
+        46, 27, "回来",
+        T3("La direction : verbe + 来 / 去", "Direction: verb + 来 / 去", "Направление: глагол + 来 / 去"),
+        T3("Verbe + (上 / 下 / 进 / 出 / 回) + 来 / 去", "Verb + (上 / 下 / 进 / 出 / 回) + 来 / 去", "Глагол + (上 / 下 / 进 / 出 / 回) + 来 / 去"),
+        T3("Après le verbe, 来 veut dire « vers moi », 去 « loin de moi ». On peut ajouter la direction : 回来 « revenir ici », 出去 « sortir », 带来 « apporter ».",
+            "After the verb, 来 means “towards me”, 去 “away from me”. You can add a direction: 回来 “come back”, 出去 “go out”, 带来 “bring”.",
+            "После глагола 来 — «ко мне», 去 — «от меня». Можно добавить направление: 回来 «вернуться», 出去 «выйти», 带来 «принести»."),
+        listOf(
+            ex("你什么时候回来？", "Nǐ shénme shíhou huílái?", "Quand est-ce que tu reviens ?", "When are you coming back?", "Когда ты вернёшься?"),
+            ex("请带伞去。", "Qǐng dài sǎn qù.", "Emporte un parapluie.", "Please take an umbrella with you.", "Возьми с собой зонт."),
+        ),
+    ),
+    GrammarPoint(
+        47, 28, "没有那么",
+        T3("Moins que : A 没有 B (那么) + adjectif", "Not as… as: A 没有 B (那么) + adjective", "Не такой… как: A 没有 B (那么) + прилагательное"),
+        T3("A + 没有 + B + (那么) + adjectif", "A + 没有 + B + (那么) + adjective", "A + 没有 + B + (那么) + прилагательное"),
+        T3("C'est le contraire de 比 : 没有 dit que A n'atteint pas B. 春天没有夏天热, « le printemps n'est pas aussi chaud que l'été ».",
+            "It's the opposite of 比: 没有 says A doesn't reach B. 春天没有夏天热, “spring isn't as hot as summer”.",
+            "Это противоположность 比: 没有 значит, что A не дотягивает до B. 春天没有夏天热 — «весна не такая жаркая, как лето»."),
+        listOf(
+            ex("春天没有夏天那么热。", "Chūntiān méiyǒu xiàtiān nàme rè.", "Le printemps n'est pas aussi chaud que l'été.", "Spring isn't as hot as summer.", "Весна не такая жаркая, как лето."),
+            ex("我没有哥哥高。", "Wǒ méiyǒu gēge gāo.", "Je ne suis pas aussi grand que mon frère.", "I'm not as tall as my brother.", "Я не такой высокий, как брат."),
+        ),
+    ),
+    GrammarPoint(
+        48, 29, "把",
+        T3("Agir sur une chose : la phrase en 把", "Acting on a thing: the 把 sentence", "Действие над предметом: конструкция с 把"),
+        T3("Sujet + 把 + objet + verbe + résultat", "Subject + 把 + object + verb + result", "Подлежащее + 把 + объект + глагол + результат"),
+        T3("把 (bǎ) place l'objet avant le verbe pour dire ce qu'on en fait et ce que ça donne : « finir ses devoirs », « mettre le livre sur la table ». Le verbe ne reste jamais seul.",
+            "把 (bǎ) moves the object before the verb to say what you do to it and the result: “finish the homework”, “put the book on the table”. The verb never stands alone.",
+            "把 (bǎ) выносит объект перед глаголом, чтобы сказать, что с ним сделали и каков результат: «доделать задание», «положить книгу на стол». Глагол не стоит один."),
+        listOf(
+            ex("我把作业做完了。", "Wǒ bǎ zuòyè zuò wán le.", "J'ai fini mes devoirs.", "I've finished my homework.", "Я доделал домашнее задание."),
+            ex("请把书放在桌子上。", "Qǐng bǎ shū fàng zài zhuōzi shang.", "Pose le livre sur la table, s'il te plaît.", "Please put the book on the table.", "Положи, пожалуйста, книгу на стол."),
+        ),
+    ),
+    GrammarPoint(
+        49, 30, "一边",
+        T3("En même temps : 一边…一边…", "At the same time: 一边…一边…", "Одновременно: 一边…一边…"),
+        T3("Sujet + 一边 + verbe 1 + 一边 + verbe 2", "Subject + 一边 + verb 1 + 一边 + verb 2", "Подлежащее + 一边 + глагол 1 + 一边 + глагол 2"),
+        T3("一边…一边… dit qu'on fait deux choses à la fois : « manger en regardant la télé ».",
+            "一边…一边… says you do two things at once: “eat while watching TV”.",
+            "一边…一边… — делать два дела одновременно: «есть и смотреть телевизор»."),
+        listOf(
+            ex("他一边吃饭一边看电视。", "Tā yìbiān chīfàn yìbiān kàn diànshì.", "Il mange en regardant la télé.", "He eats while watching TV.", "Он ест и смотрит телевизор."),
+            ex("我们一边喝茶一边聊天。", "Wǒmen yìbiān hē chá yìbiān liáotiān.", "On bavarde en buvant du thé.", "We chat over tea.", "Мы пьём чай и болтаем."),
+        ),
+    ),
+    GrammarPoint(
+        50, 31, "如果就",
+        T3("La condition : 如果…就…", "Conditions: 如果…就…", "Условие: 如果…就…"),
+        T3("如果 + condition，(sujet +) 就 + conséquence", "如果 + condition，(subject +) 就 + result", "如果 + условие，(подлежащее +) 就 + следствие"),
+        T3("如果 (rúguǒ) pose la condition, 就 (jiù) annonce ce qui se passe alors. Attention : 就 se place après le sujet de la seconde partie.",
+            "如果 (rúguǒ) sets the condition, 就 (jiù) introduces what happens then. Note: 就 goes after the subject of the second part.",
+            "如果 (rúguǒ) задаёт условие, 就 (jiù) вводит следствие. 就 ставят после подлежащего второй части."),
+        listOf(
+            ex("如果明天下雨，我们就不去了。", "Rúguǒ míngtiān xià yǔ, wǒmen jiù bú qù le.", "S'il pleut demain, on n'y va pas.", "If it rains tomorrow, we won't go.", "Если завтра будет дождь, мы не пойдём."),
+            ex("如果你累了，就休息一下。", "Rúguǒ nǐ lèi le, jiù xiūxi yíxià.", "Si tu es fatigué, repose-toi un peu.", "If you're tired, have a rest.", "Если устал, отдохни немного."),
+        ),
+    ),
+)
+
+/** « Le savais-tu ? » des leçons du HSK 3, partie 1. */
+val hsk3Culture: Map<Int, T3> = mapOf(
+    22 to T3("Les enfants appellent 阿姨 et 叔叔 tous les adultes qu'ils croisent, même inconnus : c'est la façon polie de s'adresser à eux.",
+        "Children call any adult 阿姨 or 叔叔, even strangers: it's the polite way to address them.",
+        "Дети называют любых взрослых 阿姨 и 叔叔, даже незнакомых: так вежливо к ним обращаться."),
+    23 to T3("En Chine, on boit souvent de l'eau chaude (热水) pour soigner un rhume ou un mal de ventre : c'est le premier conseil qu'on vous donnera.",
+        "In China people often drink hot water (热水) for a cold or a stomach ache: it's the first advice you'll get.",
+        "В Китае при простуде или боли в животе пьют горячую воду (热水) — это первый совет, который вам дадут."),
+    24 to T3("On évite d'offrir des chaussures à son amoureux : 鞋 (xié) sonne comme 邪 « mauvais » et l'on dit qu'il partirait avec.",
+        "People avoid giving shoes to a sweetheart: 鞋 (xié) sounds like 邪 “evil”, and it's said they'd walk away in them.",
+        "Любимому не дарят обувь: 鞋 (xié) звучит как 邪 «зло», и говорят, что он в ней уйдёт."),
+    25 to T3("Ne plantez jamais vos baguettes debout dans le riz : cela rappelle l'encens des funérailles.",
+        "Never stick your chopsticks upright in rice: it looks like funeral incense.",
+        "Никогда не втыкайте палочки вертикально в рис: это напоминает поминальные благовония."),
+    26 to T3("Dans beaucoup d'immeubles chinois, il n'y a pas de 4e étage : on passe du 3 au 5, car 四 sonne comme « mourir ».",
+        "Many Chinese buildings have no 4th floor: it jumps from 3 to 5, because 四 sounds like “to die”.",
+        "Во многих китайских домах нет четвёртого этажа: после 3 идёт 5, потому что 四 похоже на «умереть»."),
+    27 to T3("Le train à grande vitesse chinois relie Pékin à Shanghai (1 300 km) en un peu plus de quatre heures.",
+        "China's high-speed train links Beijing and Shanghai (1,300 km) in just over four hours.",
+        "Китайский скоростной поезд проходит путь Пекин — Шанхай (1300 км) чуть больше чем за четыре часа."),
+    28 to T3("Le calendrier traditionnel compte 24 « termes solaires » qui rythment l'agriculture, comme 立春 « début du printemps ».",
+        "The traditional calendar has 24 “solar terms” guiding farming, such as 立春 “start of spring”.",
+        "Традиционный календарь делится на 24 «солнечных сезона» для земледелия, например 立春 — «начало весны»."),
+    29 to T3("Les élèves chinois font souvent des exercices des yeux (眼保健操) en classe, en musique, pour reposer la vue.",
+        "Chinese pupils often do eye exercises (眼保健操) in class, to music, to rest their eyesight.",
+        "Китайские школьники часто делают в классе гимнастику для глаз (眼保健操) под музыку."),
+    30 to T3("Le mot 游戏 « jeu » existe depuis des siècles : il désignait autrefois les jeux d'enfants et les divertissements de cour.",
+        "The word 游戏 “game” is centuries old: it once meant children's games and court amusements.",
+        "Слову 游戏 «игра» много веков: так называли детские игры и придворные развлечения."),
+    31 to T3("En chinois, beaucoup d'émotions passent par le cœur 心 : 担心 « cœur porté » (s'inquiéter), 放心 « cœur posé » (être rassuré).",
+        "In Chinese many emotions go through the heart 心: 担心 “carrying the heart” (worry), 放心 “setting the heart down” (be at ease).",
+        "В китайском многие чувства связаны с сердцем 心: 担心 «нести сердце» (волноваться), 放心 «опустить сердце» (успокоиться)."),
+)

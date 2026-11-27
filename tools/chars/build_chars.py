@@ -11,7 +11,7 @@ for line in open(sys.argv[1], encoding='utf-8'):
     j = json.loads(line)
     dic[j['character']] = j
 
-src = ''.join(open(f'app/src/main/java/com/zhuzi/app/data/{n}.kt', encoding='utf-8').read() for n in ('Hsk1', 'Hsk2'))
+src = ''.join(open(f'app/src/main/java/com/zhuzi/app/data/{n}.kt', encoding='utf-8').read() for n in ('Hsk1', 'Hsk2', 'Hsk3'))
 chars = []
 for h in re.findall(r'w\("([^"]+)"', src):
     for c in h:
@@ -34,7 +34,7 @@ strokes = json.load(open('app/src/main/assets/strokes.json', encoding='utf-8'))
 # Les signes absents de la police pinceau (forme réduite d'une clé) sont remplacés ou laissés de côté
 from fontTools.ttLib import TTFont
 cmap = TTFont('app/src/main/res/font/wenkai.ttf').getBestCmap()
-swap = {'⺼': '月', '⺮': '竹', '耂': '老'}
+swap = {'⺼': '月', '⺮': '竹', '耂': '老', '⺀': '冫'}
 pinyin_fix = {'呢': 'ne', '子': 'zǐ', '了': 'le', '长': 'cháng', '得': 'de', '吧': 'ba', '着': 'zhe'}
 kinds = {'pictographic': 1, 'ideographic': 2, 'pictophonetic': 3}
 
@@ -54,11 +54,20 @@ for c in chars:
     kind = kinds.get((j.get('etymology') or {}).get('type'), 0)
     n = len(strokes[c]['m']) if c in strokes else 0
     rows.append(
-        f"    '{c}' to CharInfo('{c}', {k(py)}, {n}, {kind}, {k(r)}, {k(comps)},\n"
+        f"    m['{c}'] = CharInfo('{c}', {k(py)}, {n}, {kind}, {k(r)}, {k(comps)},\n"
         f"        T3({k(g[0])}, {k(g[1])}, {k(g[2])}),\n"
         f"        T3({k(g[3])}, {k(g[4])}, {k(g[5])}),\n"
-        f"        T3({k(rn[0])}, {k(rn[1])}, {k(rn[2])})),"
+        f"        T3({k(rn[0])}, {k(rn[1])}, {k(rn[2])}))"
     )
+
+# Par paquets de 80 : une seule fonction trop longue dépasserait la limite de taille du code Java (64 Ko)
+CHUNK = 80
+parts = [rows[i:i + CHUNK] for i in range(0, len(rows), CHUNK)]
+funcs = ''.join(
+    f"\nprivate fun part{i}(m: MutableMap<Char, CharInfo>) {{\n" + "\n".join(p) + "\n}\n"
+    for i, p in enumerate(parts)
+)
+calls = ' '.join(f'part{i}(m);' for i in range(len(parts)))
 
 kt = f'''package com.zhuzi.app.data
 
@@ -82,9 +91,11 @@ data class CharInfo(
 )
 
 /** Les {len(rows)} caractères de l'appli, dans l'ordre où ils apparaissent dans les leçons. */
-val charInfos: Map<Char, CharInfo> = linkedMapOf(
-{chr(10).join(rows)}
-)
-'''
+val charInfos: Map<Char, CharInfo> by lazy {{
+    val m = LinkedHashMap<Char, CharInfo>()
+    {calls}
+    m
+}}
+{funcs}'''
 open('app/src/main/java/com/zhuzi/app/data/Chars.kt', 'w', encoding='utf-8').write(kt)
 print(len(rows), 'caractères')

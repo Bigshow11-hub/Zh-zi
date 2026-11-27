@@ -82,7 +82,7 @@ fun LessonsScreen(
             Column {
                 ScreenTitle(tr("Leçons", "Lessons", "Уроки"),
                     tr("Le parcours HSK, thème par thème", "The HSK path, theme by theme", "Путь HSK, тема за темой"))
-                Segmented(listOf("HSK 1", "HSK 2"), level - 1, { level = it + 1 })
+                Segmented(listOf("HSK 1", "HSK 2", "HSK 3"), level - 1, { level = it + 1 })
             }
         }
         // Synthèse du parcours

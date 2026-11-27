@@ -9,7 +9,7 @@ import os
 import sys
 
 pkg = sys.argv[1]
-text = ''.join(open(f'app/src/main/java/com/zhuzi/app/data/{n}.kt', encoding='utf-8').read() for n in ('Hsk1', 'Hsk2'))
+text = ''.join(open(f'app/src/main/java/com/zhuzi/app/data/{n}.kt', encoding='utf-8').read() for n in ('Hsk1', 'Hsk2', 'Hsk3'))
 chars = sorted(set(c for c in text if '一' <= c <= '鿿'))
 out, missing = {}, []
 for c in chars:

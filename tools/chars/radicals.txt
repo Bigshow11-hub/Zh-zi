@@ -122,3 +122,35 @@
 尢|boiteux|lame|хромой
 比|comparer|compare|сравнивать
 丶|point|dot|точка
+自|soi, nez|self, nose|сам, нос
+耳|oreille|ear|ухо
+鼻|nez|nose|нос
+火|feu|fire|огонь
+舌|langue|tongue|язык
+衤|vêtement|clothes|одежда
+皮|peau|skin|кожа
+革|cuir|leather|кожа (выделанная)
+矢|flèche|arrow|стрела
+勹|envelopper|wrap|обёртка
+香|parfum|fragrance|аромат
+斗|boisseau|dipper|ковш
+酉|jarre de vin|wine jar|кувшин
+石|pierre|stone|камень
+皿|récipient|dish|посуда
+瓦|tuile, poterie|tile, pottery|черепица
+甘|sucré|sweet|сладкий
+行|marcher|walk|идти
+尸|corps, toit|body, roof|тело, крыша
+舟|barque|boat|лодка
+马|cheval|horse|лошадь
+用|utiliser|use|использовать
+卜|divination|divination|гадание
+片|tranche|slice|ломтик
+夊|marcher|walk slowly|идти
+⺀|glace|ice|лёд
+风|vent|wind|ветер
+爪|griffe|claw|коготь
+厂|abri, falaise|shelter, cliff|навес, утёс
+音|son|sound|звук
+网|filet|net|сеть
+青|vert-bleu|blue-green|сине-зелёный

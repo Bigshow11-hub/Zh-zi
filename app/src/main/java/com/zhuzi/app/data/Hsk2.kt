@@ -8,11 +8,19 @@ package com.zhuzi.app.data
 private fun w(hanzi: String, pinyin: String, french: String, english: String, russian: String) =
     Word(hanzi, pinyin, french, english, russian)
 
-/** Niveau HSK d'une leçon : 1 (leçons 1 à 11) ou 2 (leçons 12 à 21). */
-val Lesson.level: Int get() = if (id > 11) 2 else 1
+/** Niveau HSK d'une leçon : 1 (leçons 1 à 11), 2 (12 à 21) ou 3 (22 et suivantes). */
+val Lesson.level: Int get() = when {
+    id > 21 -> 3
+    id > 11 -> 2
+    else -> 1
+}
 
-/** Numéro de la leçon dans son niveau (la leçon 12 est la leçon 1 du HSK 2). */
-val Lesson.number: Int get() = if (id > 11) id - 11 else id
+/** Numéro de la leçon dans son niveau (la leçon 12 est la leçon 1 du HSK 2, la 22 la leçon 1 du HSK 3). */
+val Lesson.number: Int get() = when {
+    id > 21 -> id - 21
+    id > 11 -> id - 11
+    else -> id
+}
 
 val hsk2Lessons = listOf(
     Lesson(12, "Famille et présentations", "Famille", "哥",
@@ -195,8 +203,8 @@ val hsk2Lessons = listOf(
     )),
 )
 
-/** Toutes les leçons, HSK 1 puis HSK 2. */
-val allLessons: List<Lesson> by lazy { hsk1Lessons + hsk2Lessons }
+/** Toutes les leçons, HSK 1, 2 puis 3. */
+val allLessons: List<Lesson> by lazy { hsk1Lessons + hsk2Lessons + hsk3Lessons }
 
 /** Les accroches des leçons du HSK 2. */
 val hsk2Intros: Map<Int, T3> = mapOf(

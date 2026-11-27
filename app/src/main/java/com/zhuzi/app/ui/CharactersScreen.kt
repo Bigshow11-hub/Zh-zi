@@ -128,9 +128,9 @@ fun CharactersScreen(
                         1 -> tr("${com.zhuzi.app.data.charInfos.size} caractères : sens, clé et astuce pour les retenir",
                             "${com.zhuzi.app.data.charInfos.size} characters: meaning, radical and a tip to remember them",
                             "${com.zhuzi.app.data.charInfos.size} иероглифа: смысл, ключ и подсказка")
-                        else -> tr("${com.zhuzi.app.data.grammarPoints.size} règles du HSK 1 et 2, avec des exemples à écouter",
-                            "${com.zhuzi.app.data.grammarPoints.size} HSK 1 and 2 rules, with examples to listen to",
-                            "${com.zhuzi.app.data.grammarPoints.size} правил HSK 1 и 2 с примерами")
+                        else -> tr("${com.zhuzi.app.data.grammarPoints.size} règles du HSK 1 à 3, avec des exemples à écouter",
+                            "${com.zhuzi.app.data.grammarPoints.size} HSK 1–3 rules, with examples to listen to",
+                            "${com.zhuzi.app.data.grammarPoints.size} правил HSK 1–3 с примерами")
                     },
                 )
                 Segmented(listOf(tr("Mots", "Words", "Слова"), tr("Caractères", "Characters", "Знаки"),
@@ -225,7 +225,7 @@ private fun WordCard(word: Word, lesson: Lesson, box: Int, modifier: Modifier, o
         Text(word.meaning(currentLang()), fontSize = 13.sp, color = InkSoft, maxLines = 2, minLines = 2,
             overflow = TextOverflow.Ellipsis, lineHeight = 17.sp, modifier = Modifier.padding(horizontal = 2.dp))
         Row(Modifier.padding(top = 6.dp, start = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text((if (lesson.level == 2) "H2·L" else "L") + lesson.number, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = InkSoft,
+            Text((if (lesson.level > 1) "H${lesson.level}·L" else "L") + lesson.number, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = InkSoft,
                 modifier = Modifier.clip(PillShape).background(Mist)
                     .padding(horizontal = 7.dp, vertical = 2.dp))
             Spacer(Modifier.width(8.dp))

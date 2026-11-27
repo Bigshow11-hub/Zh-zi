@@ -39,6 +39,7 @@
 - 2.0.0 « HSK 2 » : 148 mots en 10 leçons (ids 12 à 21, `data/Hsk2.kt`), une phrase d'exemple par mot (`Hsk2Examples.kt`), accroches, 16 règles + notes « Le savais-tu ? » (`GrammarHsk2.kt`). `allLessons` = HSK 1 + HSK 2 partout (révisions, compteurs, caractères, Mes mots) ; `Lesson.level` / `Lesson.number` et `lessonName()` (« HSK 2 · Leçon 1 »). Page Leçons : sélecteur HSK 1 / HSK 2. 341 fiches de caractères (167 nouvelles dans `tools/chars/glosses.txt`), traits et police refaits (`build_strokes.py` et `build_chars.py` lisent Hsk1 + Hsk2). Panda : niveaux 6 (180 mots) et 7 (280). Fête « 21 leçons maîtrisées ».
 - 2.1.0 « panda vivant » : le bouton central est la tête du panda 3D (`res/drawable-nodpi/panda_head*.png`, rendus `tools/logo/panda3d/index.html?head=1[&blink=1]`) dans un rond de 60 dp DANS la barre (2.1.2 : plus de débordement), qui cligne des yeux et s'écrase à l'appui. Panneau des notifications refait (`ui/Notifications.kt`) : carte « Ta journée » encre profonde avec le panda, étapes (séance, révisions, série) qui se cochent en s'animant, une seule grande action, puis « À savoir » en liste simple ; la pastille de la cloche compte seulement séance + révisions, avec un halo. Cartes : elles se soulèvent pendant qu'elles se retournent.
 - 2.2.0 « examen blanc » : un examen blanc par niveau (page Leçons › « Examen blanc HSK N », `ui/ExamScreen.kt`, `data/Exam.kt`) : 20 questions comme au HSK, 10 écoute (mot entendu → caractères, phrase entendue → traduction ; 2 écoutes max) et 10 lecture (mot → sens, phrase à trou → mot), sans correction pendant l'épreuve ; bilan sur 100 (réussi à 60), barres par partie, mots ratés envoyés en révision (box 1) ; record gardé (`Progress.bestExam`).
+- 2.3.0 « HSK 3, partie 1 » : 150 mots en 10 leçons (ids 22 à 31, `data/Hsk3.kt`), exemples (`Hsk3Examples.kt`), 10 règles + culture (`GrammarHsk3.kt`), 169 fiches de caractères (510 au total ; `Chars.kt` est maintenant découpé en fonctions de 80 fiches pour rester sous la limite de 64 Ko du bytecode). `Lesson.level` gère 3 niveaux ; sélecteur HSK 1/2/3 ; examen blanc HSK 3 (overlay -13). Reste la partie 2 du HSK 3 (150 mots : 把 被 比较 比赛 必须 变化 参加 差 迟到 除了 打算 当然 …).
 - Refero : l'abonnement MCP n'est pas actif (« NO_SUBSCRIPTION ») ; on utilise les références intégrées au skill.
 - Higgsfield (génération d'images) : connecté, mais l'offre gratuite ne permet aucune génération (abonnement Basic requis).
 - Lien de téléchargement fixe : https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
@@ -46,7 +47,7 @@
 
 ## Idées de suite
 
-1. HSK 3.
+1. HSK 3, partie 2 (150 mots, leçons 32 à 41).
 2. Examen blanc chronométré, plus long (40 questions).
 
 ## Décisions

@@ -10,7 +10,7 @@ data class Example(val hanzi: String, val pinyin: String, val french: String, va
 }
 
 /** Les phrases d'exemple de tous les mots (HSK 1 et HSK 2). */
-val examples: Map<String, Example> by lazy { hsk1Examples + hsk2Examples }
+val examples: Map<String, Example> by lazy { hsk1Examples + hsk2Examples + hsk3Examples }
 
 /** Une phrase d'exemple pour chaque mot du HSK 1 (clé : les caractères du mot). */
 private val hsk1Examples: Map<String, Example> = mapOf(

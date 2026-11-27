@@ -81,7 +81,7 @@ fun greetingNow(time: LocalTime = LocalTime.now()): Greeting = when (time.hour) 
 }
 
 /** Une phrase d'accroche pour chaque leçon. */
-val lessonIntros: Map<Int, T3> by lazy { hsk1Intros + hsk2Intros }
+val lessonIntros: Map<Int, T3> by lazy { hsk1Intros + hsk2Intros + hsk3Intros }
 
 private val hsk1Intros: Map<Int, T3> = mapOf(
     1 to T3("Les premiers mots pour saluer, remercier et s'excuser.",
