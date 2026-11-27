@@ -95,7 +95,7 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 - **Pourquoi** : sur tablette, la barre du bas et les cartes s'étirent sur toute la largeur.
 - **Proposition** : largeur de lecture limitée (~600 dp, centrée) ; plus tard une barre latérale.
 
-### 13. Les onglets n'ont plus de caractère comme icône ✅ (choix à valider)
+### 13. Les onglets n'ont plus de caractère comme icône ✅ (validé par le propriétaire le 27/11/2026 : on garde les icônes dessinées)
 - **Où** : `ui/Navigation.kt`.
 - **Pourquoi** : 家 学 字 记 étaient jolis mais se lisent mal à 20 sp pour un débutant, et ne ressemblaient
   à rien de connu. Remplacés par des icônes dessinées : maison, livre, case d'écriture 田字格, barres.
@@ -112,7 +112,7 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 - **Fait** : la tuile « Examen blanc » et la pastille 知 de « Le savais-tu ? » étaient rouge sceau ; elles
   passent à l'accent. Le rouge sert aux sceaux, à la série et à la pastille de la cloche.
 - **Reste** : dans les fiches de caractères (`ui/Library.kt`), la clé (radical) et les pièges sont en rouge.
-  C'est une convention de manuel, mais elle brouille le sens « rouge = validé ». À trancher par le propriétaire.
+  C'est une convention de manuel, mais elle brouille le sens « rouge = validé ». **Décision du propriétaire (27/11/2026) : on garde le rouge pour la clé et les pièges.**
 
 ---
 
