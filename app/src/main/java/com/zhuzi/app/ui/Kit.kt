@@ -496,7 +496,7 @@ fun ZhuziSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = if (grouped) BgTop else Paper,
+        containerColor = if (grouped) com.zhuzi.app.ui.theme.SheetBg else Paper,
         contentColor = Ink,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         dragHandle = { Grabber() },

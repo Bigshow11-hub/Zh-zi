@@ -59,6 +59,8 @@ data class ZhuziColors(
     val bgBottom: Color,
     /** Pastille sélectionnée du sélecteur segmenté. */
     val thumb: Color,
+    /** Fond d'un panneau du bas « groupé » : un cran au-dessus du fond de page (la nuit surtout). */
+    val sheet: Color,
 )
 
 val DayColors = ZhuziColors(
@@ -68,6 +70,7 @@ val DayColors = ZhuziColors(
     bgTop = Color(0xFFF2F2F7),
     bgBottom = Color(0xFFF2F2F7),
     thumb = Color(0xFFFFFFFF),
+    sheet = Color(0xFFF2F2F7),
     tones = listOf(
         Color(0xFFC62828), // 1er ton : rouge
         Color(0xFFB45309), // 2e ton : ambre
@@ -94,6 +97,7 @@ val NightColors = ZhuziColors(
     bgTop = Color(0xFF000000),
     bgBottom = Color(0xFF000000),
     thumb = Color(0xFF636366),
+    sheet = Color(0xFF111113),
     tones = listOf(
         Color(0xFFFF8A80),
         Color(0xFFFDBA74),
@@ -129,6 +133,7 @@ val Accent: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.curre
 val Accent2: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.accentFill
 val AccentFill: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.accentFill
 val Thumb: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.thumb
+val SheetBg: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.sheet
 val BgTop: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.bgTop
 val BgBottom: Color @Composable @ReadOnlyComposable get() = LocalZhuziColors.current.bgBottom
 
