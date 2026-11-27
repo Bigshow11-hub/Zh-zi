@@ -12,8 +12,8 @@ android {
         applicationId = "com.zhuzi.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 36
-        versionName = "2.4.2"
+        versionCode = 37
+        versionName = "2.4.3"
     }
 
     // Clé de test fixe (sans secret) : chaque nouvelle version s'installe par-dessus l'ancienne.
@@ -61,6 +61,8 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     // Lecture du texte chinois sur une photo (sur le téléphone, sans internet) et pinyin automatique
     implementation(libs.mlkit.text.chinese)
+    // Téléchargement explicite du module de lecture (indispensable hors Play Store)
+    implementation(libs.play.services.base)
     implementation(libs.pinyin4j)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)

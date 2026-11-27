@@ -73,6 +73,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
+import com.google.android.gms.common.moduleinstall.InstallStatusListener
+import com.google.android.gms.common.moduleinstall.ModuleInstall
+import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
+import com.google.android.gms.common.moduleinstall.ModuleInstallStatusUpdate
+import com.google.android.gms.common.moduleinstall.ModuleInstallStatusUpdate.InstallState
+import com.google.mlkit.common.MlKitException
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
@@ -88,7 +94,9 @@ import com.zhuzi.app.ui.theme.PillShape
 import com.zhuzi.app.ui.theme.PinyinFont
 import com.zhuzi.app.ui.theme.Rule
 import com.zhuzi.app.ui.theme.Wrong
+import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -319,15 +327,75 @@ private fun AddWordForm(onSave: (String, String, String) -> Unit) {
 
 // ——— Photo → cartes ———
 
+/** État du module de lecture du chinois (fourni par les services Google, téléchargé à part). */
+sealed interface ReaderState {
+    data object Checking : ReaderState
+    data object Ready : ReaderState
+    /** Téléchargement en cours : progression de 0 à 1, ou null si inconnue. */
+    data class Downloading(val progress: Float?) : ReaderState
+    data object Failed : ReaderState
+}
+
 /**
- * Lit le texte chinois d'une photo, sur le téléphone (ML Kit) : rend les suites de caractères trouvées,
- * ou null si la lecture n'a pas pu se faire (module pas encore téléchargé, photo illisible).
+ * Demande aux services Google de télécharger le module de lecture du chinois s'il manque.
+ * Quand l'appli n'est pas installée par le Play Store, ce téléchargement ne se fait pas tout seul :
+ * on le lance ici, et on suit sa progression.
  */
-suspend fun readChinese(context: Context, uri: Uri): List<String>? = suspendCancellableCoroutine { cont ->
+suspend fun ensureChineseReader(context: Context, onState: (ReaderState) -> Unit): Boolean {
+    val reader = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
+    val client = ModuleInstall.getClient(context)
+    try {
+        val available = suspendCancellableCoroutine { cont ->
+            client.areModulesAvailable(reader)
+                .addOnSuccessListener { cont.resume(it.areModulesAvailable()) }
+                .addOnFailureListener { cont.resume(false) }
+        }
+        if (available) { onState(ReaderState.Ready); return true }
+        onState(ReaderState.Downloading(null))
+        val ok = suspendCancellableCoroutine { cont ->
+            var done = false
+            lateinit var listener: InstallStatusListener
+            listener = InstallStatusListener { update: ModuleInstallStatusUpdate ->
+                update.progressInfo?.let { p ->
+                    if (p.totalBytesToDownload > 0) onState(ReaderState.Downloading(p.bytesDownloaded.toFloat() / p.totalBytesToDownload))
+                }
+                val state = update.installState
+                if (!done && (state == InstallState.STATE_COMPLETED || state == InstallState.STATE_FAILED || state == InstallState.STATE_CANCELED)) {
+                    done = true
+                    client.unregisterListener(listener)
+                    cont.resume(state == InstallState.STATE_COMPLETED)
+                }
+            }
+            val request = ModuleInstallRequest.newBuilder().addApi(reader).setListener(listener).build()
+            client.installModules(request)
+                .addOnSuccessListener { r ->
+                    if (r.areModulesAlreadyInstalled() && !done) {
+                        done = true
+                        client.unregisterListener(listener)
+                        cont.resume(true)
+                    }
+                }
+                .addOnFailureListener { if (!done) { done = true; cont.resume(false) } }
+        }
+        onState(if (ok) ReaderState.Ready else ReaderState.Failed)
+        return ok
+    } finally {
+        reader.close()
+    }
+}
+
+/** Résultat d'une lecture : les suites de caractères trouvées, ou la raison de l'échec. */
+private sealed interface ReadResult {
+    data class Found(val runs: List<String>) : ReadResult
+    data object NotReady : ReadResult
+    data object Failed : ReadResult
+}
+
+private suspend fun readOnce(context: Context, uri: Uri): ReadResult = suspendCancellableCoroutine { cont ->
     val image = try {
         InputImage.fromFilePath(context, uri)
     } catch (e: Exception) {
-        cont.resume(null); return@suspendCancellableCoroutine
+        cont.resume(ReadResult.Failed); return@suspendCancellableCoroutine
     }
     val reader = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
     reader.process(image)
@@ -340,12 +408,31 @@ suspend fun readChinese(context: Context, uri: Uri): List<String>? = suspendCanc
                 }
             }
             reader.close()
-            cont.resume(runs.toList())
+            cont.resume(ReadResult.Found(runs.toList()))
         }
-        .addOnFailureListener {
+        .addOnFailureListener { e ->
             reader.close()
-            cont.resume(null)
+            // « UNAVAILABLE » : le module se télécharge encore
+            cont.resume(if (e is MlKitException && e.errorCode == MlKitException.UNAVAILABLE) ReadResult.NotReady else ReadResult.Failed)
         }
+}
+
+/**
+ * Lit le texte chinois d'une photo, sur le téléphone (ML Kit) : rend les suites de caractères trouvées,
+ * ou null si la lecture n'a pas pu se faire. Si le module manque, il est téléchargé puis la lecture reprend.
+ */
+suspend fun readChinese(context: Context, uri: Uri, onState: (ReaderState) -> Unit = {}): List<String>? {
+    repeat(4) { attempt ->
+        when (val r = readOnce(context, uri)) {
+            is ReadResult.Found -> return r.runs
+            ReadResult.Failed -> if (attempt > 0) return null
+            ReadResult.NotReady -> {}
+        }
+        // Module absent ou pas prêt : on le fait télécharger, puis on réessaie
+        if (!ensureChineseReader(context, onState)) return null
+        delay(1500L * (attempt + 1))
+    }
+    return null
 }
 
 private fun loadPreview(context: Context, uri: Uri): Bitmap? = try {
@@ -379,12 +466,18 @@ fun PhotoImportScreen(
     var preview by remember { mutableStateOf<Bitmap?>(null) }
     val drafts = remember { mutableStateListOf<Draft>().apply { previewDrafts?.let { addAll(it) } } }
     var pending by remember { mutableStateOf<Uri?>(null) }
+    var reader by remember { mutableStateOf<ReaderState>(if (previewDrafts != null) ReaderState.Ready else ReaderState.Checking) }
+    var attempt by remember { mutableStateOf(0) }
+    // Dès l'ouverture : on prépare le module de lecture du chinois (téléchargé une seule fois)
+    LaunchedEffect(attempt) {
+        if (previewDrafts == null) ensureChineseReader(context) { reader = it }
+    }
 
     val handle: (Uri) -> Unit = { uri ->
         step = 1
         scope.launch {
             preview = withContext(Dispatchers.IO) { loadPreview(context, uri) }
-            val runs = readChinese(context, uri)
+            val runs = readChinese(context, uri) { reader = it }
             drafts.clear()
             if (runs == null) { step = 4; return@launch }
             runs.forEach { r ->
@@ -419,7 +512,7 @@ fun PhotoImportScreen(
         AnimatedContent(step, transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
             label = "photoStep", modifier = Modifier.weight(1f)) { s ->
             when (s) {
-                0, 3, 4 -> PhotoStart(s, takePhoto, pick, contentPadding)
+                0, 3, 4 -> PhotoStart(s, reader, takePhoto, pick, { attempt++ }, contentPadding)
                 1 -> Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center) {
                     preview?.let {
@@ -428,8 +521,12 @@ fun PhotoImportScreen(
                         Spacer(Modifier.height(20.dp))
                     }
                     CircularProgressIndicator(color = Accent, strokeWidth = 3.dp, modifier = Modifier.size(32.dp))
-                    Text(tr("Lecture des caractères…", "Reading the characters…", "Читаю иероглифы…"),
+                    val r = reader
+                    Text(if (r is ReaderState.Downloading) tr("Préparation du lecteur de chinois…", "Getting the Chinese reader ready…", "Готовлю распознавание китайского…")
+                        else tr("Lecture des caractères…", "Reading the characters…", "Читаю иероглифы…"),
                         color = InkSoft, modifier = Modifier.padding(top = 14.dp))
+                    if (r is ReaderState.Downloading && r.progress != null)
+                        Text("${(r.progress * 100).toInt()} %", color = InkSoft, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp))
                 }
                 else -> PhotoResults(preview, drafts, contentPadding, onCreate, pick = takePhoto)
             }
@@ -438,7 +535,14 @@ fun PhotoImportScreen(
 }
 
 @Composable
-private fun PhotoStart(step: Int, takePhoto: () -> Unit, pick: () -> Unit, contentPadding: PaddingValues) {
+private fun PhotoStart(
+    step: Int,
+    reader: ReaderState,
+    takePhoto: () -> Unit,
+    pick: () -> Unit,
+    retry: () -> Unit,
+    contentPadding: PaddingValues,
+) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
             .padding(start = 20.dp, end = 20.dp, bottom = contentPadding.calculateBottomPadding() + 24.dp),
@@ -451,9 +555,12 @@ private fun PhotoStart(step: Int, takePhoto: () -> Unit, pick: () -> Unit, conte
                 if (step == 3) tr("Aucun caractère chinois trouvé sur cette photo. Essaie de plus près, bien droit et avec plus de lumière.",
                     "No Chinese characters found on this photo. Try closer, straight on, with more light.",
                     "На фото не найдено иероглифов. Попробуй ближе, ровнее и при лучшем свете.")
-                else tr("La lecture n'a pas pu se faire. Le module de lecture du chinois se télécharge peut-être encore (services Google) : vérifie ta connexion et réessaie dans une minute.",
-                    "Reading failed. The Chinese reading module may still be downloading (Google services): check your connection and try again in a minute.",
-                    "Не удалось прочитать. Модуль распознавания китайского, возможно, ещё загружается (сервисы Google): проверь соединение и попробуй через минуту."),
+                else if (reader == ReaderState.Failed) tr("Le lecteur de chinois n'a pas pu être téléchargé. Vérifie ta connexion internet et que « Services Google Play » est à jour, puis touche « Réessayer » ci-dessous.",
+                    "The Chinese reader couldn't be downloaded. Check your internet connection and that Google Play services is up to date, then tap Retry below.",
+                    "Не удалось загрузить распознавание китайского. Проверь интернет и обновление «Сервисов Google Play», затем нажми «Повторить».")
+                else tr("La lecture n'a pas pu se faire sur cette photo. Réessaie avec une photo plus nette, bien droite et éclairée.",
+                    "Reading failed on this photo. Try a sharper, straight, well-lit photo.",
+                    "Не удалось прочитать это фото. Попробуй более чёткое, ровное и светлое фото."),
                 color = Wrong, fontSize = 14.sp,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Wrong.copy(alpha = 0.08f)).padding(14.dp))
             Spacer(Modifier.height(14.dp))
@@ -473,6 +580,7 @@ private fun PhotoStart(step: Int, takePhoto: () -> Unit, pick: () -> Unit, conte
             }
         }
         Spacer(Modifier.height(12.dp))
+        ReaderStatus(reader, retry)
         InkButton(tr("Prendre une photo", "Take a photo", "Сделать фото"), takePhoto, Modifier.fillMaxWidth())
         Spacer(Modifier.height(10.dp))
         InkOutlinedButton(tr("Choisir dans la galerie", "Choose from gallery", "Выбрать из галереи"), pick, Modifier.fillMaxWidth())
@@ -480,6 +588,31 @@ private fun PhotoStart(step: Int, takePhoto: () -> Unit, pick: () -> Unit, conte
             "Reading happens on your phone: the photo never leaves the device.",
             "Распознавание идёт на телефоне: фото никуда не отправляется."),
             fontSize = 12.sp, color = InkSoft, modifier = Modifier.padding(top = 14.dp))
+    }
+}
+
+/** Une ligne discrète : le lecteur de chinois est-il prêt ? (téléchargé une fois par les services Google) */
+@Composable
+private fun ReaderStatus(reader: ReaderState, retry: () -> Unit) {
+    if (reader == ReaderState.Ready) return
+    Row(Modifier.fillMaxWidth().padding(bottom = 12.dp).clip(RoundedCornerShape(12.dp)).background(Mist)
+        .padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+        if (reader != ReaderState.Failed) {
+            CircularProgressIndicator(color = Accent, strokeWidth = 2.dp, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(10.dp))
+        }
+        Text(
+            when (reader) {
+                is ReaderState.Downloading -> tr("Téléchargement du lecteur de chinois", "Downloading the Chinese reader", "Загрузка распознавания китайского") +
+                    (reader.progress?.let { " · ${(it * 100).toInt()} %" } ?: "…")
+                ReaderState.Failed -> tr("Lecteur de chinois pas encore installé.", "Chinese reader not installed yet.", "Распознавание китайского ещё не установлено.")
+                else -> tr("Préparation du lecteur de chinois…", "Getting the Chinese reader ready…", "Готовлю распознавание китайского…")
+            },
+            fontSize = 13.sp, color = Ink, modifier = Modifier.weight(1f),
+        )
+        if (reader == ReaderState.Failed) TextButton(onClick = retry) {
+            Text(tr("Réessayer", "Retry", "Повторить"), color = Accent, fontWeight = FontWeight.SemiBold)
+        }
     }
 }
 

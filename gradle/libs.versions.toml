@@ -10,6 +10,7 @@ robolectric = "4.14.1"
 roborazzi = "1.32.2"
 mlkitChinese = "16.0.1"
 pinyin4j = "2.5.1"
+playServicesBase = "18.5.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
@@ -27,6 +28,7 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
 roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }
 mlkit-text-chinese = { module = "com.google.android.gms:play-services-mlkit-text-recognition-chinese", version.ref = "mlkitChinese" }
+play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
 pinyin4j = { module = "com.belerweb:pinyin4j", version.ref = "pinyin4j" }
 
 [plugins]
