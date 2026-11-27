@@ -72,11 +72,23 @@ fun ProgressScreen(
     onThemeChange: (Int) -> Unit = {},
     reminderTime: Pair<Int, Int> = Reminders.HOUR to 0,
     onReminderTime: (Int, Int) -> Unit = { _, _ -> },
+    wordOn: Boolean = true,
+    onWordChange: (Boolean) -> Unit = {},
+    wordTime: Pair<Int, Int> = 9 to 0,
+    onWordTime: (Int, Int) -> Unit = { _, _ -> },
+    updatesOn: Boolean = true,
+    onUpdatesChange: (Boolean) -> Unit = {},
+    updateName: String? = null,
+    onUpdate: () -> Unit = {},
     contentPadding: PaddingValues,
 ) {
     var pickTime by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var pickWordTime by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     val timeLabel = "%02d:%02d".format(reminderTime.first, reminderTime.second)
+    val wordLabel = "%02d:%02d".format(wordTime.first, wordTime.second)
     if (pickTime) ReminderTimeDialog(reminderTime, { h, m -> onReminderTime(h, m); pickTime = false }) { pickTime = false }
+    if (pickWordTime) ReminderTimeDialog(wordTime, { h, m -> onWordTime(h, m); pickWordTime = false },
+        title = tr("Heure du mot du jour", "Word of the day time", "Время слова дня")) { pickWordTime = false }
     val scroll = rememberScrollState()
     val density = androidx.compose.ui.platform.LocalDensity.current
     val compact by remember { androidx.compose.runtime.derivedStateOf { scroll.value > with(density) { 56.dp.toPx() } } }
@@ -193,30 +205,19 @@ fun ProgressScreen(
             }
         }
 
-        // Rappel quotidien
+        // Notifications : rappel du soir, mot du jour, nouvelles versions
         GroupedSection(
             Modifier.padding(top = 28.dp),
-            header = tr("RAPPEL", "REMINDER", "НАПОМИНАНИЕ"),
-            footer = tr("À $timeLabel, seulement si tu n'as pas encore étudié ce jour-là.",
-                "At $timeLabel, only if you haven't studied yet that day.",
-                "В $timeLabel, только если ты ещё не занимался в этот день."),
+            header = tr("NOTIFICATIONS", "NOTIFICATIONS", "УВЕДОМЛЕНИЯ"),
+            footer = tr("Rappel à $timeLabel seulement si tu n'as pas encore étudié. Mot du jour à $wordLabel : un mot nouveau chaque matin, à ajouter à tes révisions d'un geste.",
+                "Reminder at $timeLabel only if you haven't studied yet. Word of the day at $wordLabel: a new word every morning, added to your reviews in one tap.",
+                "Напоминание в $timeLabel, только если ты ещё не занимался. Слово дня в $wordLabel: новое слово каждое утро."),
         ) {
             GroupedRow(
                 title = tr("Rappel quotidien", "Daily reminder", "Ежедневное напоминание"),
                 icon = { IconTile(Glyph.BELL) },
                 modifier = Modifier.toggleable(value = reminderOn, role = Role.Switch) { onReminderChange(it) },
-                trailing = {
-                    Switch(
-                        checked = reminderOn,
-                        onCheckedChange = null,
-                        colors = SwitchDefaults.colors(
-                            checkedTrackColor = com.zhuzi.app.ui.theme.AccentFill, checkedThumbColor = androidx.compose.ui.graphics.Color.White,
-                            checkedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
-                            uncheckedTrackColor = Mist, uncheckedThumbColor = androidx.compose.ui.graphics.Color.White,
-                            uncheckedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
-                        ),
-                    )
-                },
+                trailing = { ZSwitch(reminderOn) },
             )
             RowDivider(RowIconInset)
             GroupedRow(
@@ -226,6 +227,29 @@ fun ProgressScreen(
                 chevron = true,
                 titleColor = if (reminderOn) androidx.compose.ui.graphics.Color.Unspecified else InkSoft,
                 onClick = if (reminderOn) ({ pickTime = true }) else null,
+            )
+            RowDivider(RowIconInset)
+            GroupedRow(
+                title = tr("Mot du jour", "Word of the day", "Слово дня"),
+                icon = { IconTile(Glyph.BOOK) },
+                modifier = Modifier.toggleable(value = wordOn, role = Role.Switch) { onWordChange(it) },
+                trailing = { ZSwitch(wordOn) },
+            )
+            RowDivider(RowIconInset)
+            GroupedRow(
+                title = tr("Heure du mot du jour", "Word of the day time", "Время слова дня"),
+                icon = { IconTile(Glyph.CLOCK) },
+                value = wordLabel,
+                chevron = true,
+                titleColor = if (wordOn) androidx.compose.ui.graphics.Color.Unspecified else InkSoft,
+                onClick = if (wordOn) ({ pickWordTime = true }) else null,
+            )
+            RowDivider(RowIconInset)
+            GroupedRow(
+                title = tr("Nouvelles versions", "New versions", "Новые версии"),
+                icon = { IconTile(Glyph.INFO) },
+                modifier = Modifier.toggleable(value = updatesOn, role = Role.Switch) { onUpdatesChange(it) },
+                trailing = { ZSwitch(updatesOn) },
             )
         }
 
@@ -246,6 +270,19 @@ fun ProgressScreen(
                 value = versionName,
                 role = null,
             )
+            if (updateName != null) {
+                RowDivider(RowIconInset)
+                GroupedRow(
+                    title = tr("Nouvelle version $updateName", "New version $updateName", "Новая версия $updateName"),
+                    subtitle = tr("Télécharge-la et installe-la par-dessus : tes progrès sont gardés.",
+                        "Download it and install it over this one: your progress is kept.",
+                        "Скачай и установи поверх: прогресс сохранится."),
+                    icon = { IconTile(Glyph.CHECK) },
+                    value = tr("Télécharger", "Download", "Скачать"),
+                    chevron = true,
+                    onClick = onUpdate,
+                )
+            }
         }
     }
     CompactTitleBar(tr("Progrès", "Progress", "Прогресс"), compact, contentPadding.calculateTopPadding())
@@ -337,13 +374,18 @@ private fun WeekChart(days: List<Pair<java.time.LocalDate, Int>>, modifier: Modi
 /** Choisir l'heure du rappel : le cadran d'Android (Material 3). */
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-private fun ReminderTimeDialog(initial: Pair<Int, Int>, onPick: (Int, Int) -> Unit, onDismiss: () -> Unit) {
+private fun ReminderTimeDialog(
+    initial: Pair<Int, Int>,
+    onPick: (Int, Int) -> Unit,
+    title: String = tr("Heure du rappel", "Reminder time", "Время напоминания"),
+    onDismiss: () -> Unit,
+) {
     val state = androidx.compose.material3.rememberTimePickerState(initial.first, initial.second, is24Hour = true)
     val accent = com.zhuzi.app.ui.theme.Accent
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = com.zhuzi.app.ui.theme.Paper,
-        title = { Text(tr("Heure du rappel", "Reminder time", "Время напоминания")) },
+        title = { Text(title) },
         text = {
             androidx.compose.material3.TimePicker(
                 state,
@@ -365,5 +407,20 @@ private fun ReminderTimeDialog(initial: Pair<Int, Int>, onPick: (Int, Int) -> Un
                 Text(tr("Annuler", "Cancel", "Отмена"), color = InkSoft)
             }
         },
+    )
+}
+
+/** Interrupteur des réglages (la ligne entière est cliquable). */
+@Composable
+private fun ZSwitch(checked: Boolean) {
+    Switch(
+        checked = checked,
+        onCheckedChange = null,
+        colors = SwitchDefaults.colors(
+            checkedTrackColor = com.zhuzi.app.ui.theme.AccentFill, checkedThumbColor = androidx.compose.ui.graphics.Color.White,
+            checkedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+            uncheckedTrackColor = Mist, uncheckedThumbColor = androidx.compose.ui.graphics.Color.White,
+            uncheckedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+        ),
     )
 }

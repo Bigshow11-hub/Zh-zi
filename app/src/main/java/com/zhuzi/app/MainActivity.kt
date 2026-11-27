@@ -63,6 +63,11 @@ private const val MYREVIEW = -5
 private const val EXAM_BASE = -10
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        /** Leçon à ouvrir directement (depuis la notification du mot du jour). */
+        const val EXTRA_LESSON = "open_lesson"
+    }
+
     private lateinit var speaker: Speaker
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,10 +85,11 @@ class MainActivity : ComponentActivity() {
         val allWords = allLessons.flatMap { it.words }
         val total = allWords.size
         val settings = getSharedPreferences("settings", MODE_PRIVATE)
-        val wordOfDay = allWords[(LocalDate.now().toEpochDay() % total).toInt()]
+        val wordOfDay = com.zhuzi.app.data.WordOfDay.today(this)
+        val startLesson = intent?.getIntExtra(EXTRA_LESSON, 0) ?: 0
         val versionName = runCatching { packageManager.getPackageInfo(packageName, 0).versionName }
             .getOrNull() ?: ""
-        Reminders.schedule(this)
+        com.zhuzi.app.reminder.Push.scheduleAll(this)
 
         setContent {
             // Langue choisie (français, anglais, russe), gardée sur le téléphone
@@ -110,7 +116,7 @@ class MainActivity : ComponentActivity() {
             CompositionLocalProvider(LocalLang provides lang) {
             ZhuziTheme(darkTheme = dark) {
                 var tab by rememberSaveable { mutableStateOf(Tab.HOME) }
-                var overlay by rememberSaveable { mutableIntStateOf(NONE) }
+                var overlay by rememberSaveable { mutableIntStateOf(if (allLessons.any { it.id == startLesson }) startLesson else NONE) }
                 // Change à chaque progrès pour rafraîchir les onglets
                 var version by rememberSaveable { mutableIntStateOf(0) }
                 val close: () -> Unit = { overlay = NONE; version++ }
@@ -122,6 +128,15 @@ class MainActivity : ComponentActivity() {
                 }
                 var fromButton by remember { mutableStateOf(false) }
                 var reminderAt by remember { mutableStateOf(Reminders.time(this@MainActivity)) }
+                // Mot du jour (le matin) et nouvelles versions : réglages de l'appli
+                var wordOn by remember { mutableStateOf(com.zhuzi.app.reminder.DailyWord.isEnabled(this@MainActivity)) }
+                var wordAt by remember { mutableStateOf(com.zhuzi.app.reminder.DailyWord.time(this@MainActivity)) }
+                var updatesOn by remember { mutableStateOf(com.zhuzi.app.reminder.Updates.isEnabled(this@MainActivity)) }
+                var updateName by remember { mutableStateOf(com.zhuzi.app.reminder.Updates.available(this@MainActivity)) }
+                LaunchedEffect(Unit) {
+                    com.zhuzi.app.reminder.Updates.check(this@MainActivity)
+                    updateName = com.zhuzi.app.reminder.Updates.available(this@MainActivity)
+                }
                 val askPermission = rememberLauncherForActivityResult(
                     ActivityResultContracts.RequestPermission(),
                 ) { granted ->
@@ -139,6 +154,13 @@ class MainActivity : ComponentActivity() {
                         !settings.getBoolean("asked_notifications", false)
                     ) {
                         settings.edit().putBoolean("asked_notifications", true).apply()
+                        askPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
+
+                val needPermission: () -> Unit = {
+                    if (!Reminders.canNotify(this@MainActivity)) {
+                        fromButton = true
                         askPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
                 }
@@ -361,6 +383,28 @@ class MainActivity : ComponentActivity() {
                                             }
                                         },
                                         versionName = versionName,
+                                        wordOn = wordOn,
+                                        onWordChange = { on ->
+                                            com.zhuzi.app.reminder.DailyWord.setEnabled(this@MainActivity, on)
+                                            wordOn = on
+                                            if (on) needPermission()
+                                        },
+                                        wordTime = wordAt,
+                                        onWordTime = { h, m ->
+                                            com.zhuzi.app.reminder.DailyWord.setTime(this@MainActivity, h, m)
+                                            wordAt = h to m
+                                        },
+                                        updatesOn = updatesOn,
+                                        onUpdatesChange = { on ->
+                                            com.zhuzi.app.reminder.Updates.setEnabled(this@MainActivity, on)
+                                            updatesOn = on
+                                            if (on) needPermission()
+                                        },
+                                        updateName = updateName,
+                                        onUpdate = {
+                                            startActivity(Intent(Intent.ACTION_VIEW,
+                                                android.net.Uri.parse(com.zhuzi.app.reminder.Updates.APK_URL)))
+                                        },
                                         lang = lang,
                                         look = look,
                                         onAvatar = { overlay = AVATAR },
