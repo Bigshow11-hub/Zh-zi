@@ -30,7 +30,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download derniere-version -R "$GITHUB_REPOSITORY" -p zhuzi.apk
+          gh release download -R "$GITHUB_REPOSITORY" -p zhuzi.apk
           gh run download 45932025624 -R "$GITHUB_REPOSITORY" -n zhuzi-apk -D old || true
           ls -la zhuzi.apk old || true
       - name: Activer KVM
@@ -68,7 +68,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download derniere-version -R "$GITHUB_REPOSITORY" -p zhuzi.apk
+          gh release download -R "$GITHUB_REPOSITORY" -p zhuzi.apk
           gh run download 45932025624 -R "$GITHUB_REPOSITORY" -n zhuzi-apk -D old || true
       - name: Activer KVM
         run: |
