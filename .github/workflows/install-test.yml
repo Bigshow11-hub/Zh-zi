@@ -22,7 +22,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api: [34, 35, 36]
+        include:
+          - { api: 35, target: google_apis }
+          - { api: 36, target: google_apis_playstore }
+          - { api: 37, target: google_apis }
+          - { api: 37, target: google_apis_playstore }
     steps:
       - name: Récupérer l'APK publié (et la version 2.0.0 pour tester la mise à jour)
         env:
@@ -40,7 +44,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api }}
-          target: google_apis
+          target: ${{ matrix.target }}
           arch: x86_64
           disable-animations: true
           script: |
