@@ -1,9 +1,16 @@
 package com.zhuzi.app.ui
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,6 +21,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -24,70 +33,90 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.zhuzi.app.R
 import com.zhuzi.app.ui.theme.Accent
 import com.zhuzi.app.ui.theme.Ink
 import com.zhuzi.app.ui.theme.InkSoft
 import com.zhuzi.app.ui.theme.Kai
 import com.zhuzi.app.ui.theme.Kicker
+import com.zhuzi.app.ui.theme.Mist
 import com.zhuzi.app.ui.theme.Paper
-import com.zhuzi.app.ui.theme.Right
+import com.zhuzi.app.ui.theme.Rule
 import com.zhuzi.app.ui.theme.Seal
 import kotlinx.coroutines.delay
 
-/** Une notification du jour : pastille (caractère + couleur), titre, texte, heure ou statut. */
+/** Une étape de la journée (séance, révisions, série) : faite ou non. */
+data class DayStep(val title: String, val detail: String, val done: Boolean)
+
+/** Une information du jour (rappel, leçon, mot du jour) : ligne simple avec une action. */
 data class DayNote(
     val glyph: String,
-    val tint: Color,
     val title: String,
     val body: String,
-    val time: String,
-    /** À faire (compte dans la pastille rouge de la cloche). */
-    val pending: Boolean,
-    /** Déjà fait aujourd'hui (coche verte). */
-    val done: Boolean = false,
     val action: String? = null,
     val onClick: (() -> Unit)? = null,
 )
 
+/** Le fil du jour : les étapes à cocher, l'action principale, puis les informations. */
+data class DayFeed(
+    val steps: List<DayStep>,
+    val startLabel: String?,
+    val onStart: () -> Unit,
+    val infos: List<DayNote>,
+) {
+    /** Ce qui reste à faire : le chiffre de la cloche. */
+    val pending: Int get() = steps.take(2).count { !it.done }
+}
+
 /**
- * La cloche de l'accueil : pastille rouge avec le nombre de choses à faire, et un petit
- * balancement de temps en temps tant qu'il en reste.
+ * La cloche de l'accueil. Une petite pastille rouge, bien posée dans le coin, avec le nombre
+ * de choses qui restent ; un halo qui respire autour, et un balancement de temps en temps.
  */
 @Composable
 fun BellButton(pending: Int, onClick: () -> Unit) {
     val ink = Ink
+    val seal = Seal
     val swing = remember { Animatable(0f) }
     LaunchedEffect(pending) {
         if (pending == 0) return@LaunchedEffect
-        delay(900)
+        delay(1200)
         while (true) {
             swing.animateTo(0f, keyframes {
-                durationMillis = 900
-                16f at 90; -14f at 210; 10f at 330; -7f at 450; 4f at 570; -2f at 690
+                durationMillis = 800
+                14f at 90; -12f at 200; 8f at 320; -5f at 440; 2f at 560
             })
-            delay(5000)
+            delay(6000)
         }
     }
-    val label = tr("Notifications", "Notifications", "Уведомления")
-    Box(Modifier.size(44.dp)) {
+    val label = tr("Notifications", "Notifications", "Уведомления") +
+        if (pending > 0) " · " + tr("$pending à faire", "$pending to do", "сделать: $pending") else ""
+    Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
         Box(
             Modifier.size(44.dp).softCard(CircleShape).clickable(onClick = onClick)
                 .semantics { contentDescription = label },
@@ -101,16 +130,27 @@ fun BellButton(pending: Int, onClick: () -> Unit) {
         if (pending > 0) {
             val pop = remember { Animatable(0f) }
             LaunchedEffect(pending) {
-                pop.snapTo(0.4f)
-                pop.animateTo(1f, spring(dampingRatio = 0.4f, stiffness = Spring.StiffnessMedium))
+                pop.snapTo(0.3f)
+                pop.animateTo(1f, spring(dampingRatio = 0.5f, stiffness = Spring.StiffnessMedium))
             }
+            val pulse = rememberInfiniteTransition(label = "badge")
+            val ring by pulse.animateFloat(0f, 1f, infiniteRepeatable(tween(1800), RepeatMode.Restart), label = "ring")
             Box(
-                Modifier.align(Alignment.TopEnd).offset(x = 3.dp, y = (-3).dp)
-                    .graphicsLayer { scaleX = pop.value; scaleY = pop.value }
-                    .size(19.dp).clip(CircleShape).background(Seal).border(2.dp, Paper, CircleShape),
+                Modifier.align(Alignment.TopEnd).offset(x = (-1).dp, y = 1.dp).size(18.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("$pending", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                // halo qui s'élargit et s'efface
+                Canvas(Modifier.size(18.dp)) {
+                    drawCircle(seal.copy(alpha = 0.35f * (1f - ring)), radius = size.minDimension / 2 * (1f + ring * 0.8f))
+                }
+                Box(
+                    Modifier.graphicsLayer { scaleX = pop.value; scaleY = pop.value }
+                        .size(18.dp).clip(CircleShape).background(seal).border(1.5.dp, Paper, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(if (pending > 9) "9+" else "$pending", color = Color.White, fontSize = 10.sp,
+                        fontWeight = FontWeight.ExtraBold, lineHeight = 10.sp)
+                }
             }
         }
     }
@@ -118,100 +158,212 @@ fun BellButton(pending: Int, onClick: () -> Unit) {
 
 @Composable
 private fun BellIcon(c: Color) {
-    androidx.compose.foundation.Canvas(Modifier.size(20.dp)) {
+    Canvas(Modifier.size(20.dp)) {
         val w = size.width
-        val p = androidx.compose.ui.graphics.Path().apply {
+        val p = Path().apply {
             moveTo(w * 0.18f, w * 0.74f)
             cubicTo(w * 0.26f, w * 0.62f, w * 0.24f, w * 0.52f, w * 0.26f, w * 0.40f)
             cubicTo(w * 0.30f, w * 0.18f, w * 0.70f, w * 0.18f, w * 0.74f, w * 0.40f)
             cubicTo(w * 0.76f, w * 0.52f, w * 0.74f, w * 0.62f, w * 0.82f, w * 0.74f)
             close()
         }
-        drawPath(p, c, style = androidx.compose.ui.graphics.drawscope.Stroke(w * 0.10f))
-        drawLine(c, androidx.compose.ui.geometry.Offset(w * 0.42f, w * 0.88f),
-            androidx.compose.ui.geometry.Offset(w * 0.58f, w * 0.88f), w * 0.10f,
-            cap = androidx.compose.ui.graphics.StrokeCap.Round)
+        drawPath(p, c, style = Stroke(w * 0.10f))
+        drawLine(c, Offset(w * 0.42f, w * 0.88f), Offset(w * 0.58f, w * 0.88f), w * 0.10f, cap = StrokeCap.Round)
     }
 }
 
 /** Le panneau des notifications du jour, qui monte du bas. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotificationsSheet(notes: List<DayNote>, dateLabel: String, onDismiss: () -> Unit) {
+fun NotificationsSheet(feed: DayFeed, dateLabel: String, onDismiss: () -> Unit) {
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = state, containerColor = Paper) {
-        NotificationsContent(notes, dateLabel, onDismiss)
+        NotificationsContent(feed, dateLabel, onDismiss)
     }
 }
 
+/**
+ * Le contenu : la carte « Ta journée » (encre profonde, panda 3D, étapes qui se cochent,
+ * une seule grande action), puis les informations en liste simple.
+ */
 @Composable
-fun NotificationsContent(notes: List<DayNote>, dateLabel: String, onDismiss: () -> Unit) {
-    val pending = notes.count { it.pending }
+fun NotificationsContent(feed: DayFeed, dateLabel: String, onDismiss: () -> Unit) {
     val seen = remember { mutableSetOf<Any>() }
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
             .padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
     ) {
-        Text(tr("Notifications", "Notifications", "Уведомления"), style = MaterialTheme.typography.headlineMedium)
-        Text(
-            dateLabel + " · " + if (pending == 0) tr("tout est fait, bravo !", "all done, well done!", "всё сделано, молодец!")
-            else tr("$pending à faire", "$pending to do", "сделать: $pending"),
-            color = InkSoft, fontSize = 14.sp, modifier = Modifier.padding(top = 2.dp, bottom = 16.dp),
-        )
-        Text(tr("AUJOURD'HUI", "TODAY", "СЕГОДНЯ"), style = Kicker, modifier = Modifier.padding(bottom = 10.dp))
-        notes.forEachIndexed { i, n ->
-            NoteRow(n, Modifier.staggerIn("note$i", i, seen)) {
-                n.onClick?.let { onDismiss(); it() }
+        Text(dateLabel, color = InkSoft, fontSize = 14.sp)
+        Text(tr("Ta journée", "Your day", "Твой день"), style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(top = 2.dp, bottom = 16.dp))
+        DayCard(feed, Modifier.staggerIn("day", 0, seen)) { onDismiss(); feed.onStart() }
+        if (feed.infos.isNotEmpty()) {
+            Text(tr("À SAVOIR", "GOOD TO KNOW", "К СВЕДЕНИЮ"), style = Kicker, modifier = Modifier.padding(top = 26.dp, bottom = 10.dp))
+            Column(Modifier.fillMaxWidth().staggerIn("infos", 1, seen).softCard()) {
+                feed.infos.forEachIndexed { i, n ->
+                    if (i > 0) HorizontalDivider(color = Rule, thickness = 1.dp, modifier = Modifier.padding(start = 70.dp))
+                    InfoRow(n) { n.onClick?.let { onDismiss(); it() } }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun NoteRow(note: DayNote, modifier: Modifier, onClick: () -> Unit) {
-    val interaction = remember { MutableInteractionSource() }
-    Row(
-        modifier.padding(bottom = 10.dp).fillMaxWidth().pressScale(interaction)
-            .softCard(RoundedCornerShape(16.dp))
-            .clickable(interactionSource = interaction, indication = null, enabled = note.onClick != null, onClick = onClick)
-            .padding(14.dp),
-        verticalAlignment = Alignment.Top,
-    ) {
-        Box(Modifier.size(42.dp).clip(CircleShape)
-            .background(if (note.tint == Ink) com.zhuzi.app.ui.theme.Mist else note.tint.copy(alpha = 0.12f)),
-            contentAlignment = Alignment.Center) {
-            Text(note.glyph, fontFamily = Kai, fontSize = 22.sp, color = note.tint)
+private fun DayCard(feed: DayFeed, modifier: Modifier, onStart: () -> Unit) {
+    val deep = Color(0xFF16172C)
+    val done = feed.steps.count { it.done }
+    val total = feed.steps.size
+    Box(modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(deep)) {
+        // le panda 3D qui regarde la carte, posé en haut à droite
+        PandaHead(Modifier.align(Alignment.TopEnd).offset(x = 14.dp, y = (-6).dp).size(112.dp))
+        Column(Modifier.padding(20.dp)) {
+            Text(
+                if (done == total) tr("Tout est fait !", "All done!", "Всё сделано!")
+                else tr("$done sur $total", "$done of $total", "$done из $total"),
+                color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 26.sp,
+            )
+            Text(
+                if (done == total) tr("Ton bambou a poussé aujourd'hui.", "Your bamboo grew today.", "Твой бамбук сегодня подрос.")
+                else tr("Quelques minutes et ta journée est validée.", "A few minutes and your day is complete.",
+                    "Несколько минут — и день засчитан."),
+                color = Color.White.copy(alpha = 0.72f), fontSize = 14.sp, modifier = Modifier.padding(top = 2.dp, end = 84.dp),
+            )
+            // barre en segments : un par étape, qui se remplit en cascade
+            Row(Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                feed.steps.forEachIndexed { i, s -> Segment(s.done, i, Modifier.weight(1f)) }
+            }
+            Column(Modifier.padding(top = 14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                feed.steps.forEachIndexed { i, s -> StepRow(s, i) }
+            }
+            feed.startLabel?.let { label ->
+                val interaction = remember { MutableInteractionSource() }
+                Box(
+                    Modifier.padding(top = 18.dp).fillMaxWidth().height(52.dp).pressScale(interaction)
+                        .clip(RoundedCornerShape(50)).background(Color.White)
+                        .clickable(interactionSource = interaction, indication = null, onClick = onStart),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(label, color = deep, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Segment(done: Boolean, index: Int, modifier: Modifier) {
+    val fill = remember { Animatable(0f) }
+    LaunchedEffect(done) {
+        delay(250L + index * 140L)
+        fill.animateTo(if (done) 1f else 0f, tween(520, easing = EaseOutQuart))
+    }
+    val accent = Accent
+    Canvas(modifier.height(6.dp)) {
+        val r = androidx.compose.ui.geometry.CornerRadius(size.height / 2, size.height / 2)
+        drawRoundRect(Color.White.copy(alpha = 0.16f), cornerRadius = r)
+        if (fill.value > 0f) drawRoundRect(accent, size = size.copy(width = size.width * fill.value), cornerRadius = r)
+    }
+}
+
+@Composable
+private fun StepRow(step: DayStep, index: Int) {
+    val accent = Accent
+    val check = remember { Animatable(0f) }
+    LaunchedEffect(step.done) {
+        delay(350L + index * 160L)
+        check.animateTo(if (step.done) 1f else 0f, tween(420, easing = EaseOutQuart))
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        // rond qui se remplit, puis la coche qui se dessine
+        Canvas(Modifier.size(24.dp)) {
+            val w = size.width
+            val c = check.value
+            drawCircle(Color.White.copy(alpha = 0.28f), radius = w / 2 - 1.dp.toPx(), style = Stroke(1.5.dp.toPx()))
+            if (c > 0f) {
+                drawCircle(accent, radius = (w / 2) * minOf(1f, c * 1.6f))
+                val t = ((c - 0.35f) / 0.65f).coerceIn(0f, 1f)
+                if (t > 0f) {
+                    val a = Offset(w * 0.28f, w * 0.52f)
+                    val b = Offset(w * 0.44f, w * 0.67f)
+                    val e = Offset(w * 0.73f, w * 0.36f)
+                    val path = Path().apply {
+                        moveTo(a.x, a.y)
+                        if (t < 0.4f) {
+                            val k = t / 0.4f
+                            lineTo(a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k)
+                        } else {
+                            lineTo(b.x, b.y)
+                            val k = (t - 0.4f) / 0.6f
+                            lineTo(b.x + (e.x - b.x) * k, b.y + (e.y - b.y) * k)
+                        }
+                    }
+                    drawPath(path, Color.White, style = Stroke(2.2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+                }
+            }
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(note.title, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp, color = Ink,
-                    maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                Spacer(Modifier.width(8.dp))
-                Text(note.time, fontSize = 11.sp, color = InkSoft, fontWeight = FontWeight.Bold)
-            }
-            Text(note.body, fontSize = 13.sp, color = InkSoft, modifier = Modifier.padding(top = 2.dp))
-            Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically) {
-                when {
-                    note.done -> StatusPill("✓ " + tr("Fait", "Done", "Готово"), Right)
-                    note.pending -> StatusPill(tr("À faire", "To do", "Сделать"), Seal)
-                }
-                note.action?.let { Text("$it ›", color = Accent, fontWeight = FontWeight.Bold, fontSize = 13.sp) }
-            }
+            Text(step.title, color = Color.White.copy(alpha = if (step.done) 0.6f else 1f),
+                fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            Text(step.detail, color = Color.White.copy(alpha = 0.6f), fontSize = 13.sp)
         }
     }
 }
 
 @Composable
-private fun StatusPill(text: String, color: Color) {
-    Box(Modifier.clip(com.zhuzi.app.ui.theme.PillShape).background(color.copy(alpha = 0.13f))
-        .padding(horizontal = 9.dp, vertical = 3.dp)) {
-        Text(text, color = color, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+private fun InfoRow(note: DayNote, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 64.dp)
+            .clickable(enabled = note.onClick != null, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(Mist), contentAlignment = Alignment.Center) {
+            Text(note.glyph, fontFamily = Kai, fontSize = 22.sp, color = Ink)
+        }
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(note.title, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Ink, maxLines = 1,
+                overflow = TextOverflow.Ellipsis)
+            Text(note.body, fontSize = 13.sp, color = InkSoft, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        }
+        note.action?.let {
+            Text(it, color = Accent, fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.padding(start = 8.dp))
+        }
     }
 }
 
-/** Fabrique les notifications du jour à partir de l'état de l'appli. */
+/** La tête du panda en 3D, qui cligne des yeux de temps en temps et flotte doucement. */
+@Composable
+fun PandaHead(modifier: Modifier = Modifier, float: Boolean = true) {
+    val blink = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(2600L + (0..2200).random())
+            blink.snapTo(1f); delay(130); blink.snapTo(0f)
+            if ((0..3).random() == 0) { delay(160); blink.snapTo(1f); delay(120); blink.snapTo(0f) }
+        }
+    }
+    val bob = rememberInfiniteTransition(label = "bob")
+    val y by bob.animateFloat(-1f, 1f, infiniteRepeatable(tween(1600, easing = EaseInOutSine), RepeatMode.Reverse), label = "y")
+    val tilt by bob.animateFloat(-3f, 3f, infiniteRepeatable(tween(2300, easing = EaseInOutSine), RepeatMode.Reverse), label = "tilt")
+    Image(
+        painterResource(if (blink.value > 0.5f) R.drawable.panda_head_blink else R.drawable.panda_head),
+        contentDescription = null,
+        modifier = modifier.graphicsLayer {
+            if (float) {
+                translationY = y * 2.5f * density
+                rotationZ = tilt
+            }
+        },
+    )
+}
+
+/** Va-et-vient doux (sinusoïdal), pour le flottement du panda. */
+val EaseInOutSine = androidx.compose.animation.core.CubicBezierEasing(0.37f, 0f, 0.63f, 1f)
+
+/** Fabrique le fil du jour à partir de l'état de l'appli. */
 @Composable
 fun dayNotes(
     activeToday: Boolean,
@@ -228,74 +380,49 @@ fun dayNotes(
     onReminder: () -> Unit,
     speak: (String) -> Unit,
     reminderAt: Pair<Int, Int> = 19 to 0,
-): List<DayNote> {
+): DayFeed {
+    val lang = currentLang()
     val at = "%02d:%02d".format(reminderAt.first, reminderAt.second)
     val passed = hour * 60 >= reminderAt.first * 60 + reminderAt.second
-    val lang = currentLang()
-    val accent = Accent
-    // Une seule couleur pour l'action ; le reste en encre neutre, le rouge pour la série
-    val blue = Ink
-    val green = Ink
-    val amber = Ink
+    val streakNow = if (activeToday) streakDays else streakDays + 1
+    val steps = listOf(
+        DayStep(tr("Séance du jour", "Today's session", "Занятие дня"),
+            if (activeToday) tr("Validée", "Done", "Засчитано") else tr("5 minutes suffisent", "5 minutes is enough", "Хватит 5 минут"),
+            activeToday),
+        DayStep(tr("Révisions", "Reviews", "Повторения"),
+            if (due > 0) wordsCount(lang, due) + tr(" prêts à revoir", " ready to review", " готовы к повторению")
+            else if (dueTomorrow > 0) tr("À jour · demain : ", "Up to date · tomorrow: ", "Готово · завтра: ") + wordsCount(lang, dueTomorrow)
+            else tr("À jour", "Up to date", "Готово"),
+            due == 0),
+        DayStep(tr("Série", "Streak", "Серия"),
+            if (activeToday) daysCount(lang, streakDays) + tr(" d'affilée", " in a row", " подряд")
+            else if (streakDays > 0) tr("Passe à ", "Goes to ", "Станет ") + daysCount(lang, streakNow) + tr(" avant minuit", " before midnight", " до полуночи")
+            else tr("Commence ta série aujourd'hui", "Start your streak today", "Начни серию сегодня"),
+            activeToday),
+    )
+    val startLabel = when {
+        due > 0 -> tr("Réviser ", "Review ", "Повторить ") + wordsCount(lang, due)
+        !activeToday -> tr("Commencer · 5 min", "Start · 5 min", "Начать · 5 мин")
+        else -> null
+    }
     val start: () -> Unit = if (due > 0) onReview else ({ onOpen(next) })
-    val notes = mutableListOf<DayNote>()
-    // 1. La journée : valider par une séance
-    notes += if (activeToday) DayNote("好", Right, tr("Journée validée", "Day complete", "День засчитан"),
-        tr("Tu as étudié aujourd'hui. Reviens demain pour faire grandir ta série.",
-            "You studied today. Come back tomorrow to grow your streak.",
-            "Сегодня ты позанимался. Возвращайся завтра, чтобы серия росла."),
-        tr("Fait", "Done", "Готово"), pending = false, done = true)
-    else DayNote("学", accent, tr("Fais une séance pour valider ta journée", "Do a session to complete your day", "Позанимайся, чтобы засчитать день"),
-        tr("Une révision ou quelques cartes suffisent : 5 minutes et c'est validé.",
-            "A review or a few cards is enough: 5 minutes and it counts.",
-            "Хватит повторения или пары карточек: 5 минут — и день засчитан."),
-        tr("Aujourd'hui", "Today", "Сегодня"), pending = true,
-        action = tr("Commencer", "Start", "Начать"), onClick = start)
-    // 2. La série en jeu
-    if (streakDays > 0 && !activeToday) {
-        notes += DayNote("天", Seal, tr("Ta série de ", "Your ", "Твоя серия: ") + daysCount(lang, streakDays) +
-            tr(" t'attend", " streak is waiting", ""),
-            tr("Étudie avant minuit pour ne pas la perdre.", "Study before midnight to keep it.", "Позанимайся до полуночи, чтобы её не потерять."),
-            tr("Avant minuit", "By midnight", "До полуночи"), pending = true,
-            action = tr("Garder ma série", "Keep my streak", "Сохранить серию"), onClick = start)
-    }
-    // 3. Les révisions
-    notes += if (due > 0) DayNote("记", blue, wordsCount(lang, due) + tr(" à revoir", " to review", " повторить"),
-        tr("Ils sont prêts : c'est le meilleur moment pour ne pas les oublier.",
-            "They're ready: now is the best time not to forget them.",
-            "Они готовы: сейчас лучшее время, чтобы их не забыть."),
-        tr("Prêt", "Ready", "Готово"), pending = true, action = tr("Réviser", "Review", "Повторить"), onClick = onReview)
-    else DayNote("记", blue, tr("Révisions à jour", "Reviews up to date", "Повторения выполнены"),
-        if (dueTomorrow > 0) tr("Demain : ", "Tomorrow: ", "Завтра: ") + wordsCount(lang, dueTomorrow)
-        else tr("Rien à revoir pour l'instant.", "Nothing to review for now.", "Пока нечего повторять."),
-        tr("Aujourd'hui", "Today", "Сегодня"), pending = false, done = true)
-    // 4. Le rappel quotidien, à l'heure choisie
-    notes += when {
-        !reminderOn -> DayNote("钟", InkSoft, tr("Rappel désactivé", "Reminder off", "Напоминание выключено"),
-            tr("Active-le pour recevoir un petit mot chaque jour à l'heure de ton choix.",
-                "Turn it on to get a little nudge every day at the time you choose.",
-                "Включи его, чтобы каждый день получать напоминание в удобное время."),
-            at, pending = false, action = tr("Régler", "Settings", "Настроить"), onClick = onReminder)
-        passed -> DayNote("钟", amber, tr("Rappel de $at", "$at reminder", "Напоминание в $at"),
-            tr("« 学习时间到了 » : c'est l'heure de ton chinois du jour.",
-                "“学习时间到了”: it's time for your daily Chinese.",
-                "«学习时间到了»: время для китайского."),
-            at, pending = false, action = tr("Régler", "Settings", "Настроить"), onClick = onReminder)
-        else -> DayNote("钟", amber, tr("Prochain rappel à $at", "Next reminder at $at", "Следующее напоминание в $at"),
-            tr("Un petit mot si tu n'as pas encore étudié d'ici là.",
-                "A little nudge if you haven't studied by then.",
-                "Напомню, если ты к тому времени ещё не позанимаешься."),
-            at, pending = false, action = tr("Régler", "Settings", "Настроить"), onClick = onReminder)
-    }
-    // 5. La leçon en cours
-    notes += DayNote(next.symbol, green, lessonName(next) + " · " + next.title(lang),
-        "$nextKnown / ${next.words.size} " + tr("mots découverts", "words discovered", "слов открыто"),
-        tr("En cours", "In progress", "В процессе"), pending = false, done = nextKnown >= next.words.size,
-        action = tr("Continuer", "Continue", "Продолжить"), onClick = { onOpen(next) })
-    // 6. Le mot du jour
-    notes += DayNote(wordOfDay.hanzi.take(1), Seal, tr("Mot du jour : ", "Word of the day: ", "Слово дня: ") + wordOfDay.hanzi,
-        wordOfDay.pinyin + " · " + wordOfDay.meaning(lang),
-        tr("Nouveau", "New", "Новое"), pending = false,
-        action = tr("Écouter", "Listen", "Слушать"), onClick = { speak(wordOfDay.hanzi) })
-    return notes
+    val infos = listOf(
+        DayNote(next.symbol, lessonName(next) + " · " + next.title(lang),
+            "$nextKnown / ${next.words.size} " + tr("mots découverts", "words discovered", "слов открыто"),
+            tr("Ouvrir", "Open", "Открыть")) { onOpen(next) },
+        DayNote(wordOfDay.hanzi.take(1), tr("Mot du jour : ", "Word of the day: ", "Слово дня: ") + wordOfDay.hanzi,
+            wordOfDay.pinyin + " · " + wordOfDay.meaning(lang), tr("Écouter", "Listen", "Слушать")) { speak(wordOfDay.hanzi) },
+        when {
+            !reminderOn -> DayNote("钟", tr("Rappel désactivé", "Reminder off", "Напоминание выключено"),
+                tr("Active-le pour un petit mot chaque jour.", "Turn it on for a daily nudge.", "Включи ежедневное напоминание."),
+                tr("Régler", "Settings", "Настроить"), onReminder)
+            passed -> DayNote("钟", tr("Rappel de $at", "$at reminder", "Напоминание в $at"),
+                tr("C'est l'heure de ton chinois du jour.", "It's time for your daily Chinese.", "Время для китайского."),
+                tr("Régler", "Settings", "Настроить"), onReminder)
+            else -> DayNote("钟", tr("Rappel à $at", "Reminder at $at", "Напоминание в $at"),
+                tr("Seulement si tu n'as pas encore étudié.", "Only if you haven't studied yet.", "Только если ты ещё не занимался."),
+                tr("Régler", "Settings", "Настроить"), onReminder)
+        },
+    )
+    return DayFeed(steps, startLabel, start, infos)
 }

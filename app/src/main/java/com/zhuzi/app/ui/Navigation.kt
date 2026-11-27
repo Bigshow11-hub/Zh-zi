@@ -1,5 +1,10 @@
 package com.zhuzi.app.ui
 
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
@@ -109,7 +114,7 @@ fun ZhuziBottomBar(selected: Tab, onSelect: (Tab) -> Unit, onCenter: () -> Unit 
                 }
             }
         }
-        CenterButton(Modifier.align(Alignment.TopCenter).offset(y = (-18).dp)) {
+        CenterButton(Modifier.align(Alignment.TopCenter).offset(y = (-26).dp)) {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             onCenter()
         }
@@ -149,31 +154,58 @@ private fun TabItem(t: Tab, on: Boolean, modifier: Modifier, onClick: () -> Unit
     }
 }
 
-/** Bouton rond central en dégradé : lance la séance du jour (révision, sinon la leçon à reprendre). */
+/**
+ * Bouton central : le panda 3D qui lance la séance du jour. Il flotte, cligne des yeux,
+ * s'écrase un peu quand on appuie, et une pastille « lecture » rappelle que c'est un bouton.
+ */
 @Composable
 private fun CenterButton(modifier: Modifier, onClick: () -> Unit) {
     val a = com.zhuzi.app.ui.theme.Accent
-    val b = com.zhuzi.app.ui.theme.Accent2
     val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val squash by animateFloatAsState(if (pressed) 0.88f else 1f,
+        androidx.compose.animation.core.spring(dampingRatio = 0.45f, stiffness = androidx.compose.animation.core.Spring.StiffnessMedium),
+        label = "squash")
     val desc = tr("Lancer la séance du jour", "Start today's session", "Начать занятие дня")
+    val bob = androidx.compose.animation.core.rememberInfiniteTransition(label = "fab")
+    val lift by bob.animateFloat(0f, 1f, androidx.compose.animation.core.infiniteRepeatable(
+        androidx.compose.animation.core.tween(1600, easing = EaseInOutSine), androidx.compose.animation.core.RepeatMode.Reverse), label = "lift")
     Box(
-        modifier.size(64.dp).pressScale(interaction)
-            .shadow(8.dp, CircleShape, ambientColor = a.copy(alpha = 0.15f), spotColor = a.copy(alpha = 0.3f))
-            .clip(CircleShape)
-            .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(a, b)))
+        modifier.size(80.dp)
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .semantics { contentDescription = desc },
         contentAlignment = Alignment.Center,
     ) {
-        // Triangle « lecture », dessiné
-        androidx.compose.foundation.Canvas(Modifier.size(22.dp)) {
-            val p = androidx.compose.ui.graphics.Path().apply {
-                moveTo(size.width * 0.22f, size.height * 0.10f)
-                lineTo(size.width * 0.92f, size.height * 0.50f)
-                lineTo(size.width * 0.22f, size.height * 0.90f)
-                close()
+        // ombre douce au sol, plus petite quand le panda monte
+        androidx.compose.foundation.Canvas(Modifier.align(Alignment.BottomCenter).size(56.dp, 10.dp)) {
+            drawOval(Color(0xFF14152B).copy(alpha = 0.16f - 0.06f * lift),
+                topLeft = androidx.compose.ui.geometry.Offset(size.width * 0.1f * lift, 0f),
+                size = androidx.compose.ui.geometry.Size(size.width * (1f - 0.2f * lift), size.height))
+        }
+        PandaHead(
+            Modifier.size(76.dp).graphicsLayer {
+                translationY = -lift * 3f * density
+                scaleX = squash * (1f + (1f - squash) * 0.6f); scaleY = squash
+                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 1f)
+            },
+            float = false,
+        )
+        // pastille « lecture »
+        Box(
+            Modifier.align(Alignment.BottomEnd).offset(x = (-4).dp, y = (-6).dp).size(26.dp)
+                .shadow(4.dp, CircleShape, spotColor = a.copy(alpha = 0.4f)).clip(CircleShape).background(a)
+                .border(2.dp, com.zhuzi.app.ui.theme.Paper, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            androidx.compose.foundation.Canvas(Modifier.size(10.dp)) {
+                val p = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(size.width * 0.18f, size.height * 0.08f)
+                    lineTo(size.width * 0.95f, size.height * 0.50f)
+                    lineTo(size.width * 0.18f, size.height * 0.92f)
+                    close()
+                }
+                drawPath(p, Color.White)
             }
-            drawPath(p, Color.White)
         }
     }
 }

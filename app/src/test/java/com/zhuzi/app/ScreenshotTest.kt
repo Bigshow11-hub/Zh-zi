@@ -272,7 +272,7 @@ class ScreenshotTest {
                 onAvatar = {}, contentPadding = it, activeToday = false, reminderOn = true, hour = 20,
             )
         }
-        compose.onNodeWithContentDescription("Notifications").performClick()
+        compose.onNodeWithContentDescription("Notifications", substring = true).performClick()
         compose.waitForIdle()
         captureScreenRoboImage("build/screens/23-notifications.png")
     }

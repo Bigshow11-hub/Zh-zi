@@ -191,7 +191,7 @@ fun FlipCard(
 ) {
     val rotation by animateFloatAsState(
         if (flipped) 180f else 0f,
-        spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow),
+        spring(dampingRatio = 0.72f, stiffness = Spring.StiffnessMediumLow),
         label = "flip",
     )
     Box(
@@ -200,7 +200,13 @@ fun FlipCard(
             .height(360.dp)
             .graphicsLayer {
                 rotationY = rotation
-                cameraDistance = 14f * density
+                cameraDistance = 12f * density
+                // la carte se soulève pendant qu'elle tourne, puis se repose
+                val lift = kotlin.math.sin(Math.toRadians(rotation.toDouble())).toFloat().let { kotlin.math.abs(it) }
+                scaleX = 1f + 0.06f * lift; scaleY = 1f + 0.06f * lift
+                shadowElevation = (2f + 22f * lift) * density
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                clip = false
             }
             .softCard()
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null,

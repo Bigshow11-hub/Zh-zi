@@ -111,7 +111,7 @@ fun HomeScreen(
                 Text(todayLabel, style = MaterialTheme.typography.bodySmall, color = InkSoft, modifier = Modifier.weight(1f))
                 RoundIcon(tr("Rechercher", "Search", "Поиск"), onSearch) { c -> SearchGlyph(c) }
                 Spacer(Modifier.width(10.dp))
-                BellButton(notes.count { it.pending }) { showNotes = true }
+                BellButton(notes.pending) { showNotes = true }
             }
         }
         // Salut + avatar
