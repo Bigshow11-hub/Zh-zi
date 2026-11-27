@@ -57,6 +57,8 @@ fun LessonsScreen(
     contentPadding: PaddingValues,
     myCount: Int = 0,
     onMyWords: () -> Unit = {},
+    bestExam: (Int) -> Int = { -1 },
+    onExam: (Int) -> Unit = {},
 ) {
     val lang = currentLang()
     // La leçon en cours, toutes niveaux confondus ; le niveau affiché part de celui-là
@@ -105,8 +107,10 @@ fun LessonsScreen(
         }
         // Mes mots : ceux de l'élève, écrits ou pris en photo
         staggerItem(2, seen) { MyWordsEntry(myCount, onMyWords) }
+        // Examen blanc du niveau affiché
+        staggerItem(3, seen) { ExamEntry(level, bestExam(level)) { onExam(level) } }
         lessons.forEachIndexed { i, lesson ->
-            staggerItem(i + 3, seen) {
+            staggerItem(i + 4, seen) {
                 LessonCard(lesson, lessonKnown(lesson), mastered(lesson), lesson == current, bestScore, onOpen)
             }
         }

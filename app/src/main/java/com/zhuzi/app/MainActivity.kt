@@ -59,6 +59,8 @@ private const val AVATAR = -2
 private const val MYWORDS = -3
 private const val PHOTO = -4
 private const val MYREVIEW = -5
+/** Examen blanc : -11 pour le HSK 1, -12 pour le HSK 2. */
+private const val EXAM_BASE = -10
 
 class MainActivity : ComponentActivity() {
     private lateinit var speaker: Speaker
@@ -180,6 +182,22 @@ class MainActivity : ComponentActivity() {
                                 listeningPassed = allLessons.any { progress.bestScore(it.id, QuizMode.LISTENING) >= 80 },
                             ),
                             onChange = setLook,
+                            onBack = close,
+                            contentPadding = bars,
+                        )
+                    }
+                    overlay <= EXAM_BASE - 1 && overlay >= EXAM_BASE - 2 -> Surface {
+                        BackHandler(onBack = close)
+                        val examLevel = EXAM_BASE - overlay
+                        com.zhuzi.app.ui.ExamScreen(
+                            level = examLevel,
+                            best = progress.bestExam(examLevel),
+                            speak = speaker::speak,
+                            onFinish = { score, missed ->
+                                progress.saveExam(examLevel, score)
+                                missed.forEach { srs.quizAnswer(it, false) }
+                                streak.markActive()
+                            },
                             onBack = close,
                             contentPadding = bars,
                         )
@@ -307,7 +325,9 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                     Tab.LESSONS -> LessonsScreen(bestScore, lessonKnown, openLesson, padding,
-                                        myCount = mine.size, onMyWords = { overlay = MYWORDS })
+                                        myCount = mine.size, onMyWords = { overlay = MYWORDS },
+                                        bestExam = { l -> if (v >= 0) progress.bestExam(l) else -1 },
+                                        onExam = { l -> overlay = EXAM_BASE - l })
                                     Tab.CHARS -> CharactersScreen(
                                         boxOf = { w -> if (v >= 0) srs.boxOf(w) else 0 },
                                         speak = speaker::speak,

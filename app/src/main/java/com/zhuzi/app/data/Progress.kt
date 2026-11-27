@@ -32,4 +32,11 @@ class Progress(context: Context) {
             prefs.edit().putInt("best_$lessonId${mode.key}", percent).apply()
         }
     }
+
+    /** Meilleure note (sur 100) à l'examen blanc d'un niveau HSK, ou -1. */
+    fun bestExam(level: Int): Int = prefs.getInt("exam_$level", -1)
+
+    fun saveExam(level: Int, score: Int) {
+        if (score > bestExam(level)) prefs.edit().putInt("exam_$level", score).apply()
+    }
 }

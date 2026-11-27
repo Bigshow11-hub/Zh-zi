@@ -380,6 +380,28 @@ class ScreenshotTest {
         shot("31-hsk2-grammaire")
     }
 
+    private fun exam(step: Int) {
+        compose.setContent {
+            ZhuziTheme {
+                Surface {
+                    com.zhuzi.app.ui.ExamScreen(
+                        level = 1, best = 72, speak = {}, onFinish = { _, _ -> }, onBack = {}, contentPadding = bars,
+                        startStep = step, previewAnswers = List(20) { it % 3 },
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
+    fun examenAccueil() { exam(0); shot("32-examen-accueil") }
+
+    @Test
+    fun examenQuestion() { exam(1); shot("33-examen-question") }
+
+    @Test
+    fun examenBilan() { exam(2); shot("34-examen-bilan") }
+
     @Test
     fun ecrire() {
         lesson(1)
