@@ -7,6 +7,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -210,10 +211,11 @@ fun FlipCard(
                     )
                     if (onListen != null) {
                         val accent = Accent
+                        val listenLabel = tr("Écouter", "Listen", "Слушать")
                         Box(
                             Modifier.size(40.dp).clip(CircleShape).background(accent.copy(alpha = 0.1f))
                                 .clickable(onClick = onListen)
-                                .semantics { contentDescription = tr("Écouter", "Listen", "Слушать") },
+                                .semantics { contentDescription = listenLabel },
                             contentAlignment = Alignment.Center,
                         ) { ZIcon(Glyph.SPEAKER, accent, size = 20.dp, weight = 1.2f) }
                     }
@@ -402,7 +404,6 @@ private fun Flashcards(
                             revealed = !revealed
                             if (revealed) { onSeen(word); speak(word.hanzi) }
                         },
-                        onListen = { speak(word.hanzi) },
                         Modifier
                             .graphicsLayer {
                                 translationX = drag.value
@@ -430,6 +431,7 @@ private fun Flashcards(
                                     scope.launch { drag.snapTo(drag.value + amount) }
                                 }
                             },
+                        onListen = { speak(word.hanzi) },
                     )
                 }
             }
