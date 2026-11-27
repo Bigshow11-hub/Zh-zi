@@ -1,5 +1,7 @@
 package com.zhuzi.app.ui
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.semantics.Role
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -155,7 +157,7 @@ fun WritingPad(char: String, color: Color, size: Dp, onDone: (mistakes: Int) -> 
 
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Canvas(
-            Modifier.size(size).clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+            Modifier.size(size).clip(RoundedCornerShape(8.dp))
                 .pointerInput(char, done) {
                     detectDragGestures(
                         onDragStart = { drawing.clear(); drawing.add(it) },
@@ -321,7 +323,7 @@ fun WritingPractice(word: Word, onWordDone: () -> Unit, modifier: Modifier = Mod
                     tr("Passer ce caractère", "Skip this character", "Пропустить иероглиф"),
                     fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Accent,
                     modifier = Modifier.padding(start = 12.dp).clip(PillShape)
-                        .clickable(role = androidx.compose.ui.semantics.Role.Button) {
+                        .clickable(role = Role.Button) {
                             skipped.add(index)
                             if (index !in finished) finished.add(index)
                             if (index + 1 < chars.size) index++

@@ -23,8 +23,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.shape.CircleShape
@@ -35,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,9 +55,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.zhuzi.app.data.CharInfo
+import com.zhuzi.app.data.GrammarPoint
 import com.zhuzi.app.data.Lesson
 import com.zhuzi.app.data.Word
 import com.zhuzi.app.data.allLessons
+import com.zhuzi.app.data.charInfos
+import com.zhuzi.app.data.grammarPoints
+import com.zhuzi.app.ui.theme.Accent
 import com.zhuzi.app.ui.theme.Ink
 import com.zhuzi.app.ui.theme.InkSoft
 import com.zhuzi.app.ui.theme.Kicker
@@ -63,13 +71,16 @@ import com.zhuzi.app.ui.theme.Paper
 import com.zhuzi.app.ui.theme.PillShape
 import com.zhuzi.app.ui.theme.Rule
 import com.zhuzi.app.ui.theme.Seal
-import com.zhuzi.app.ui.theme.TileShape
 import java.text.Normalizer
 
 /** Enlève les accents et tons (nǐ → ni, é → e) pour chercher sans se soucier des signes. */
 private val Marks = Regex("\\p{M}")
 private fun plain(s: String): String =
     Normalizer.normalize(s, Normalizer.Form.NFD).replace(Marks, "").lowercase().trim()
+
+/** Formes des cartes de la grille : arrondis simples. */
+private val GridCardShape = RoundedCornerShape(16.dp)
+private val GridTileShape = RoundedCornerShape(12.dp)
 
 /** Onglet Caractères : les mots, les caractères un par un et la grammaire, avec recherche et fiches. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,40 +90,52 @@ fun CharactersScreen(
     speak: (String) -> Unit,
     contentPadding: PaddingValues,
     startSection: Int = 0,
+    // Change à chaque progrès (leçon, révision) : les filtres Vus / Retenus / Nouveaux sont alors recalculés
+    version: Int = 0,
 ) {
     val entries = remember { allLessons.flatMap { l -> l.words.map { it to l } } }
     var section by rememberSaveable { mutableIntStateOf(startSection) }
     var query by rememberSaveable { mutableStateOf("") }
     var filter by rememberSaveable { mutableIntStateOf(0) }
     var selected by remember { mutableStateOf<Pair<Word, Lesson>?>(null) }
-    var selectedChar by remember { mutableStateOf<com.zhuzi.app.data.CharInfo?>(null) }
-    var selectedPoint by remember { mutableStateOf<com.zhuzi.app.data.GrammarPoint?>(null) }
+    var selectedChar by remember { mutableStateOf<CharInfo?>(null) }
+    var selectedPoint by remember { mutableStateOf<GrammarPoint?>(null) }
     val seen = remember { mutableSetOf<Any>() }
 
     val lang = currentLang()
-    val q = plain(query)
-    val shown = entries.filter { (w, _) ->
-        val box = boxOf(w)
-        val keep = when (filter) {
-            1 -> box > 0
-            2 -> box >= 4
-            3 -> box == 0
-            else -> true
+    // Le filtrage (~800 mots, ~800 caractères, ~70 règles) n'est refait que si la recherche, le filtre,
+    // la langue ou les progrès changent, pas à chaque recomposition
+    val shown = remember(query, filter, lang, version) {
+        val q = plain(query)
+        entries.filter { (w, _) ->
+            val box = boxOf(w)
+            val keep = when (filter) {
+                1 -> box > 0
+                2 -> box >= 4
+                3 -> box == 0
+                else -> true
+            }
+            keep && (q.isEmpty() || plain(w.pinyin).contains(q) || plain(w.meaning(lang)).contains(q) ||
+                w.hanzi.contains(query.trim()))
         }
-        keep && (q.isEmpty() || plain(w.pinyin).contains(q) || plain(w.meaning(lang)).contains(q) ||
-            w.hanzi.contains(query.trim()))
     }
-    val chars = com.zhuzi.app.data.charInfos.values.filter { c ->
-        q.isEmpty() || plain(c.pinyin).contains(q) || plain(c.meaning.get(lang)).contains(q) || query.trim().contains(c.char)
+    val chars = remember(query, lang) {
+        val q = plain(query)
+        charInfos.values.filter { c ->
+            q.isEmpty() || plain(c.pinyin).contains(q) || plain(c.meaning.get(lang)).contains(q) || query.trim().contains(c.char)
+        }
     }
-    val points = com.zhuzi.app.data.grammarPoints.filter { p ->
-        q.isEmpty() || plain(p.title.get(lang)).contains(q) || plain(p.pattern.get(lang)).contains(q) || p.key.contains(query.trim())
+    val points = remember(query, lang) {
+        val q = plain(query)
+        grammarPoints.filter { p ->
+            q.isEmpty() || plain(p.title.get(lang)).contains(q) || plain(p.pattern.get(lang)).contains(q) || p.key.contains(query.trim())
+        }
     }
-    val known = entries.count { boxOf(it.first) > 0 }
+    val known = remember(version) { entries.count { boxOf(it.first) > 0 } }
 
-    val grid = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
+    val grid = rememberLazyGridState()
     val compact by remember {
-        androidx.compose.runtime.derivedStateOf { grid.firstVisibleItemIndex > 0 || grid.firstVisibleItemScrollOffset > 140 }
+        derivedStateOf { grid.firstVisibleItemIndex > 0 || grid.firstVisibleItemScrollOffset > 140 }
     }
     Box(Modifier.fillMaxSize()) {
     // 6 colonnes : les mots en prennent 3 (2 par ligne), les caractères 2 (3 par ligne), la grammaire 6
@@ -135,12 +158,12 @@ fun CharactersScreen(
                         0 -> tr("$known mots découverts sur ${entries.size} · touche un mot pour sa fiche",
                             "$known of ${entries.size} words discovered · tap one for details",
                             "Открыто $known из ${entries.size} слов · нажми на слово")
-                        1 -> tr("${com.zhuzi.app.data.charInfos.size} caractères : sens, clé et astuce pour les retenir",
-                            "${com.zhuzi.app.data.charInfos.size} characters: meaning, radical and a tip to remember them",
-                            "${com.zhuzi.app.data.charInfos.size} иероглифа: смысл, ключ и подсказка")
-                        else -> tr("${com.zhuzi.app.data.grammarPoints.size} règles du HSK 1 à 4, avec des exemples à écouter",
-                            "${com.zhuzi.app.data.grammarPoints.size} HSK 1–4 rules, with examples to listen to",
-                            "${com.zhuzi.app.data.grammarPoints.size} правил HSK 1–4 с примерами")
+                        1 -> tr("${charInfos.size} caractères : sens, clé et astuce pour les retenir",
+                            "${charInfos.size} characters: meaning, radical and a tip to remember them",
+                            "${charInfos.size} иероглифа: смысл, ключ и подсказка")
+                        else -> tr("${grammarPoints.size} règles du HSK 1 à 4, avec des exemples à écouter",
+                            "${grammarPoints.size} HSK 1–4 rules, with examples to listen to",
+                            "${grammarPoints.size} правил HSK 1–4 с примерами")
                     },
                 )
                 Segmented(listOf(tr("Mots", "Words", "Слова"), tr("Caractères", "Characters", "Знаки"),
@@ -207,7 +230,7 @@ private fun SearchField(value: String, onChange: (String) -> Unit) {
         onValueChange = onChange,
         singleLine = true,
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = Ink),
-        cursorBrush = SolidColor(com.zhuzi.app.ui.theme.Accent),
+        cursorBrush = SolidColor(Accent),
         modifier = Modifier.fillMaxWidth().height(48.dp),
         decorationBox = { inner ->
             Row(
@@ -226,7 +249,7 @@ private fun SearchField(value: String, onChange: (String) -> Unit) {
                 if (value.isNotEmpty()) {
                     // Effacer : rond gris avec une croix (cible de 40 dp)
                     Box(
-                        Modifier.size(40.dp).clip(CircleShape).clickable(role = androidx.compose.ui.semantics.Role.Button) { onChange("") }
+                        Modifier.size(40.dp).clip(CircleShape).clickable(role = Role.Button) { onChange("") }
                             .semantics { contentDescription = clearLabel },
                         contentAlignment = Alignment.Center,
                     ) {
@@ -245,14 +268,15 @@ private fun WordCard(word: Word, lesson: Lesson, box: Int, modifier: Modifier, o
     val interaction = remember { MutableInteractionSource() }
     Column(
         modifier.fillMaxWidth().pressScale(interaction)
-            .softCard()
+            // Grille de ~800 cartes : arrondi simple (moins coûteux à découper que les coins continus)
+            .softCard(GridCardShape)
             .clickable(interactionSource = interaction, indication = null,
-                role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
+                role = Role.Button, onClick = onClick)
             .padding(10.dp),
     ) {
         // Le mot posé sur un fond doux, comme une feuille sur le bureau
         Box(
-            Modifier.fillMaxWidth().height(78.dp).clip(com.zhuzi.app.ui.theme.TileShape).background(Mist)
+            Modifier.fillMaxWidth().height(78.dp).clip(GridTileShape).background(Mist)
                 .padding(horizontal = 6.dp),
             contentAlignment = Alignment.Center,
         ) {
@@ -305,7 +329,7 @@ private fun WordDetail(word: Word, lesson: Lesson, box: Int, speak: (String) -> 
         PinyinText(word.pinyin, 30.sp)
         Text(word.meaning(currentLang()), fontSize = 18.sp, color = InkSoft, textAlign = TextAlign.Center)
         Spacer(Modifier.height(14.dp))
-        Text(lessonName(lesson).uppercase() + " · " + lesson.short(currentLang()).uppercase(), style = Kicker)
+        Text(lessonName(lesson) + " · " + lesson.short(currentLang()), style = Kicker)
         Text(
             when {
                 box >= 4 -> tr("Bien retenu", "Well learned", "Хорошо выучено")

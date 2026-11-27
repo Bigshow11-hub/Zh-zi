@@ -26,11 +26,15 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 - **Proposition** : créer la clé de publication (le propriétaire la garde), l'ajouter comme secret GitHub,
   ajouter une tâche `bundleRelease` dans `.github/workflows/build.yml`.
 
-### 3. Pas de réduction du code pour la version publiée ⬜
+### 3. Pas de réduction du code pour la version publiée ✅ (branche audit-suite : R8 sur la version « release » seulement)
 - **Où** : `app/build.gradle.kts` (`isMinifyEnabled = false`).
 - **Pourquoi** : l'APK est plus lourd et un peu plus lent au démarrage. R8 enlève le code inutile.
 - **Proposition** : `isMinifyEnabled = true` + `isShrinkResources = true` en version publiée, tester que ML Kit
   et pinyin4j marchent toujours (règles ProGuard si besoin).
+- **Fait** : R8 et réduction des ressources pour `release` uniquement, règles dans `app/proguard-rules.pro`
+  (pinyin4j, ML Kit, workers et receivers de `reminder`). L'APK distribué (version « debug ») ne change pas.
+  GitHub construit aussi `assembleRelease` (non signée) pour vérifier, sans bloquer. **Reste** : tester la
+  version réduite sur un téléphone le jour où elle sera signée (point 2).
 
 ### 4. Les progrès peuvent se perdre en changeant de téléphone ✅ (2.6.0 : règles de sauvegarde Android + fichier de sauvegarde dans Progrès)
 - **Où** : `AndroidManifest.xml` (`allowBackup="true"` sans règles), `data/Srs.kt`, `data/Streak.kt`.
@@ -78,7 +82,7 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 - **Pourquoi** : le glissement n'est pas accessible au lecteur d'écran.
 - **État** : les boutons « Précédent / Suivant » sont toujours là en bas : rien à corriger.
 
-### 10. Le tracé des caractères n'a pas d'alternative ⬜
+### 10. Le tracé des caractères n'a pas d'alternative ✅ (2.7.0 : « Passer ce caractère » + nombre de traits)
 - **Où** : `ui/Writing.kt`.
 - **Pourquoi** : impossible pour une personne qui ne peut pas tracer au doigt (TalkBack, motricité).
 - **Proposition** : bouton « Passer ce caractère » et lecture du nombre de traits.
@@ -90,10 +94,12 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 - **Proposition** : hauteur minimale (`heightIn(min = …)`) plutôt que fixe, et marge basse du quiz calculée
   d'après la hauteur réelle du panneau de réponse.
 
-### 12. Pas de mise en page tablette ou paysage ⬜
+### 12. Pas de mise en page tablette ou paysage 🟡 (branche audit-suite : largeur de lecture)
 - **Où** : `ui/Navigation.kt`, tous les écrans.
 - **Pourquoi** : sur tablette, la barre du bas et les cartes s'étirent sur toute la largeur.
 - **Proposition** : largeur de lecture limitée (~600 dp, centrée) ; plus tard une barre latérale.
+- **Fait** : contenu des onglets, écrans pleins et barre du bas limités à 600 dp et centrés (`ReadingColumn`,
+  `ReadingWidth` dans `ui/Kit.kt`). Un téléphone tenu droit ne change pas. **Reste** : barre latérale.
 
 ### 13. Les onglets n'ont plus de caractère comme icône ✅ (validé par le propriétaire le 27/11/2026 : on garde les icônes dessinées)
 - **Où** : `ui/Navigation.kt`.
@@ -124,18 +130,19 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
   (5,9:1). L'accent de nuit est séparé en deux : `accent` `#7D7AFF` pour le texte (4,9:1 sur carte) et
   `accentFill` `#5E5CE6` sous du texte blanc (5,1:1). Avant, le blanc sur l'accent de nuit tombait sous 4,5:1.
 
-### 17. Zones tactiles trop petites 🟡
+### 17. Zones tactiles trop petites ✅
 - **Où** : `ui/Kit.kt`, `ui/StrokeOrder.kt`, `ui/AvatarScreen.kt` (pastilles de couleur 44 dp),
   `ui/LessonsScreen.kt` (« Tout voir »).
 - **Fait** : sélecteur segmenté 48 dp de haut (dessin de 36 dp), boutons ronds du haut 48 dp, bouton
   retour 48 dp, liens 48 dp, choix du caractère dans l'ordre des traits 44 → 48 dp, « Tout voir » 48 dp.
-- **Reste** : pastilles de couleur de « Mon avatar » (44 dp).
+- **Fait aussi** (2.7.0) : pastilles de couleur de « Mon avatar » 48 dp.
 
-### 18. Textes trop petits 🟡
+### 18. Textes trop petits ✅
 - **Où** : `ui/CharactersScreen.kt` (10 sp), `ui/Library.kt`, `ui/MyWordsScreen.kt`, `ui/ProgressScreen.kt`
   (chiffres du graphique 10 sp).
 - **Fait** : étiquettes des cartes de mots passées de 10 à 11 sp.
-- **Reste** : `Library.kt` (« STRUCTURE » 10 sp), `MyWordsScreen.kt` (« photo » 10 sp), graphique de la semaine.
+- **Fait aussi** : plus aucun texte à 10 sp (2.7.0, puis branche audit-suite : libellés russes de la barre du bas
+  et pastille de la cloche à 11 sp).
 
 ### 19. Rôles pour TalkBack ✅
 - **Où** : `ui/Kit.kt`, `ui/HomeScreen.kt`, `ui/LessonsScreen.kt`, `ui/LessonScreen.kt`.
@@ -148,7 +155,7 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 - **Fait** : `enableOnBackInvokedCallback="true"` : l'aperçu du geste retour fonctionne ; les `BackHandler`
   existants continuent de gérer chaque écran.
 
-### 21. Réduire les animations ⬜
+### 21. Réduire les animations ✅ (2.7.0 : `reduceMotion()`)
 - **Où** : `ui/Notifications.kt` (cloche qui se balance, halo), `PandaHead` (clignement), `Celebration.kt`.
 - **Pourquoi** : les boucles écrites avec `delay()` ne suivent pas le réglage « Supprimer les animations »
   du téléphone.
@@ -158,10 +165,12 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 
 ## D. Débordements de texte (français, anglais, russe)
 
-### 22. Libellés de la barre du bas en russe 🟡
+### 22. Libellés de la barre du bas en russe ✅ (branche audit-suite)
 - **Où** : `ui/Navigation.kt`.
 - **État** : « Иероглифы » tient à 10 sp dans ~70 dp ; avec une très grande police, il est coupé (pas de
   points de suspension). Proposition : texte plus court « Знаки » si on veut de la marge.
+- **Fait** : 11 sp dans toutes les langues ; un libellé qui ne tient pas passe à 10,5 sp un peu resserré,
+  puis se termine par « … » en dernier recours.
 
 ### 23. Sélecteurs à 4 choix ✅ (vérifié)
 - **Où** : `ui/LessonScreen.kt` (Cartes / Écrire / Grammaire / Quiz), `ui/CharactersScreen.kt` (filtres).
@@ -171,10 +180,12 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 - **Où** : `ui/HomeScreen.kt` (`StatsCard`).
 - **Fait** : libellés courts (« Série », « Streak », « Серия »), une ligne avec « … » de secours.
 
-### 25. Barre du haut des écrans pleins 🟡
+### 25. Barre du haut des écrans pleins ✅ (branche audit-suite)
 - **Où** : `ui/Kit.kt` (`TopBar`).
 - **État** : le repère de droite (« Пробный экзамен HSK 3 ») est coupé avec « … » s'il manque de place ; à
   vérifier sur un petit téléphone (360 dp).
+- **Fait** : le repère de droite prend toute la place qui reste (aligné à droite, « … ») ; le libellé de retour
+  est limité à 160 dp avec « … ».
 
 ---
 
@@ -187,19 +198,22 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
   cela peut faire sauter des images sur un téléphone d'entrée de gamme.
 - **Proposition** : calculer un instantané `remember(version) { … }` une fois par retour sur les onglets.
 
-### 27. Recherche des caractères ✅ en partie
+### 27. Recherche des caractères ✅
 - **Où** : `ui/CharactersScreen.kt`.
 - **Fait** : l'expression régulière qui enlève les accents n'est plus recréée ~1 800 fois par frappe.
-- **Reste** : filtrer dans un `remember(query, filter, version)` plutôt qu'à chaque recomposition.
+- **Fait aussi** (branche audit-suite) : mots, caractères et règles filtrés dans `remember(query, filter, lang,
+  version)` ; `MainActivity` passe `version` à l'onglet.
 
-### 28. Coins continus ⬜ (à surveiller)
+### 28. Coins continus ✅ (branche audit-suite : arrondis simples dans la grille)
 - **Où** : `ui/theme/Theme.kt` (`SmoothShape`).
 - **Pourquoi** : une forme « tracé » est un peu plus coûteuse à découper qu'un arrondi simple, surtout dans la
   grille de ~600 mots. Rien de visible sur les photos d'écran, mais à vérifier sur un vieux téléphone.
 - **Proposition** : si ça saccade, garder `SmoothShape` pour les grandes cartes et `RoundedCornerShape` dans
   la grille.
+- **Fait** : cartes de mots de la grille en `RoundedCornerShape` (16 dp, case 12 dp) ; les fiches de caractères
+  l'étaient déjà. `SmoothShape` reste pour les grandes cartes.
 
-### 29. Animations infinies ⬜
+### 29. Animations infinies ✅ (2.7.0 : halo joué 3 fois puis arrêté)
 - **Où** : `ui/Notifications.kt` (halo de la pastille, `rememberInfiniteTransition`).
 - **Pourquoi** : redessine l'écran en continu tant qu'il y a quelque chose à faire (batterie).
 - **Proposition** : jouer le halo 3 fois puis s'arrêter.
@@ -218,33 +232,43 @@ Légende : ✅ corrigé sur `design-ios` · 🟡 en partie · ⬜ pas encore.
 
 ## F. Santé du code
 
-### 31. `MainActivity` fait tout ⬜
+### 31. `MainActivity` fait tout 🟡 (branche audit-suite : navigation par classe `Overlay`)
 - **Où** : `MainActivity.kt` (≈ 400 lignes, navigation par numéros négatifs `REVIEW = -1`, `EXAM_BASE = -10`…).
 - **Pourquoi** : chaque nouvel écran rend la logique plus fragile (un examen HSK 4 = -14 à ajouter à la main).
 - **Proposition** : une petite classe `Screen` (sealed) et un `ViewModel` qui lit les préférences une fois.
+- **Fait** : classe scellée `Overlay` (None, Review, Avatar, MyWords, Photo, MyReview, `Exam(level)`,
+  `LessonOf(id)`), gardée à la rotation par un `Saver` qui écrit les mêmes nombres qu'avant. Comportement
+  identique (leçon ouverte depuis la notification, retour, examens HSK 1 à 4). **Reste** : le `ViewModel`.
 
-### 32. Noms complets partout ⬜
+### 32. Noms complets partout 🟡 (branche audit-suite)
 - **Où** : presque tous les fichiers `ui/*.kt` (`com.zhuzi.app.ui.theme.Accent`, `androidx.compose…`).
 - **Pourquoi** : le code est difficile à lire et à relire.
 - **Proposition** : des `import` en haut de fichier (aucun changement de comportement).
+- **Fait** : `MainActivity.kt`, `Kit.kt`, `Navigation.kt`, `CharactersScreen.kt`, `Library.kt`, `AvatarScreen.kt`,
+  `ExamScreen.kt`, `MyWordsScreen.kt`, `ReviewScreen.kt`, `ToneQuiz.kt`, `Writing.kt`, `Notifications.kt`.
+  **Reste** : les autres fichiers `ui/*.kt`.
 
-### 33. Pas de tests de la révision espacée ⬜
+### 33. Pas de tests de la révision espacée ✅ (2.7.0 : `LearningTest`, bloque la publication)
 - **Où** : `data/Srs.kt`, `data/Streak.kt`.
 - **Pourquoi** : seules les photos d'écran sont testées. Une erreur dans le calcul des jours casserait la
   révision de tout le monde sans que rien ne le signale.
 - **Proposition** : tests unitaires simples (boîte qui monte, retour en boîte 1, série qui casse à minuit).
 
-### 34. Mots en double entre leçons et « Mes mots » ⬜
+### 34. Mots en double entre leçons et « Mes mots » ✅ (2.7.0 : « Déjà dans la leçon »)
 - **Où** : `data/Srs.kt` (clé = les caractères du mot).
 - **Pourquoi** : un mot ajouté dans « Mes mots » avec les mêmes caractères qu'un mot HSK partage sa boîte ;
   pas grave, mais à savoir (et à afficher : « déjà dans la leçon 3 »).
 
-### 35. Petites incohérences de design restantes ⬜
+### 35. Petites incohérences de design restantes ✅ (branche audit-suite)
 - **Où** : `ui/Library.kt`, `ui/ExamScreen.kt`, `ui/MyWordsScreen.kt`, `ui/AvatarScreen.kt`, `ui/ToneQuiz.kt`,
   `ui/Writing.kt`.
 - **Pourquoi** : ces écrans profitent du nouveau système (couleurs, boutons, sélecteur, barre du haut,
   panneaux) mais gardent quelques étiquettes en capitales et des marges de 20 dp au lieu de 16 dp.
 - **Proposition** : même passe que pour Accueil / Leçons / Progrès.
+- **Fait** : marges de 16 dp (examen blanc, avatar, tons, révision, mes mots, fiches de caractères et de
+  grammaire) ; chevrons dessinés à la place des « › » tapés ; plus de capitales hors en-têtes de section
+  (« Niveau 3 / 7 », « Structure », nom de la leçon dans les fiches) ; pastilles de l'avatar qui défilent sur
+  un écran étroit.
 
 ---
 

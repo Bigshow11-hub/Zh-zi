@@ -12,8 +12,8 @@ android {
         applicationId = "com.zhuzi.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 44
-        versionName = "2.8.1"
+        versionCode = 45
+        versionName = "2.9.0"
     }
 
     // Clé de test fixe (sans secret) : chaque nouvelle version s'installe par-dessus l'ancienne.
@@ -31,8 +31,12 @@ android {
     }
 
     buildTypes {
+        // Version publiée (Play Store, plus tard) : R8 enlève le code et les ressources inutiles.
+        // L'APK distribué aujourd'hui est la version « debug », qui n'est pas réduite.
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     compileOptions {

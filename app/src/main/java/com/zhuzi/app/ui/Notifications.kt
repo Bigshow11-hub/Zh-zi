@@ -71,6 +71,13 @@ import com.zhuzi.app.ui.theme.Paper
 import com.zhuzi.app.ui.theme.Rule
 import com.zhuzi.app.ui.theme.Seal
 import kotlinx.coroutines.delay
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.semantics.Role
+import com.zhuzi.app.data.Lesson
+import com.zhuzi.app.data.Word
+import com.zhuzi.app.ui.theme.SmoothShape
 
 /** Une étape de la journée (séance, révisions, série) : faite ou non. */
 data class DayStep(val title: String, val detail: String, val done: Boolean)
@@ -123,7 +130,7 @@ fun BellButton(pending: Int, onClick: () -> Unit) {
         ToolbarButton(label, onClick) {
             Box(Modifier.graphicsLayer {
                 rotationZ = swing.value
-                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 0.1f)
+                transformOrigin = TransformOrigin(0.5f, 0.1f)
             }) { ZIcon(Glyph.BELL, ink, size = 21.dp, weight = 1.1f) }
         }
         if (pending > 0) {
@@ -152,8 +159,8 @@ fun BellButton(pending: Int, onClick: () -> Unit) {
                         .size(18.dp).clip(CircleShape).background(seal).border(1.5.dp, Paper, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(if (pending > 9) "9+" else "$pending", color = Color.White, fontSize = 10.sp,
-                        fontWeight = FontWeight.ExtraBold, lineHeight = 10.sp)
+                    Text(if (pending > 9) "9+" else "$pending", color = Color.White, fontSize = 11.sp,
+                        fontWeight = FontWeight.ExtraBold, lineHeight = 11.sp)
                 }
             }
         }
@@ -204,7 +211,7 @@ private fun DayCard(feed: DayFeed, modifier: Modifier, onStart: () -> Unit) {
     val deep = Color(0xFF16172C)
     val done = feed.steps.count { it.done }
     val total = feed.steps.size
-    Box(modifier.fillMaxWidth().clip(com.zhuzi.app.ui.theme.SmoothShape(22.dp)).background(deep)) {
+    Box(modifier.fillMaxWidth().clip(SmoothShape(22.dp)).background(deep)) {
         // le panda 3D qui regarde la carte, posé en haut à droite
         PandaHead(Modifier.align(Alignment.TopEnd).offset(x = 14.dp, y = (-6).dp).size(112.dp))
         Column(Modifier.padding(20.dp)) {
@@ -232,7 +239,7 @@ private fun DayCard(feed: DayFeed, modifier: Modifier, onStart: () -> Unit) {
                     Modifier.padding(top = 18.dp).fillMaxWidth().height(52.dp).pressScale(interaction)
                         .clip(RoundedCornerShape(50)).background(Color.White)
                         .clickable(interactionSource = interaction, indication = null,
-                            role = androidx.compose.ui.semantics.Role.Button, onClick = onStart),
+                            role = Role.Button, onClick = onStart),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(label, color = deep, style = MaterialTheme.typography.labelLarge)
@@ -251,7 +258,7 @@ private fun Segment(done: Boolean, index: Int, modifier: Modifier) {
     }
     val accent = Accent
     Canvas(modifier.height(6.dp)) {
-        val r = androidx.compose.ui.geometry.CornerRadius(size.height / 2, size.height / 2)
+        val r = CornerRadius(size.height / 2, size.height / 2)
         drawRoundRect(Color.White.copy(alpha = 0.16f), cornerRadius = r)
         if (fill.value > 0f) drawRoundRect(accent, size = size.copy(width = size.width * fill.value), cornerRadius = r)
     }
@@ -306,7 +313,7 @@ private fun StepRow(step: DayStep, index: Int) {
 private fun InfoRow(note: DayNote, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().heightIn(min = 64.dp)
-            .clickable(enabled = note.onClick != null, role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
+            .clickable(enabled = note.onClick != null, role = Role.Button, onClick = onClick)
             .padding(start = 16.dp, end = 14.dp, top = 12.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -353,7 +360,7 @@ fun PandaHead(modifier: Modifier = Modifier, float: Boolean = true) {
 }
 
 /** Va-et-vient doux (sinusoïdal), pour le flottement du panda. */
-val EaseInOutSine = androidx.compose.animation.core.CubicBezierEasing(0.37f, 0f, 0.63f, 1f)
+val EaseInOutSine = CubicBezierEasing(0.37f, 0f, 0.63f, 1f)
 
 /** Fabrique le fil du jour à partir de l'état de l'appli. */
 @Composable
@@ -364,11 +371,11 @@ fun dayNotes(
     dueTomorrow: Int,
     reminderOn: Boolean,
     hour: Int,
-    next: com.zhuzi.app.data.Lesson,
+    next: Lesson,
     nextKnown: Int,
-    wordOfDay: com.zhuzi.app.data.Word,
+    wordOfDay: Word,
     onReview: () -> Unit,
-    onOpen: (com.zhuzi.app.data.Lesson) -> Unit,
+    onOpen: (Lesson) -> Unit,
     onReminder: () -> Unit,
     speak: (String) -> Unit,
     reminderAt: Pair<Int, Int> = 19 to 0,

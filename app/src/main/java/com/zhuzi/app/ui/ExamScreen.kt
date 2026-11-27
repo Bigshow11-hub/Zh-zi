@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -117,7 +118,7 @@ private fun score(qs: List<ExamQuestion>, answers: List<Int>): Int =
 private fun ExamIntro(level: Int, best: Int, contentPadding: PaddingValues, onStart: () -> Unit) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = contentPadding.calculateBottomPadding() + 24.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = contentPadding.calculateBottomPadding() + 24.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -183,7 +184,7 @@ private fun ExamRun(questions: List<ExamQuestion>, speak: (String) -> Unit, cont
     val partSize = questions.count { it.part == q.part }
     val inPart = questions.take(index + 1).count { it.part == q.part }
     Column(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(horizontal = 20.dp)) {
+        Column(Modifier.padding(horizontal = 16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     (if (q.part == ExamPart.LISTENING) "听力 · " + tr("Écoute", "Listening", "Аудирование")
@@ -220,7 +221,7 @@ private fun ExamRun(questions: List<ExamQuestion>, speak: (String) -> Unit, cont
 @Composable
 private fun QuestionBody(q: ExamQuestion, speak: (String) -> Unit, picked: Int, onPick: (Int) -> Unit) {
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -309,8 +310,8 @@ private fun SpeakerIcon(c: Color) {
         }
         drawPath(p, c)
         val st = Stroke(w * 0.07f, cap = StrokeCap.Round)
-        drawArc(c, -45f, 90f, false, Offset(w * 0.46f, w * 0.32f), androidx.compose.ui.geometry.Size(w * 0.24f, w * 0.36f), style = st)
-        drawArc(c, -50f, 100f, false, Offset(w * 0.44f, w * 0.18f), androidx.compose.ui.geometry.Size(w * 0.44f, w * 0.64f), style = st)
+        drawArc(c, -45f, 90f, false, Offset(w * 0.46f, w * 0.32f), Size(w * 0.24f, w * 0.36f), style = st)
+        drawArc(c, -50f, 100f, false, Offset(w * 0.44f, w * 0.18f), Size(w * 0.44f, w * 0.64f), style = st)
     }
 }
 
@@ -352,7 +353,7 @@ private fun ExamResult(
     LaunchedEffect(Unit) { count.animateTo(total.toFloat(), tween(1100, easing = EaseOutQuart)) }
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = contentPadding.calculateBottomPadding() + 24.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = contentPadding.calculateBottomPadding() + 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(contentAlignment = Alignment.BottomEnd) {

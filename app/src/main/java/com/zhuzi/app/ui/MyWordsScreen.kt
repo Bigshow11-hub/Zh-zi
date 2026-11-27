@@ -1,5 +1,8 @@
 package com.zhuzi.app.ui
 
+import androidx.compose.ui.text.style.TextAlign
+import com.zhuzi.app.data.allLessons
+import androidx.compose.ui.graphics.Path
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -134,7 +137,7 @@ fun MyWordsScreen(
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         TopBar(tr("Retour", "Back", "Назад"), "", onBack)
         LazyColumn(
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 4.dp,
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp,
                 bottom = contentPadding.calculateBottomPadding() + 24.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -203,7 +206,7 @@ private fun ReviewMine(total: Int, due: Int, onReview: () -> Unit) {
                 fontSize = 13.sp, color = InkSoft,
             )
         }
-        Text("›", fontSize = 22.sp, color = InkSoft)
+        Chevron()
     }
 }
 
@@ -220,7 +223,7 @@ private fun EmptyMine() {
             "Photograph a page of your textbook or the board: Zhúzi finds the characters and prepares the cards.",
             "Сфотографируй страницу учебника или доску: Zhúzi найдёт иероглифы и подготовит карточки."),
             fontSize = 14.sp, color = InkSoft, modifier = Modifier.padding(top = 4.dp),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            textAlign = TextAlign.Center)
     }
 }
 
@@ -302,7 +305,7 @@ private fun AddWordForm(onSave: (String, String, String) -> Unit) {
     val hint = remember(hanzi, lang) { PinyinAuto.meaningHint(hanzi, lang) }
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
-            .padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
+            .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Text(tr("Nouveau mot", "New word", "Новое слово"), style = MaterialTheme.typography.titleLarge)
@@ -310,13 +313,13 @@ private fun AddWordForm(onSave: (String, String, String) -> Unit) {
             hanzi = it
             if (!pinyinEdited) pinyin = PinyinAuto.of(it)
             if (meaning.isEmpty()) {
-                val known = com.zhuzi.app.data.allLessons.flatMap { l -> l.words }.firstOrNull { w -> w.hanzi == it.trim() }
+                val known = allLessons.flatMap { l -> l.words }.firstOrNull { w -> w.hanzi == it.trim() }
                 if (known != null) meaning = known.meaning(lang)
             }
         }, placeholder = "你好", big = true, font = Kai)
         // Le mot existe déjà dans une leçon : on le dit (il partage ses révisions avec elle)
         val inLesson = remember(hanzi) {
-            hanzi.trim().takeIf { it.isNotEmpty() }?.let { h -> com.zhuzi.app.data.allLessons.firstOrNull { l -> l.words.any { it.hanzi == h } } }
+            hanzi.trim().takeIf { it.isNotEmpty() }?.let { h -> allLessons.firstOrNull { l -> l.words.any { it.hanzi == h } } }
         }
         if (inLesson != null) {
             Text(tr("Déjà dans ", "Already in ", "Уже есть: ") + lessonName(inLesson) + " · " + inLesson.title(lang),
@@ -488,7 +491,7 @@ fun PhotoImportScreen(
             drafts.clear()
             if (runs == null) { step = 4; return@launch }
             runs.forEach { r ->
-                val known = com.zhuzi.app.data.allLessons.flatMap { it.words }.firstOrNull { it.hanzi == r }
+                val known = allLessons.flatMap { it.words }.firstOrNull { it.hanzi == r }
                 drafts += Draft(r, PinyinAuto.of(r), known?.meaning(lang) ?: "", selected = r.length <= 6)
             }
             step = if (drafts.isEmpty()) 3 else 2
@@ -552,7 +555,7 @@ private fun PhotoStart(
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, bottom = contentPadding.calculateBottomPadding() + 24.dp),
+            .padding(start = 16.dp, end = 16.dp, bottom = contentPadding.calculateBottomPadding() + 24.dp),
     ) {
         ScreenTitle(tr("Photo → cartes", "Photo → cards", "Фото → карточки"),
             tr("Prends en photo ton manuel, une fiche ou le tableau.", "Snap your textbook, a handout or the board.",
@@ -637,7 +640,7 @@ private fun PhotoResults(
     Column(Modifier.fillMaxSize()) {
         LazyColumn(
             Modifier.weight(1f),
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 16.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item {
@@ -700,7 +703,7 @@ private fun DraftRow(d: Draft) {
                 if (d.selected) {
                     Canvas(Modifier.size(12.dp)) {
                         val w = size.width
-                        val p = androidx.compose.ui.graphics.Path().apply {
+                        val p = Path().apply {
                             moveTo(w * 0.05f, w * 0.55f); lineTo(w * 0.38f, w * 0.85f); lineTo(w * 0.95f, w * 0.15f)
                         }
                         drawPath(p, Color.White, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))

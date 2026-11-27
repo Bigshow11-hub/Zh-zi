@@ -3,9 +3,11 @@ package com.zhuzi.app.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -55,7 +57,8 @@ fun LevelInfo(known: Int, modifier: Modifier = Modifier) {
     val level = levelFor(known)
     val next = nextLevel(known)
     Column(modifier) {
-        Text(tr("NIVEAU ", "LEVEL ", "УРОВЕНЬ ") + "${level.number} / ${levels.size}", style = Kicker)
+        Text(tr("Niveau ", "Level ", "Уровень ") + "${level.number} / ${levels.size}",
+            style = MaterialTheme.typography.bodySmall, color = InkSoft)
         Text(level.name.get(lang), style = MaterialTheme.typography.headlineMedium)
         if (next != null) {
             val span = (next.from - level.from).toFloat()
@@ -94,11 +97,11 @@ fun AvatarScreen(
             PandaAvatar(look, level.number, Modifier.size(240.dp)
                 .semantics { contentDescription = tr(lang, "Ta mascotte panda", "Your panda mascot", "Твой талисман-панда") })
         }
-        LevelInfo(stats.known, Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp).fillMaxWidth().softCard().padding(20.dp))
+        LevelInfo(stats.known, Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp).fillMaxWidth().softCard().padding(16.dp))
 
         // Tenue
         Section(tr("TENUE", "OUTFIT", "ОДЕЖДА"))
-        Row(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(SwatchRow, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             outfitColors.forEachIndexed { i, c ->
                 Swatch(Brush.linearGradient(listOf(Color(c), Color(c).copy(alpha = 0.75f))), i == look.outfit) {
                     onChange(look.copy(outfit = i))
@@ -108,9 +111,9 @@ fun AvatarScreen(
 
         // Accessoires
         Section(tr("ACCESSOIRE", "ACCESSORY", "АКСЕССУАР"))
-        Column(Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Accessory.entries.chunked(2).forEach { row ->
-                Row(Modifier.height(androidx.compose.foundation.layout.IntrinsicSize.Min),
+                Row(Modifier.height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     row.forEach { acc ->
                         val open = acc.unlocked(stats)
@@ -145,7 +148,7 @@ fun AvatarScreen(
 
         // Fond
         Section(tr("FOND", "BACKGROUND", "ФОН"))
-        Row(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(SwatchRow, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             backgrounds.forEachIndexed { i, (a, b) ->
                 Swatch(Brush.linearGradient(listOf(Color(a), Color(b))), i == look.background) {
                     onChange(look.copy(background = i))
@@ -157,15 +160,20 @@ fun AvatarScreen(
                 "Your mascot grows with you: each level lengthens its bamboo, and each milestone unlocks an accessory.",
                 "Твой талисман растёт вместе с тобой: каждый уровень удлиняет бамбук, а каждый этап открывает аксессуар."),
             fontSize = 13.sp, color = InkSoft, textAlign = TextAlign.Center,
-            modifier = Modifier.padding(start = 28.dp, end = 28.dp, top = 24.dp).fillMaxWidth(),
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp).fillMaxWidth(),
         )
     }
 }
 
+/** En-tête de section (style des listes groupées), aligné sur la marge de 16 dp. */
 @Composable
 private fun Section(title: String) {
-    Text(title, style = Kicker, modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 26.dp, bottom = 12.dp))
+    Text(title, style = Kicker, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 26.dp, bottom = 12.dp))
 }
+
+/** Rangée de pastilles aux marges de 16 dp ; elle défile si l'écran est trop étroit (6 pastilles). */
+private val SwatchRow: Modifier
+    @Composable get() = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp)
 
 /** Pastille de couleur ronde, cerclée d'indigo quand elle est choisie. */
 @Composable
