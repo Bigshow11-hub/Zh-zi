@@ -199,13 +199,10 @@ private fun SmallPill(label: String, filled: Boolean = false, onClick: () -> Uni
     ) { Text(label, color = if (filled) Paper else Ink, fontWeight = FontWeight.Bold, fontSize = 14.sp) }
 }
 
-/** Lien souligné « Ordre des traits ». */
+/** Lien « Ordre des traits » : pinceau + libellé en accent. */
 @Composable
 fun StrokeLink(onClick: () -> Unit) {
-    androidx.compose.material3.TextButton(onClick = onClick) {
-        Text(tr("Ordre des traits", "Stroke order", "Порядок черт"), color = Ink, fontWeight = FontWeight.Bold,
-            textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
-    }
+    ActionLink(tr("Ordre des traits", "Stroke order", "Порядок черт"), Glyph.PENCIL, onClick)
 }
 
 /** Panneau du bas avec l'animation des traits d'un mot (rien si word est null). */
@@ -213,7 +210,7 @@ fun StrokeLink(onClick: () -> Unit) {
 @Composable
 fun StrokeSheet(word: Word?, onDismiss: () -> Unit) {
     if (word == null) return
-    androidx.compose.material3.ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Paper) {
+    ZhuziSheet(onDismiss) {
         Column(
             Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

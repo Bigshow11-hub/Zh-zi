@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -117,15 +118,11 @@ fun BellButton(pending: Int, onClick: () -> Unit) {
     val label = tr("Notifications", "Notifications", "Уведомления") +
         if (pending > 0) " · " + tr("$pending à faire", "$pending to do", "сделать: $pending") else ""
     Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-        Box(
-            Modifier.size(44.dp).softCard(CircleShape).clickable(onClick = onClick)
-                .semantics { contentDescription = label },
-            contentAlignment = Alignment.Center,
-        ) {
+        ToolbarButton(label, onClick) {
             Box(Modifier.graphicsLayer {
                 rotationZ = swing.value
                 transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 0.1f)
-            }) { BellIcon(ink) }
+            }) { ZIcon(Glyph.BELL, ink, size = 21.dp, weight = 1.1f) }
         }
         if (pending > 0) {
             val pop = remember { Animatable(0f) }
@@ -136,7 +133,7 @@ fun BellButton(pending: Int, onClick: () -> Unit) {
             val pulse = rememberInfiniteTransition(label = "badge")
             val ring by pulse.animateFloat(0f, 1f, infiniteRepeatable(tween(1800), RepeatMode.Restart), label = "ring")
             Box(
-                Modifier.align(Alignment.TopEnd).offset(x = (-1).dp, y = 1.dp).size(18.dp),
+                Modifier.align(Alignment.TopEnd).offset(x = (-3).dp, y = 3.dp).size(18.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 // halo qui s'élargit et s'efface
@@ -156,28 +153,12 @@ fun BellButton(pending: Int, onClick: () -> Unit) {
     }
 }
 
-@Composable
-private fun BellIcon(c: Color) {
-    Canvas(Modifier.size(20.dp)) {
-        val w = size.width
-        val p = Path().apply {
-            moveTo(w * 0.18f, w * 0.74f)
-            cubicTo(w * 0.26f, w * 0.62f, w * 0.24f, w * 0.52f, w * 0.26f, w * 0.40f)
-            cubicTo(w * 0.30f, w * 0.18f, w * 0.70f, w * 0.18f, w * 0.74f, w * 0.40f)
-            cubicTo(w * 0.76f, w * 0.52f, w * 0.74f, w * 0.62f, w * 0.82f, w * 0.74f)
-            close()
-        }
-        drawPath(p, c, style = Stroke(w * 0.10f))
-        drawLine(c, Offset(w * 0.42f, w * 0.88f), Offset(w * 0.58f, w * 0.88f), w * 0.10f, cap = StrokeCap.Round)
-    }
-}
-
 /** Le panneau des notifications du jour, qui monte du bas. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsSheet(feed: DayFeed, dateLabel: String, onDismiss: () -> Unit) {
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = state, containerColor = Paper) {
+    ZhuziSheet(onDismiss, grouped = true, sheetState = state) {
         NotificationsContent(feed, dateLabel, onDismiss)
     }
 }
@@ -191,17 +172,19 @@ fun NotificationsContent(feed: DayFeed, dateLabel: String, onDismiss: () -> Unit
     val seen = remember { mutableSetOf<Any>() }
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
-            .padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
+            .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
     ) {
-        Text(dateLabel, color = InkSoft, fontSize = 14.sp)
+        Text(dateLabel, color = InkSoft, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 4.dp))
         Text(tr("Ta journée", "Your day", "Твой день"), style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(top = 2.dp, bottom = 16.dp))
+            modifier = Modifier.padding(start = 4.dp, top = 2.dp, bottom = 16.dp).semantics { heading() })
         DayCard(feed, Modifier.staggerIn("day", 0, seen)) { onDismiss(); feed.onStart() }
         if (feed.infos.isNotEmpty()) {
-            Text(tr("À SAVOIR", "GOOD TO KNOW", "К СВЕДЕНИЮ"), style = Kicker, modifier = Modifier.padding(top = 26.dp, bottom = 10.dp))
-            Column(Modifier.fillMaxWidth().staggerIn("infos", 1, seen).softCard()) {
+            GroupedSection(
+                Modifier.padding(top = 28.dp).staggerIn("infos", 1, seen),
+                header = tr("À SAVOIR", "GOOD TO KNOW", "К СВЕДЕНИЮ"),
+            ) {
                 feed.infos.forEachIndexed { i, n ->
-                    if (i > 0) HorizontalDivider(color = Rule, thickness = 1.dp, modifier = Modifier.padding(start = 70.dp))
+                    if (i > 0) RowDivider(68.dp)
                     InfoRow(n) { n.onClick?.let { onDismiss(); it() } }
                 }
             }
@@ -214,7 +197,7 @@ private fun DayCard(feed: DayFeed, modifier: Modifier, onStart: () -> Unit) {
     val deep = Color(0xFF16172C)
     val done = feed.steps.count { it.done }
     val total = feed.steps.size
-    Box(modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(deep)) {
+    Box(modifier.fillMaxWidth().clip(com.zhuzi.app.ui.theme.SmoothShape(22.dp)).background(deep)) {
         // le panda 3D qui regarde la carte, posé en haut à droite
         PandaHead(Modifier.align(Alignment.TopEnd).offset(x = 14.dp, y = (-6).dp).size(112.dp))
         Column(Modifier.padding(20.dp)) {
@@ -241,10 +224,11 @@ private fun DayCard(feed: DayFeed, modifier: Modifier, onStart: () -> Unit) {
                 Box(
                     Modifier.padding(top = 18.dp).fillMaxWidth().height(52.dp).pressScale(interaction)
                         .clip(RoundedCornerShape(50)).background(Color.White)
-                        .clickable(interactionSource = interaction, indication = null, onClick = onStart),
+                        .clickable(interactionSource = interaction, indication = null,
+                            role = androidx.compose.ui.semantics.Role.Button, onClick = onStart),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(label, color = deep, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+                    Text(label, color = deep, style = MaterialTheme.typography.labelLarge)
                 }
             }
         }
@@ -315,21 +299,20 @@ private fun StepRow(step: DayStep, index: Int) {
 private fun InfoRow(note: DayNote, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().heightIn(min = 64.dp)
-            .clickable(enabled = note.onClick != null, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .clickable(enabled = note.onClick != null, role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
+            .padding(start = 16.dp, end = 14.dp, top = 12.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(Mist), contentAlignment = Alignment.Center) {
-            Text(note.glyph, fontFamily = Kai, fontSize = 22.sp, color = Ink)
-        }
+        KaiTile(note.glyph, size = 38.dp, filled = false)
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
-            Text(note.title, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Ink, maxLines = 1,
+            Text(note.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = Ink, maxLines = 1,
                 overflow = TextOverflow.Ellipsis)
-            Text(note.body, fontSize = 13.sp, color = InkSoft, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(note.body, style = MaterialTheme.typography.bodySmall, color = InkSoft, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         note.action?.let {
-            Text(it, color = Accent, fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.padding(start = 8.dp))
+            Text(it, color = Accent, style = MaterialTheme.typography.titleSmall, maxLines = 1,
+                modifier = Modifier.padding(start = 10.dp))
         }
     }
 }

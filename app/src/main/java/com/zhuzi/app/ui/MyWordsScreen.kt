@@ -156,8 +156,7 @@ fun MyWordsScreen(
         }
     }
     if (adding) {
-        ModalBottomSheet(onDismissRequest = { adding = false }, containerColor = Paper,
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        ZhuziSheet({ adding = false }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
             AddWordForm { h, p, m ->
                 onAdd(listOf(Triple(h, p, m)), "main")
                 adding = false

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import com.zhuzi.app.data.Lang
 import com.zhuzi.app.reminder.Reminders
@@ -75,26 +77,35 @@ fun ProgressScreen(
     var pickTime by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     val timeLabel = "%02d:%02d".format(reminderTime.first, reminderTime.second)
     if (pickTime) ReminderTimeDialog(reminderTime, { h, m -> onReminderTime(h, m); pickTime = false }) { pickTime = false }
+    val scroll = rememberScrollState()
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val compact by remember { androidx.compose.runtime.derivedStateOf { scroll.value > with(density) { 56.dp.toPx() } } }
+    Box(Modifier.fillMaxSize()) {
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp,
-                top = contentPadding.calculateTopPadding() + 16.dp,
-                bottom = contentPadding.calculateBottomPadding() + 24.dp),
+        Modifier.fillMaxSize().verticalScroll(scroll)
+            .padding(start = 16.dp, end = 16.dp,
+                top = contentPadding.calculateTopPadding() + 12.dp,
+                bottom = contentPadding.calculateBottomPadding() + 32.dp),
     ) {
-        ScreenTitle(tr("Progrès", "Progress", "Прогресс"),
-            tr("Ta régularité et ce que tu as retenu", "Your consistency and what you've learned", "Твоя регулярность и что ты выучил"))
+        LargeTitle(tr("Progrès", "Progress", "Прогресс"),
+            subtitle = tr("Ta régularité et ce que tu as retenu", "Your consistency and what you've learned", "Твоя регулярность и что ты выучил"))
 
         // Ta mascotte et son niveau
         Row(
-            Modifier.padding(top = 12.dp).fillMaxWidth().softCard().clickable(onClick = onAvatar).padding(16.dp),
+            Modifier.padding(top = 4.dp).fillMaxWidth().softCard()
+                .clickable(role = Role.Button, onClick = onAvatar).padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            PandaAvatar(look, com.zhuzi.app.data.levelFor(knownCount).number, Modifier.size(96.dp))
+            PandaAvatar(look, com.zhuzi.app.data.levelFor(knownCount).number, Modifier.size(88.dp))
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 LevelInfo(knownCount)
-                Text(tr("Personnaliser ›", "Customize ›", "Настроить ›"), color = com.zhuzi.app.ui.theme.Accent,
-                    fontWeight = FontWeight.Bold, fontSize = 14.sp, modifier = Modifier.padding(top = 8.dp))
+                Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(tr("Personnaliser", "Customize", "Настроить"), color = com.zhuzi.app.ui.theme.Accent,
+                        style = MaterialTheme.typography.titleSmall)
+                    ZIcon(Glyph.CHEVRON_RIGHT, com.zhuzi.app.ui.theme.Accent, size = 14.dp, weight = 1.6f,
+                        modifier = Modifier.padding(start = 2.dp))
+                }
             }
         }
 
@@ -104,10 +115,10 @@ fun ProgressScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                Modifier.size(76.dp).graphicsLayer { rotationZ = -6f }
+                Modifier.size(72.dp).graphicsLayer { rotationZ = -6f }
                     .clip(RoundedCornerShape(6.dp)).background(Seal),
                 contentAlignment = Alignment.Center,
-            ) { Text("$streakDays", color = OnSeal, fontWeight = FontWeight.Black, fontSize = 32.sp) }
+            ) { Text("$streakDays", color = OnSeal, fontWeight = FontWeight.Black, fontSize = 30.sp) }
             Spacer(Modifier.width(18.dp))
             Column {
                 Text(
@@ -120,7 +131,7 @@ fun ProgressScreen(
                         "Study one word today to start it.", "Выучи сегодня одно слово, чтобы начать.")
                     else tr("Un peu chaque jour : c'est ainsi que le bambou pousse.",
                         "A little every day: that's how bamboo grows.", "Понемногу каждый день: так растёт бамбук."),
-                    color = InkSoft, modifier = Modifier.padding(top = 2.dp),
+                    color = InkSoft, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 2.dp),
                 )
             }
         }
@@ -131,115 +142,130 @@ fun ProgressScreen(
         // Chiffres clés
         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             val ofWords = tr("sur ", "of ", "из ") + wordsCount(lang, total)
-            StatTile(tr("DÉCOUVERTS", "DISCOVERED", "ОТКРЫТО"), "$knownCount", ofWords, knownCount.toFloat() / total, Modifier.weight(1f))
-            StatTile(tr("BIEN RETENUS", "WELL LEARNED", "ВЫУЧЕНО"), "$masteredCount", ofWords, masteredCount.toFloat() / total, Modifier.weight(1f))
+            StatTile(tr("Découverts", "Discovered", "Открыто"), "$knownCount", ofWords, knownCount.toFloat() / total, Modifier.weight(1f))
+            StatTile(tr("Bien retenus", "Well learned", "Выучено"), "$masteredCount", ofWords, masteredCount.toFloat() / total, Modifier.weight(1f))
         }
         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatTile(tr("LEÇONS MAÎTRISÉES", "LESSONS MASTERED", "УРОКОВ ОСВОЕНО"), "$lessonsMastered",
+            StatTile(tr("Leçons maîtrisées", "Lessons mastered", "Уроков освоено"), "$lessonsMastered",
                 tr("sur ", "of ", "из ") + lessonsTotal, lessonsMastered.toFloat() / lessonsTotal,
                 Modifier.weight(1f))
-            StatTile(tr("À REVOIR DEMAIN", "DUE TOMORROW", "ПОВТОРИТЬ ЗАВТРА"), "$dueTomorrow",
+            StatTile(tr("À revoir demain", "Due tomorrow", "Повторить завтра"), "$dueTomorrow",
                 wordsCount(lang, dueTomorrow).substringAfter(' '), null, Modifier.weight(1f))
         }
 
+        // Réglages : listes groupées, comme l'appli Réglages
         // Apparence : automatique, clair, sombre
-        SectionLabel(tr("APPARENCE", "APPEARANCE", "ОФОРМЛЕНИЕ"))
-        Segmented(
-            listOf(tr("Automatique", "Automatic", "Авто"), tr("Clair", "Light", "Светлая"), tr("Sombre", "Dark", "Тёмная")),
-            themeMode, onThemeChange,
-        )
-        Text(tr("« Automatique » suit le réglage de ton téléphone.", "\"Automatic\" follows your phone's setting.",
-            "«Авто» следует настройке телефона."), color = InkSoft, fontSize = 12.sp, modifier = Modifier.padding(top = 6.dp))
-
-        // Langue
-        SectionLabel(tr("LANGUE", "LANGUAGE", "ЯЗЫК"))
-        Lang.entries.forEach { l ->
-            val on = l == lang
-            Row(
-                Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(TileShape)
-                    .background(if (on) com.zhuzi.app.ui.theme.Accent.copy(alpha = 0.12f) else Paper)
-                    .selectable(selected = on, role = Role.RadioButton) { onLangChange(l) }
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Flag(l)
-                Spacer(Modifier.width(14.dp))
-                Text(l.nativeName, fontWeight = if (on) FontWeight.Bold else FontWeight.Medium, fontSize = 16.sp,
-                    modifier = Modifier.weight(1f))
-                if (on) Text("✓", fontWeight = FontWeight.Black, fontSize = 18.sp, color = Ink)
+        GroupedSection(
+            Modifier.padding(top = 32.dp),
+            header = tr("APPARENCE", "APPEARANCE", "ОФОРМЛЕНИЕ"),
+            footer = tr("« Automatique » suit le réglage de ton téléphone.", "\"Automatic\" follows your phone's setting.",
+                "«Авто» следует настройке телефона."),
+        ) {
+            Box(Modifier.padding(horizontal = 8.dp, vertical = 2.dp)) {
+                Segmented(
+                    listOf(tr("Automatique", "Automatic", "Авто"), tr("Clair", "Light", "Светлая"), tr("Sombre", "Dark", "Тёмная")),
+                    themeMode, onThemeChange,
+                )
             }
         }
-        Text(tr("Traductions des mots et textes de l'appli.", "Word translations and app texts.",
-            "Переводы слов и тексты приложения."), color = InkSoft, fontSize = 12.sp,
-            modifier = Modifier.padding(top = 4.dp))
+
+        // Langue : liste à choix unique, coche en accent
+        GroupedSection(
+            Modifier.padding(top = 28.dp),
+            header = tr("LANGUE", "LANGUAGE", "ЯЗЫК"),
+            footer = tr("Traductions des mots et textes de l'appli.", "Word translations and app texts.",
+                "Переводы слов и тексты приложения."),
+        ) {
+            Lang.entries.forEachIndexed { i, l ->
+                val on = l == lang
+                if (i > 0) RowDivider(RowIconInset)
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 52.dp)
+                        .selectable(selected = on, role = Role.RadioButton) { onLangChange(l) }
+                        .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(Modifier.width(30.dp), contentAlignment = Alignment.Center) { Flag(l) }
+                    Spacer(Modifier.width(14.dp))
+                    Text(l.nativeName, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    if (on) ZIcon(Glyph.CHECK, com.zhuzi.app.ui.theme.Accent, size = 20.dp, weight = 1.5f)
+                }
+            }
+        }
 
         // Rappel quotidien
-        SectionLabel(tr("RAPPEL", "REMINDER", "НАПОМИНАНИЕ"))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(tr("Rappel quotidien", "Daily reminder", "Ежедневное напоминание"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(tr("À $timeLabel, seulement si tu n'as pas encore étudié ce jour-là.",
-                    "At $timeLabel, only if you haven't studied yet that day.",
-                    "В $timeLabel, только если ты ещё не занимался в этот день."),
-                    color = InkSoft, fontSize = 13.sp)
-            }
-            Spacer(Modifier.width(12.dp))
-            Switch(
-                checked = reminderOn,
-                onCheckedChange = onReminderChange,
-                colors = SwitchDefaults.colors(
-                    checkedTrackColor = com.zhuzi.app.ui.theme.Accent, checkedThumbColor = androidx.compose.ui.graphics.Color.White,
-                    uncheckedTrackColor = Mist, uncheckedThumbColor = InkSoft, uncheckedBorderColor = Rule,
-                ),
-            )
-        }
-        // L'heure, au choix
-        Row(
-            Modifier.padding(top = 12.dp).fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Mist)
-                .clickable(enabled = reminderOn) { pickTime = true }.padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        GroupedSection(
+            Modifier.padding(top = 28.dp),
+            header = tr("RAPPEL", "REMINDER", "НАПОМИНАНИЕ"),
+            footer = tr("À $timeLabel, seulement si tu n'as pas encore étudié ce jour-là.",
+                "At $timeLabel, only if you haven't studied yet that day.",
+                "В $timeLabel, только если ты ещё не занимался в этот день."),
         ) {
-            Text(tr("Heure du rappel", "Reminder time", "Время напоминания"), fontSize = 15.sp,
-                color = if (reminderOn) com.zhuzi.app.ui.theme.Ink else InkSoft, modifier = Modifier.weight(1f))
-            Text(timeLabel, fontSize = 17.sp, fontWeight = FontWeight.Bold,
-                color = if (reminderOn) com.zhuzi.app.ui.theme.Accent else InkSoft)
-            Text("  ›", fontSize = 18.sp, color = InkSoft)
+            GroupedRow(
+                title = tr("Rappel quotidien", "Daily reminder", "Ежедневное напоминание"),
+                icon = { IconTile(Glyph.BELL) },
+                modifier = Modifier.toggleable(value = reminderOn, role = Role.Switch) { onReminderChange(it) },
+                trailing = {
+                    Switch(
+                        checked = reminderOn,
+                        onCheckedChange = null,
+                        colors = SwitchDefaults.colors(
+                            checkedTrackColor = com.zhuzi.app.ui.theme.AccentFill, checkedThumbColor = androidx.compose.ui.graphics.Color.White,
+                            checkedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+                            uncheckedTrackColor = Mist, uncheckedThumbColor = androidx.compose.ui.graphics.Color.White,
+                            uncheckedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+                        ),
+                    )
+                },
+            )
+            RowDivider(RowIconInset)
+            GroupedRow(
+                title = tr("Heure du rappel", "Reminder time", "Время напоминания"),
+                icon = { IconTile(Glyph.CLOCK) },
+                value = timeLabel,
+                chevron = true,
+                titleColor = if (reminderOn) androidx.compose.ui.graphics.Color.Unspecified else InkSoft,
+                onClick = if (reminderOn) ({ pickTime = true }) else null,
+            )
         }
 
         // À propos
-        SectionLabel(tr("À PROPOS", "ABOUT", "О ПРИЛОЖЕНИИ"))
-        Text("Zhúzi $versionName", fontWeight = FontWeight.Bold)
-        Text(tr("Caractères au pinceau : police LXGW WenKai. Logo : police Ma Shan Zheng (licence SIL OFL). " +
-            "Ordre des traits : Make Me a Hanzi (licence Arphic).",
-            "Brush characters: LXGW WenKai font. Logo: Ma Shan Zheng font (SIL OFL license). " +
-            "Stroke order: Make Me a Hanzi (Arphic license).",
-            "Иероглифы: шрифт LXGW WenKai. Логотип: шрифт Ma Shan Zheng (лицензия SIL OFL). " +
-            "Порядок черт: Make Me a Hanzi (лицензия Arphic)."), color = InkSoft, fontSize = 13.sp,
-            modifier = Modifier.padding(top = 2.dp))
+        GroupedSection(
+            Modifier.padding(top = 28.dp),
+            header = tr("À PROPOS", "ABOUT", "О ПРИЛОЖЕНИИ"),
+            footer = tr("Caractères au pinceau : police LXGW WenKai. Logo : police Ma Shan Zheng (licence SIL OFL). " +
+                "Ordre des traits : Make Me a Hanzi (licence Arphic).",
+                "Brush characters: LXGW WenKai font. Logo: Ma Shan Zheng font (SIL OFL license). " +
+                    "Stroke order: Make Me a Hanzi (Arphic license).",
+                "Иероглифы: шрифт LXGW WenKai. Логотип: шрифт Ma Shan Zheng (лицензия SIL OFL). " +
+                    "Порядок черт: Make Me a Hanzi (лицензия Arphic)."),
+        ) {
+            GroupedRow(
+                title = "Zhúzi",
+                icon = { IconTile(Glyph.INFO) },
+                value = versionName,
+                role = null,
+            )
+        }
     }
-}
-
-@Composable
-private fun SectionLabel(text: String) {
-    Column(Modifier.padding(top = 28.dp, bottom = 10.dp)) {
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Rule))
-        Text(text, style = Kicker, modifier = Modifier.padding(top = 16.dp))
+    CompactTitleBar(tr("Progrès", "Progress", "Прогресс"), compact, contentPadding.calculateTopPadding())
     }
 }
 
 @Composable
 private fun StatTile(label: String, value: String, sub: String, progress: Float?, modifier: Modifier) {
-    Column(modifier.softCard(androidx.compose.foundation.shape.RoundedCornerShape(16.dp)).padding(16.dp)) {
-        Text(label, style = Kicker)
+    Column(modifier.softCard().padding(16.dp)) {
+        Text(label, style = MaterialTheme.typography.titleSmall, color = InkSoft, maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
         val n = value.toIntOrNull()
         if (n != null) {
             CountUpText(n, Modifier.padding(top = 4.dp), style = MaterialTheme.typography.displaySmall)
         } else {
             Text(value, style = MaterialTheme.typography.displaySmall, modifier = Modifier.padding(top = 4.dp))
         }
-        Text(sub, color = InkSoft, fontSize = 12.sp)
-        Spacer(Modifier.height(10.dp))
-        if (progress != null) ProgressBar(progress, height = 5.dp) else Spacer(Modifier.height(5.dp))
+        Text(sub, color = InkSoft, style = MaterialTheme.typography.bodySmall, maxLines = 1)
+        Spacer(Modifier.height(12.dp))
+        if (progress != null) ProgressBar(progress, height = 4.dp) else Spacer(Modifier.height(4.dp))
     }
 }
 
@@ -259,9 +285,10 @@ private fun WeekChart(days: List<Pair<java.time.LocalDate, Int>>, modifier: Modi
     val b = com.zhuzi.app.ui.theme.Accent2
     Column(modifier.fillMaxWidth().softCard().padding(18.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(tr("TA SEMAINE", "YOUR WEEK", "ТВОЯ НЕДЕЛЯ"), style = Kicker, modifier = Modifier.weight(1f))
+            Text(tr("Ta semaine", "Your week", "Твоя неделя"), style = MaterialTheme.typography.titleSmall, color = InkSoft,
+                modifier = Modifier.weight(1f))
             Text(tr("$activeDays jour${if (activeDays > 1) "s" else ""} sur 7", "$activeDays of 7 days", "$activeDays из 7 дней"),
-                fontSize = 12.sp, color = InkSoft, fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.labelMedium, color = InkSoft)
         }
         Text(
             "$total " + tr(if (total > 1) "actions cette semaine" else "action cette semaine", "actions this week",
@@ -286,9 +313,9 @@ private fun WeekChart(days: List<Pair<java.time.LocalDate, Int>>, modifier: Modi
                     // Place toujours réservée au chiffre, pour que toutes les barres partent du même niveau
                     Text(if (n > 0) "$n" else " ", fontSize = 10.sp, color = InkSoft, fontWeight = FontWeight.Bold)
                     Box(
-                        Modifier.padding(top = 4.dp).width(22.dp)
+                        Modifier.padding(top = 4.dp).width(20.dp)
                             .height(androidx.compose.ui.unit.max(6.dp, 72.dp * anim.value))
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(6.dp))
                             .background(
                                 if (isToday) androidx.compose.ui.graphics.Brush.verticalGradient(listOf(b, a))
                                 else androidx.compose.ui.graphics.SolidColor(if (n > 0) a.copy(alpha = 0.35f) else Mist),

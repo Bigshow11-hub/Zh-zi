@@ -407,25 +407,13 @@ private fun PartBar(label: String, good: Int, total: Int) {
 /** Pastille « examen blanc » de la page Leçons. */
 @Composable
 fun ExamEntry(level: Int, best: Int, onClick: () -> Unit) {
-    val interaction = remember { MutableInteractionSource() }
-    Row(
-        Modifier.fillMaxWidth().pressScale(interaction).softCard()
-            .clickable(interactionSource = interaction, indication = null, onClick = onClick).padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(Modifier.size(54.dp).clip(RoundedCornerShape(16.dp)).background(Seal), contentAlignment = Alignment.Center) {
-            Text("考", fontFamily = Kai, fontSize = 30.sp, color = Color.White)
-        }
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text(tr("Examen blanc HSK $level", "HSK $level mock exam", "Пробный экзамен HSK $level"), fontWeight = FontWeight.Bold, fontSize = 17.sp)
-            Text(
-                if (best >= 0) tr("Ton record : $best / 100", "Your best: $best / 100", "Твой рекорд: $best / 100")
-                else tr("20 questions · écoute et lecture · es-tu prêt ?", "20 questions · listening and reading · are you ready?",
-                    "20 вопросов · аудирование и чтение · ты готов?"),
-                fontSize = 13.sp, color = InkSoft,
-            )
-        }
-        Text("›", fontSize = 22.sp, color = InkSoft)
-    }
+    GroupedRow(
+        title = tr("Examen blanc HSK $level", "HSK $level mock exam", "Пробный экзамен HSK $level"),
+        subtitle = if (best >= 0) tr("Ton record : $best / 100", "Your best: $best / 100", "Твой рекорд: $best / 100")
+        else tr("20 questions · écoute et lecture · es-tu prêt ?", "20 questions · listening and reading · are you ready?",
+            "20 вопросов · аудирование и чтение · ты готов?"),
+        icon = { KaiTile("考", size = 48.dp) },
+        chevron = true,
+        onClick = onClick,
+    )
 }

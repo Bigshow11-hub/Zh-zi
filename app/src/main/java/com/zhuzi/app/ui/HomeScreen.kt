@@ -17,6 +17,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.semantics.heading
+import com.zhuzi.app.ui.theme.AccentFill
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -58,9 +67,6 @@ import com.zhuzi.app.ui.theme.Rule
 import com.zhuzi.app.ui.theme.Seal
 import com.zhuzi.app.ui.theme.TileShape
 
-/** Bleu des tuiles « bien retenus ». */
-private val TileBlue = Color(0xFF4C8DF6)
-
 /** Onglet Accueil : salut, chiffres clés, objectif du jour, programme, mot et proverbe du jour. */
 @Composable
 fun HomeScreen(
@@ -98,135 +104,156 @@ fun HomeScreen(
     val notes = dayNotes(activeToday, streakDays, dueWords.size, dueTomorrow, reminderOn, hour, next, nextKnown, wordOfDay,
         onReview, onOpen, onReminder, speak, reminderAt)
     if (showNotes) NotificationsSheet(notes, todayLabel) { showNotes = false }
+    val list = androidx.compose.foundation.lazy.rememberLazyListState()
+    // La barre compacte apparaît quand le grand titre (« Bonsoir ») a quitté l'écran
+    val compact by remember {
+        androidx.compose.runtime.derivedStateOf {
+            list.firstVisibleItemIndex > 1 || (list.firstVisibleItemIndex == 1 && list.firstVisibleItemScrollOffset > 120)
+        }
+    }
+    Box(Modifier.fillMaxSize()) {
     LazyColumn(
+        state = list,
         contentPadding = PaddingValues(
-            start = 20.dp, end = 20.dp,
-            top = contentPadding.calculateTopPadding() + 8.dp,
-            bottom = contentPadding.calculateBottomPadding() + 28.dp,
+            start = 16.dp, end = 16.dp,
+            top = contentPadding.calculateTopPadding() + 4.dp,
+            bottom = contentPadding.calculateBottomPadding() + 32.dp,
         ),
     ) {
-        // Boutons ronds : recherche et rappel
+        // Barre d'outils : la date, recherche et notifications
         staggerItem(0, seen) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(todayLabel, style = MaterialTheme.typography.bodySmall, color = InkSoft, modifier = Modifier.weight(1f))
-                RoundIcon(tr("Rechercher", "Search", "Поиск"), onSearch) { c -> SearchGlyph(c) }
-                Spacer(Modifier.width(10.dp))
+                Text(todayLabel, style = MaterialTheme.typography.bodyMedium, color = InkSoft,
+                    fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                val ink = Ink
+                ToolbarButton(tr("Rechercher", "Search", "Поиск"), onSearch) { ZIcon(Glyph.SEARCH, ink, size = 21.dp, weight = 1.1f) }
                 BellButton(notes.pending) { showNotes = true }
             }
         }
-        // Salut + avatar
+        // Grand titre : le salut ; à droite, la mascotte
         staggerItem(1, seen) {
-            Row(Modifier.padding(top = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(greeting.local.get(lang) + ",", style = MaterialTheme.typography.titleMedium, color = InkSoft)
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(greeting.hanzi, fontFamily = Kai, fontSize = 38.sp, color = Ink)
-                        Text("  " + greeting.pinyin, fontSize = 14.sp, color = InkSoft,
+                    Text(greeting.local.get(lang), style = MaterialTheme.typography.displaySmall, color = Ink,
+                        modifier = Modifier.semantics { heading() })
+                    Row(Modifier.padding(top = 2.dp), verticalAlignment = Alignment.Bottom) {
+                        Text(greeting.hanzi, fontFamily = Kai, fontSize = 26.sp, color = Ink)
+                        Text("  " + greeting.pinyin, fontSize = 15.sp, color = InkSoft,
                             fontFamily = com.zhuzi.app.ui.theme.PinyinFont,
-                            modifier = Modifier.padding(bottom = 8.dp))
+                            modifier = Modifier.padding(bottom = 4.dp))
                     }
                     Text(tr("Un peu de chinois aujourd'hui ?", "A little Chinese today?", "Немного китайского сегодня?"),
-                        style = MaterialTheme.typography.bodyMedium, color = InkSoft)
+                        style = MaterialTheme.typography.bodyMedium, color = InkSoft, modifier = Modifier.padding(top = 2.dp))
                 }
-                // Avatar : la mascotte dans un halo lavande ; la toucher ouvre « Mon avatar »
+                // La mascotte ; la toucher ouvre « Mon avatar »
                 Box(
-                    Modifier.size(92.dp).clip(CircleShape)
-                        .background(com.zhuzi.app.ui.theme.Mist)
+                    Modifier.size(84.dp).clip(CircleShape)
+                        .background(Paper)
                         .clickable(onClick = onAvatar)
                         .semantics { contentDescription = tr(lang, "Mon avatar", "My avatar", "Мой аватар") },
                     contentAlignment = Alignment.Center,
                 ) {
-                    PandaAvatar(look, com.zhuzi.app.data.levelFor(knownCount).number, Modifier.size(80.dp))
+                    PandaAvatar(look, com.zhuzi.app.data.levelFor(knownCount).number, Modifier.size(74.dp))
                 }
             }
         }
-        // Trois tuiles : découverts, bien retenus, série
+        // Les trois chiffres, dans une seule carte, séparés par des filets
         staggerItem(2, seen) {
-            Row(Modifier.padding(top = 20.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                StatTile("字", Ink, knownCount, tr("Découverts", "Discovered", "Открыто"), Modifier.weight(1f))
-                StatTile("记", Ink, masteredCount, tr("Retenus", "Learned", "Выучено"), Modifier.weight(1f))
-                StatTile("天", Seal, streakDays,
-                    tr("Série", "Streak", "Серия"),
-                    Modifier.weight(1f))
-            }
+            StatsCard(knownCount, masteredCount, streakDays, Modifier.padding(top = 20.dp))
         }
         // Objectif du jour
         staggerItem(3, seen) { GoalCard(dueWords.size, dueTomorrow, knownCount, total, next, onReview, onOpen) }
 
-        // Au programme
+        // Au programme : une liste groupée de trois lignes à cocher
         staggerItem(4, seen) {
-            Row(Modifier.padding(top = 28.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(tr("Au programme", "On the agenda", "План на сегодня"), style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.weight(1f))
-                Text(tr("Tout voir ›", "See all ›", "Все ›"), color = Accent, fontWeight = FontWeight.Bold, fontSize = 14.sp,
-                    modifier = Modifier.clickable(onClick = onSeeAll).padding(4.dp))
+            Column {
+                SectionTitle(tr("Au programme", "On the agenda", "План на сегодня"),
+                    action = tr("Tout voir", "See all", "Все"), onAction = onSeeAll)
+                Column(Modifier.fillMaxWidth().clip(com.zhuzi.app.ui.theme.GroupShape).background(Paper)) {
+                    TaskRow(
+                        done = dueWords.isEmpty() && knownCount > 0,
+                        title = tr("Révision du jour", "Today's review", "Повторение дня"),
+                        subtitle = if (dueWords.isNotEmpty()) wordsCount(lang, dueWords.size) + tr(" à revoir", " to review", " повторить")
+                        else tr("Tout est révisé", "All reviewed", "Всё повторено"),
+                        onClick = if (dueWords.isNotEmpty()) onReview else null,
+                    )
+                    RowDivider(56.dp)
+                    TaskRow(
+                        done = nextKnown >= next.words.size,
+                        title = lessonName(next) + " · " + next.title(lang),
+                        subtitle = "$nextKnown / ${next.words.size} " + tr("mots découverts", "words discovered", "слов открыто"),
+                        onClick = { onOpen(next) },
+                    )
+                    RowDivider(56.dp)
+                    TaskRow(
+                        done = wordOfDayKnown,
+                        title = tr("Mot du jour : ", "Word of the day: ", "Слово дня: ") + wordOfDay.hanzi,
+                        subtitle = wordOfDay.pinyin + " · " + wordOfDay.meaning(lang),
+                        onClick = { speak(wordOfDay.hanzi) },
+                    )
+                }
             }
         }
         staggerItem(5, seen) {
-            TaskRow(
-                done = dueWords.isEmpty() && knownCount > 0,
-                title = tr("Révision du jour", "Today's review", "Повторение дня"),
-                subtitle = if (dueWords.isNotEmpty()) wordsCount(lang, dueWords.size) + tr(" à revoir", " to review", " повторить")
-                else tr("Tout est révisé", "All reviewed", "Всё повторено"),
-                onClick = if (dueWords.isNotEmpty()) onReview else ({}),
-            )
+            Column {
+                SectionTitle(tr("Mot du jour", "Word of the day", "Слово дня"))
+                WordOfDayCard(wordOfDay, speak)
+            }
         }
         staggerItem(6, seen) {
-            TaskRow(
-                done = nextKnown >= next.words.size,
-                title = lessonName(next) + " · " + next.title(lang),
-                subtitle = "$nextKnown / ${next.words.size} " + tr("mots découverts", "words discovered", "слов открыто"),
-                onClick = { onOpen(next) },
-            )
+            Column {
+                SectionTitle(tr("Proverbe du jour", "Proverb of the day", "Пословица дня"))
+                ProverbCard(proverb, speak)
+            }
         }
-        staggerItem(7, seen) {
-            TaskRow(
-                done = wordOfDayKnown,
-                title = tr("Mot du jour : ", "Word of the day: ", "Слово дня: ") + wordOfDay.hanzi,
-                subtitle = wordOfDay.pinyin + " · " + wordOfDay.meaning(lang),
-                onClick = { speak(wordOfDay.hanzi) },
-            )
-        }
-        staggerItem(8, seen) { WordOfDayCard(wordOfDay, speak) }
-        staggerItem(9, seen) { ProverbCard(proverb, speak) }
+    }
+    CompactTitleBar(tr("Accueil", "Home", "Главная"), compact, contentPadding.calculateTopPadding())
     }
 }
 
-/** Petit bouton rond blanc avec un pictogramme dessiné. */
+/** Titre de section (titre 3, 20 sp) avec, à droite, une action en accent (« Tout voir »). */
 @Composable
-private fun RoundIcon(label: String, onClick: () -> Unit, glyph: @Composable (Color) -> Unit) {
-    val ink = Ink
-    Box(
-        Modifier.size(44.dp).softCard(CircleShape).clickable(onClick = onClick)
-            .semantics { contentDescription = label },
-        contentAlignment = Alignment.Center,
-    ) { glyph(ink) }
-}
-
-@Composable
-private fun SearchGlyph(c: Color) {
-    Canvas(Modifier.size(20.dp)) {
-        val w = size.width
-        drawCircle(c, radius = w * 0.32f, center = Offset(w * 0.42f, w * 0.42f), style = Stroke(w * 0.11f))
-        drawLine(c, Offset(w * 0.66f, w * 0.66f), Offset(w * 0.92f, w * 0.92f), w * 0.12f, cap = StrokeCap.Round)
-    }
-}
-
-/** Tuile chiffre : pastille colorée avec un caractère, le nombre, son libellé. */
-@Composable
-private fun StatTile(glyph: String, tint: Color, value: Int, label: String, modifier: Modifier) {
-    Column(modifier.softCard(RoundedCornerShape(16.dp)).padding(14.dp)) {
-        Box(Modifier.size(36.dp).clip(CircleShape)
-            .background(if (tint == Seal) tint.copy(alpha = 0.12f) else com.zhuzi.app.ui.theme.Mist),
-            contentAlignment = Alignment.Center) {
-            Text(glyph, fontFamily = Kai, fontSize = 20.sp, color = tint)
+fun SectionTitle(title: String, modifier: Modifier = Modifier, action: String? = null, onAction: () -> Unit = {}) {
+    Row(modifier.fillMaxWidth().padding(top = 28.dp, bottom = 8.dp, start = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(title, style = MaterialTheme.typography.titleLarge, color = Ink, modifier = Modifier.weight(1f).semantics { heading() })
+        action?.let {
+            Text(it, color = Accent, style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.clip(com.zhuzi.app.ui.theme.PillShape)
+                    .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onAction)
+                    .padding(horizontal = 8.dp, vertical = 12.dp))
         }
-        CountUpText(value, Modifier.padding(top = 10.dp))
-        Text(label, fontSize = 12.sp, color = InkSoft, maxLines = 1)
     }
 }
 
-/** La carte « Objectif du jour » : dégradé indigo → violet, bambou en filigrane, barre de progression. */
+/** Les trois chiffres clés (découverts, retenus, série) dans une carte, séparés par des filets verticaux. */
+@Composable
+private fun StatsCard(known: Int, mastered: Int, streak: Int, modifier: Modifier = Modifier) {
+    val line = Rule
+    Row(
+        modifier.fillMaxWidth().height(IntrinsicSize.Min).clip(com.zhuzi.app.ui.theme.GroupShape).background(Paper)
+            .padding(vertical = 14.dp),
+    ) {
+        val items = listOf(
+            Triple(known, tr("Découverts", "Discovered", "Открыто"), Color.Unspecified),
+            Triple(mastered, tr("Retenus", "Learned", "Выучено"), Color.Unspecified),
+            Triple(streak, tr("Jours de série", "Day streak", "Дней подряд"), Seal),
+        )
+        items.forEachIndexed { i, (value, label, color) ->
+            if (i > 0) Box(Modifier.width(1.dp).fillMaxHeight().padding(vertical = 6.dp)
+                .drawBehind { drawLine(line, Offset(0f, 0f), Offset(0f, size.height), 1f) })
+            Column(Modifier.weight(1f).padding(horizontal = 14.dp)) {
+                CountUpText(value, style = MaterialTheme.typography.headlineMedium, color = color)
+                Text(label, style = MaterialTheme.typography.bodySmall, color = InkSoft, maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            }
+        }
+    }
+}
+
+/**
+ * La carte « Objectif du jour » : aplat d'accent aux coins continus, bambou en filigrane,
+ * barre de progression. C'est la seule grande action de l'accueil.
+ */
 @Composable
 private fun GoalCard(
     due: Int,
@@ -238,30 +265,26 @@ private fun GoalCard(
     onOpen: (Lesson) -> Unit,
 ) {
     val lang = currentLang()
-    val a = Accent
-    val b = Accent2
+    val a = AccentFill
     val percent = knownCount * 100 / total
     val action: () -> Unit = if (due > 0) onReview else ({ onOpen(next) })
+    val shape = com.zhuzi.app.ui.theme.SmoothShape(22.dp)
+    val interaction = remember { MutableInteractionSource() }
     Box(
-        Modifier.padding(top = 18.dp).fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(20.dp), ambientColor = a.copy(alpha = 0.12f), spotColor = a.copy(alpha = 0.22f))
-            .clip(RoundedCornerShape(20.dp))
-            .background(Brush.linearGradient(listOf(a, b)))
-            .clickable(onClick = action),
+        Modifier.padding(top = 16.dp).fillMaxWidth().pressScale(interaction)
+            .shadow(10.dp, shape, ambientColor = a.copy(alpha = 0.10f), spotColor = a.copy(alpha = 0.28f))
+            .clip(shape)
+            // Un très léger dégradé vertical : la carte paraît éclairée par le haut
+            .background(Brush.verticalGradient(listOf(lerp(a, Color.White, 0.08f), a)))
+            .clickable(interactionSource = interaction, indication = null,
+                role = androidx.compose.ui.semantics.Role.Button, onClick = action),
     ) {
         BambooArt(Modifier.align(Alignment.TopEnd).size(150.dp, 190.dp))
-        Column(Modifier.padding(22.dp)) {
+        Column(Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Pastille « cible »
-                        Box(Modifier.size(22.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.22f)),
-                            contentAlignment = Alignment.Center) {
-                            Box(Modifier.size(8.dp).clip(CircleShape).background(Color.White))
-                        }
-                        Text("  " + tr("Objectif du jour", "Today's goal", "Цель дня"), color = Color.White.copy(alpha = 0.85f),
-                            fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                    }
+                    Text(tr("Objectif du jour", "Today's goal", "Цель дня"), color = Color.White.copy(alpha = 0.86f),
+                        style = MaterialTheme.typography.titleSmall)
                     Text(
                         when {
                             due > 0 -> wordsCount(lang, due) + tr(" à revoir", " to review", " повторить")
@@ -269,7 +292,7 @@ private fun GoalCard(
                             else -> tr("Continue comme ça !", "Keep going!", "Так держать!")
                         },
                         color = Color.White, style = MaterialTheme.typography.headlineMedium,
-                        modifier = Modifier.padding(top = 8.dp),
+                        modifier = Modifier.padding(top = 4.dp),
                     )
                     Text(
                         when {
@@ -278,72 +301,67 @@ private fun GoalCard(
                             dueTomorrow > 0 -> tr("Demain : ", "Tomorrow: ", "Завтра: ") + wordsCount(lang, dueTomorrow)
                             else -> tr("Prochaine étape : ", "Next up: ", "Дальше: ") + next.short(lang)
                         },
-                        color = Color.White.copy(alpha = 0.85f), fontSize = 14.sp, modifier = Modifier.padding(top = 2.dp),
+                        color = Color.White.copy(alpha = 0.86f), style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 2.dp),
                     )
                 }
                 // Flèche ronde
-                Box(Modifier.size(46.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) {
-                    Text("›", color = a, fontSize = 28.sp, fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 3.dp))
+                Box(Modifier.size(44.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) {
+                    ZIcon(Glyph.CHEVRON_RIGHT, a, size = 20.dp, weight = 1.6f, modifier = Modifier.offset(x = 1.dp))
                 }
             }
-            Row(Modifier.padding(top = 18.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.padding(top = 20.dp), verticalAlignment = Alignment.CenterVertically) {
                 ProgressBar(knownCount.toFloat() / total, Modifier.weight(1f), color = Color.White,
-                    track = Color.White.copy(alpha = 0.28f), height = 8.dp)
-                Text("  $percent %", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    track = Color.White.copy(alpha = 0.26f), height = 6.dp)
+                Text("  $percent %", color = Color.White, style = MaterialTheme.typography.labelMedium)
             }
-            Text(tr("du vocabulaire HSK découvert", "of HSK vocabulary discovered", "словаря HSK открыто"), color = Color.White.copy(alpha = 0.75f),
-                fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+            Text(tr("du vocabulaire HSK découvert", "of HSK vocabulary discovered", "словаря HSK открыто"),
+                color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 4.dp))
         }
     }
 }
 
-/** Une ligne du programme : rond à cocher, titre, sous-titre, flèche. */
+/** Une ligne du programme (dans la liste groupée) : rond à cocher, titre, sous-titre, chevron. */
 @Composable
-private fun TaskRow(done: Boolean, title: String, subtitle: String, onClick: () -> Unit) {
-    val interaction = remember { MutableInteractionSource() }
+private fun TaskRow(done: Boolean, title: String, subtitle: String, onClick: (() -> Unit)?) {
     Row(
-        Modifier.padding(bottom = 10.dp).fillMaxWidth().pressScale(interaction)
-            .softCard(RoundedCornerShape(16.dp))
-            .clickable(interactionSource = interaction, indication = null, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+        Modifier.fillMaxWidth().heightIn(min = 60.dp)
+            .then(if (onClick != null) Modifier.clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClick) else Modifier)
+            .padding(start = 16.dp, end = 14.dp, top = 10.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (done) {
-            Box(Modifier.size(28.dp).clip(CircleShape).background(Accent), contentAlignment = Alignment.Center) {
-                Text("✓", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
-            }
-        } else {
-            Box(Modifier.size(28.dp).clip(CircleShape).border(2.dp, Rule, CircleShape))
-        }
-        Spacer(Modifier.width(14.dp))
+        CheckCircle(done)
+        Spacer(Modifier.width(16.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp, maxLines = 1,
+            Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1,
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 color = if (done) InkSoft else Ink)
-            Text(subtitle, fontSize = 13.sp, color = InkSoft, maxLines = 1,
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = InkSoft, maxLines = 1,
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 fontFamily = com.zhuzi.app.ui.theme.PinyinFont)
         }
-        Text("›", fontSize = 22.sp, color = InkSoft)
+        if (onClick != null) {
+            Spacer(Modifier.width(8.dp))
+            Chevron()
+        }
     }
 }
 
 /** Le mot du jour, avec sa phrase d'exemple. */
 @Composable
 private fun WordOfDayCard(word: Word, speak: (String) -> Unit) {
-    Column(Modifier.padding(top = 18.dp).fillMaxWidth().softCard().padding(20.dp)) {
-        Text(tr("MOT DU JOUR", "WORD OF THE DAY", "СЛОВО ДНЯ"), style = Kicker)
-        Row(Modifier.padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+    Column(Modifier.fillMaxWidth().softCard().padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.width(140.dp)) { WordGrids(word.hanzi, maxSize = 68.dp, pinyin = word.pinyin) }
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 PinyinText(word.pinyin, 22.sp)
-                Text(word.meaning(currentLang()), color = InkSoft, fontSize = 16.sp)
+                Text(word.meaning(currentLang()), color = InkSoft, style = MaterialTheme.typography.bodyLarge)
                 ListenLink { speak(word.hanzi) }
             }
         }
-        ExampleBlock(word, speak, Modifier.padding(top = 8.dp))
+        ExampleBlock(word, speak, Modifier.padding(top = 12.dp))
     }
 }
 
@@ -351,19 +369,20 @@ private fun WordOfDayCard(word: Word, speak: (String) -> Unit) {
 @Composable
 private fun ProverbCard(proverb: Proverb, speak: (String) -> Unit) {
     Column(
-        Modifier.padding(top = 18.dp).fillMaxWidth().softCard()
-            .clickable { speak(proverb.hanzi) }.padding(22.dp),
+        Modifier.fillMaxWidth().softCard()
+            .clickable(onClickLabel = tr("Écouter", "Listen", "Слушать")) { speak(proverb.hanzi) }.padding(20.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(tr("PROVERBE DU JOUR", "PROVERB OF THE DAY", "ПОСЛОВИЦА ДНЯ"), style = Kicker,
-                modifier = Modifier.weight(1f))
+        Row(verticalAlignment = Alignment.Top) {
+            Text(proverb.hanzi, fontFamily = Kai, fontSize = 32.sp, color = Ink, modifier = Modifier.weight(1f))
             SealStamp("竹", 26.dp, animate = false)
         }
-        Text(proverb.hanzi, fontFamily = Kai, fontSize = 32.sp, color = Ink, modifier = Modifier.padding(top = 12.dp))
-        PinyinText(proverb.pinyin, 15.sp, fontWeight = FontWeight.Medium, maxLines = 2)
+        PinyinText(proverb.pinyin, 15.sp, fontWeight = FontWeight.Medium, maxLines = 2, modifier = Modifier.padding(top = 4.dp))
         Text(proverb.meaning.get(currentLang()), style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(top = 10.dp))
-        Text(tr("Touche pour l'écouter", "Tap to listen", "Нажми, чтобы послушать"), fontSize = 12.sp,
-            color = InkSoft, modifier = Modifier.padding(top = 8.dp))
+        Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            ZIcon(Glyph.SPEAKER, InkSoft, size = 16.dp)
+            Text("  " + tr("Touche pour l'écouter", "Tap to listen", "Нажми, чтобы послушать"),
+                style = MaterialTheme.typography.bodySmall, color = InkSoft)
+        }
     }
 }

@@ -212,47 +212,64 @@ fun ToneLegend(modifier: Modifier = Modifier) {
 @Composable
 fun Modifier.pressScale(interaction: MutableInteractionSource): Modifier {
     val pressed by interaction.collectIsPressedAsState()
-    val s by animateFloatAsState(if (pressed) 0.96f else 1f, zhuziSpring(), label = "press")
+    val s by animateFloatAsState(if (pressed) 0.97f else 1f, zhuziSpring(), label = "press")
     return this.scale(s)
 }
 
-/** Bouton principal : encre pleine, en pilule. */
+/** Bouton principal : pilule pleine en accent, la seule action forte de l'écran. S'assombrit à l'appui. */
 @Composable
 fun InkButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     val interaction = remember { MutableInteractionSource() }
-    val a = com.zhuzi.app.ui.theme.Accent
-    // Pilule pleine, couleur d'accent unie : la seule action forte de l'écran
+    val pressed by interaction.collectIsPressedAsState()
+    val a = com.zhuzi.app.ui.theme.AccentFill
     Box(
-        modifier.height(56.dp).pressScale(interaction)
+        modifier.height(52.dp).pressScale(interaction)
             .clip(PillShape)
-            .background(if (enabled) a else a.copy(alpha = 0.4f))
-            .clickable(interactionSource = interaction, indication = null, enabled = enabled, onClick = onClick),
+            .background(if (!enabled) a.copy(alpha = 0.4f) else if (pressed) a.copy(alpha = 0.86f) else a)
+            .clickable(interactionSource = interaction, indication = null, enabled = enabled,
+                role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
+            .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, color = Color.White, style = androidx.compose.material3.MaterialTheme.typography.labelLarge)
+        Text(text, color = Color.White, style = androidx.compose.material3.MaterialTheme.typography.labelLarge,
+            maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
-/** Carte blanche : coins arrondis, une seule ombre neutre et légère (pas de bordure en plus). */
+/**
+ * Carte : fond de carte aux coins continus, sans ombre (comme les listes groupées d'iOS : la carte
+ * se détache par sa couleur sur le fond gris).
+ */
 @Composable
-fun Modifier.softCard(shape: androidx.compose.ui.graphics.Shape = com.zhuzi.app.ui.theme.PanelShape): Modifier {
-    val shade = Color(0xFF14152B)
-    return this.shadow(6.dp, shape, ambientColor = shade.copy(alpha = 0.05f), spotColor = shade.copy(alpha = 0.10f))
+fun Modifier.softCard(shape: androidx.compose.ui.graphics.Shape = com.zhuzi.app.ui.theme.PanelShape): Modifier =
+    this.clip(shape).background(Paper)
+
+/** Carte qui flotte au-dessus du contenu (barre du bas, carte retournée) : une ombre douce et décalée. */
+@Composable
+fun Modifier.raised(shape: androidx.compose.ui.graphics.Shape = com.zhuzi.app.ui.theme.PanelShape): Modifier {
+    val shade = Color(0xFF000000)
+    return this.shadow(12.dp, shape, ambientColor = shade.copy(alpha = 0.06f), spotColor = shade.copy(alpha = 0.12f))
         .clip(shape).background(Paper)
 }
 
-/** Bouton secondaire : contour encre, en pilule. */
+/** Bouton secondaire : pilule teintée (accent très léger), libellé en accent — le style « gris » d'iOS. */
 @Composable
 fun InkOutlinedButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val interaction = remember { MutableInteractionSource() }
-    OutlinedButton(
-        onClick = onClick,
-        shape = PillShape,
-        interactionSource = interaction,
-        border = BorderStroke(1.5.dp, Ink),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = Ink),
-        modifier = modifier.height(56.dp).pressScale(interaction),
-    ) { Text(text, style = androidx.compose.material3.MaterialTheme.typography.labelLarge) }
+    val pressed by interaction.collectIsPressedAsState()
+    val a = com.zhuzi.app.ui.theme.Accent
+    Box(
+        modifier.height(52.dp).pressScale(interaction)
+            .clip(PillShape)
+            .background(a.copy(alpha = if (pressed) 0.20f else 0.12f))
+            .clickable(interactionSource = interaction, indication = null,
+                role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text, color = a, style = androidx.compose.material3.MaterialTheme.typography.labelLarge,
+            maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
 }
 
 /**
@@ -480,7 +497,7 @@ fun ExampleBlock(word: com.zhuzi.app.data.Word, speak: (String) -> Unit, modifie
     }
     androidx.compose.foundation.layout.Column(
         modifier.fillMaxWidth().clip(com.zhuzi.app.ui.theme.TileShape)
-            .background(com.zhuzi.app.ui.theme.Mist).padding(horizontal = 18.dp, vertical = 16.dp),
+            .background(com.zhuzi.app.ui.theme.Mist).padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 4.dp),
     ) {
         Text(tr("EXEMPLE", "EXAMPLE", "ПРИМЕР"), style = com.zhuzi.app.ui.theme.Kicker)
         Text(sentence, fontFamily = Kai, fontSize = 26.sp, modifier = Modifier.padding(top = 8.dp))
@@ -488,13 +505,8 @@ fun ExampleBlock(word: com.zhuzi.app.data.Word, speak: (String) -> Unit, modifie
             color = InkSoft, modifier = Modifier.padding(top = 2.dp))
         Text(ex.meaning(currentLang()), fontSize = 15.sp, color = Ink, fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(top = 6.dp))
-        androidx.compose.material3.TextButton(
-            onClick = { speak(ex.hanzi) },
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
-        ) {
-            Text(tr("Écouter la phrase", "Listen to the sentence", "Слушать фразу"), color = Ink,
-                fontWeight = FontWeight.Bold, textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
-        }
+        ActionLink(tr("Écouter la phrase", "Listen to the sentence", "Слушать фразу"), Glyph.SPEAKER,
+            { speak(ex.hanzi) }, Modifier.padding(top = 4.dp).offset(x = (-12).dp))
     }
 }
 
