@@ -98,6 +98,20 @@ jobs:
           sleep 20
           adb shell pidof com.zhuzi.app && echo "APPLI LANCEE" || echo "APPLI ARRETEE"
           adb logcat -d -b crash || true
+          # Notifications appli fermée : alarmes programmées, puis alarme déclenchée appli tuée
+          echo "== alarmes programmees"; adb shell dumpsys alarm | grep -A2 "com.zhuzi.app" | grep -E "ALARM_|tag=|when" | head -10
+          adb shell pm grant com.zhuzi.app android.permission.POST_NOTIFICATIONS || true
+          adb shell input keyevent KEYCODE_HOME; sleep 2
+          adb shell am kill com.zhuzi.app; sleep 2
+          adb shell pidof com.zhuzi.app && echo "APPLI ENCORE OUVERTE" || echo "APPLI FERMEE"
+          if adb root >/dev/null 2>&1; then
+            sleep 3
+            adb shell am broadcast -n com.zhuzi.app/.reminder.AlarmReceiver -a com.zhuzi.app.ALARM_WORD
+            sleep 5
+            adb shell dumpsys notification --noredact | grep -E "pkg=com.zhuzi.app|android.title=|android.text=" | head -8 || true
+            adb shell dumpsys notification | grep -q "pkg=com.zhuzi.app" && echo "NOTIFICATION AFFICHEE" || echo "PAS DE NOTIFICATION"
+            adb unroot >/dev/null 2>&1 || true; sleep 3
+          fi
           # comme sur le téléphone : installation par l'installeur du système (session), pas par adb
           adb uninstall com.zhuzi.app || true
           adb push zhuzi.apk /data/local/tmp/z.apk
