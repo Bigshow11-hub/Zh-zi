@@ -28,6 +28,7 @@ import com.zhuzi.app.ui.theme.InkSoft
 import com.zhuzi.app.ui.theme.Paper
 import com.zhuzi.app.ui.theme.Wrong
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 /** Le téléphone n'a pas de voix chinoise : on explique, et on ouvre l'écran d'Android pour l'installer. */
 @Composable
 fun VoiceSheet(onInstall: () -> Unit, onDismiss: () -> Unit) {
