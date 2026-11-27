@@ -1,0 +1,47 @@
+name: Tester l'installation
+
+# Installe la dernière version publiée sur un vrai Android (émulateur) et lance l'appli,
+# pour voir l'erreur exacte si l'installation échoue.
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Construire l'APK"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer l'APK publié
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download derniere-version -R "$GITHUB_REPOSITORY" -p zhuzi.apk
+      - name: Examiner l'APK
+        run: |
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          echo "build-tools: $BT"
+          "$BT/apksigner" verify --verbose --print-certs zhuzi.apk || true
+          "$BT/aapt2" dump badging zhuzi.apk | head -40 || true
+          "$BT/zipalign" -c -P 16 -v 4 zhuzi.apk | tail -5 || true
+      - name: Activer KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Installer et lancer sur Android 14
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: |
+            adb install zhuzi.apk; echo "resultat install: $?"
+            adb shell pm list packages | grep zhuzi || echo "PAS INSTALLEE"
+            adb logcat -c
+            adb shell monkey -p com.zhuzi.app -c android.intent.category.LAUNCHER 1 || true
+            sleep 15
+            adb shell pidof com.zhuzi.app && echo "APPLI LANCEE" || echo "APPLI ARRETEE"
+            adb logcat -d -b crash || true
+            adb logcat -d | grep -iE "zhuzi|FATAL|AndroidRuntime|PackageManager" | tail -80 || true
