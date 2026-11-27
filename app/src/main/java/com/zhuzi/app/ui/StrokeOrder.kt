@@ -167,7 +167,7 @@ fun StrokeOrderView(char: String, size: Dp, modifier: Modifier = Modifier, contr
             alpha = appear.value
             val sc = 0.94f + 0.06f * appear.value
             scaleX = sc; scaleY = sc
-        }) {
+        }.clip(RoundedCornerShape(14.dp))) {
             val w = this.size.width
             val r = CornerRadius(14.dp.toPx(), 14.dp.toPx())
             val thin = 1.dp.toPx()
