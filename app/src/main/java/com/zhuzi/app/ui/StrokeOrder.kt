@@ -249,7 +249,7 @@ fun StrokePanel(word: Word, modifier: Modifier = Modifier, size: Dp = 220.dp) {
                 chars.forEachIndexed { i, c ->
                     val on = i == index
                     Box(
-                        Modifier.size(44.dp).clip(PillShape).background(if (on) Ink else Mist)
+                        Modifier.size(48.dp).clip(PillShape).background(if (on) Ink else Mist)
                             .clickable { index = i },
                         contentAlignment = Alignment.Center,
                     ) {

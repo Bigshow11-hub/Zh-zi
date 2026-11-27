@@ -236,7 +236,7 @@ private fun StatsCard(known: Int, mastered: Int, streak: Int, modifier: Modifier
         val items = listOf(
             Triple(known, tr("Découverts", "Discovered", "Открыто"), Color.Unspecified),
             Triple(mastered, tr("Retenus", "Learned", "Выучено"), Color.Unspecified),
-            Triple(streak, tr("Jours de série", "Day streak", "Дней подряд"), Seal),
+            Triple(streak, tr("Série", "Streak", "Серия"), Seal),
         )
         items.forEachIndexed { i, (value, label, color) ->
             if (i > 0) Box(Modifier.width(1.dp).fillMaxHeight().padding(vertical = 6.dp)

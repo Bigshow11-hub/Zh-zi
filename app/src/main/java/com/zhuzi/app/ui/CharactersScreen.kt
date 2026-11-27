@@ -67,8 +67,9 @@ import com.zhuzi.app.ui.theme.TileShape
 import java.text.Normalizer
 
 /** Enlève les accents et tons (nǐ → ni, é → e) pour chercher sans se soucier des signes. */
+private val Marks = Regex("\\p{M}")
 private fun plain(s: String): String =
-    Normalizer.normalize(s, Normalizer.Form.NFD).replace(Regex("\\p{M}"), "").lowercase().trim()
+    Normalizer.normalize(s, Normalizer.Form.NFD).replace(Marks, "").lowercase().trim()
 
 /** Onglet Caractères : les mots, les caractères un par un et la grammaire, avec recherche et fiches. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -200,6 +201,7 @@ fun CharactersScreen(
 @Composable
 private fun SearchField(value: String, onChange: (String) -> Unit) {
     val soft = InkSoft
+    val clearLabel = tr("Effacer", "Clear", "Очистить")
     BasicTextField(
         value = value,
         onValueChange = onChange,
@@ -225,7 +227,7 @@ private fun SearchField(value: String, onChange: (String) -> Unit) {
                     // Effacer : rond gris avec une croix (cible de 40 dp)
                     Box(
                         Modifier.size(40.dp).clip(CircleShape).clickable(role = androidx.compose.ui.semantics.Role.Button) { onChange("") }
-                            .semantics { contentDescription = tr("Effacer", "Clear", "Очистить") },
+                            .semantics { contentDescription = clearLabel },
                         contentAlignment = Alignment.Center,
                     ) {
                         Box(Modifier.size(18.dp).clip(CircleShape).background(soft.copy(alpha = 0.6f)), contentAlignment = Alignment.Center) {
@@ -261,7 +263,7 @@ private fun WordCard(word: Word, lesson: Lesson, box: Int, modifier: Modifier, o
         Text(word.meaning(currentLang()), fontSize = 13.sp, color = InkSoft, maxLines = 2, minLines = 2,
             overflow = TextOverflow.Ellipsis, lineHeight = 17.sp, modifier = Modifier.padding(horizontal = 2.dp))
         Row(Modifier.padding(top = 6.dp, start = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text((if (lesson.level > 1) "H${lesson.level}·L" else "L") + lesson.number, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = InkSoft,
+            Text((if (lesson.level > 1) "H${lesson.level}·L" else "L") + lesson.number, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = InkSoft,
                 modifier = Modifier.clip(PillShape).background(Mist)
                     .padding(horizontal = 7.dp, vertical = 2.dp))
             Spacer(Modifier.width(8.dp))
@@ -280,13 +282,13 @@ private fun StatusTag(box: Int) {
                     Modifier.size(9.dp).graphicsLayer { rotationZ = -6f }
                         .clip(RoundedCornerShape(1.5.dp)).background(Seal),
                 )
-                Text("  " + tr("Retenu", "Learned", "Выучено"), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Seal)
+                Text("  " + tr("Retenu", "Learned", "Выучено"), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Seal)
             }
             box > 0 -> {
                 Box(Modifier.size(6.dp).clip(CircleShape).background(InkSoft))
-                Text("  " + tr("Vu", "Seen", "Видел"), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = InkSoft)
+                Text("  " + tr("Vu", "Seen", "Видел"), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = InkSoft)
             }
-            else -> Text(tr("Nouveau", "New", "Новое"), fontSize = 10.sp, color = InkSoft)
+            else -> Text(tr("Nouveau", "New", "Новое"), fontSize = 11.sp, color = InkSoft)
         }
     }
 }
