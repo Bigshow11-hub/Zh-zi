@@ -31,8 +31,12 @@ android {
     }
 
     buildTypes {
+        // Version publiée (Play Store, plus tard) : R8 enlève le code et les ressources inutiles.
+        // L'APK distribué aujourd'hui est la version « debug », qui n'est pas réduite.
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     compileOptions {

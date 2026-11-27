@@ -1,8 +1,11 @@
 package com.zhuzi.app.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -52,7 +55,7 @@ fun ReviewScreen(
         TopBar(tr("Accueil", "Home", "Главная"), tr("Révision du jour", "Today's review", "Повторение дня"), onBack)
         if (queue.isEmpty()) {
             Column(
-                Modifier.weight(1f).fillMaxWidth().padding(horizontal = 20.dp),
+                Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
@@ -72,7 +75,7 @@ fun ReviewScreen(
         val word = queue.first()
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState())
-                .padding(start = 20.dp, end = 20.dp, top = 8.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             StepProgress(done, total)
@@ -87,10 +90,10 @@ fun ReviewScreen(
                 ListenLink { speak(word.hanzi) }
                 StrokeLink { strokesFor = word }
             }
-            androidx.compose.animation.AnimatedVisibility(
+            AnimatedVisibility(
                 revealed,
-                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandVertically(),
-                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkVertically(),
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically(),
             ) {
                 ExampleBlock(word, speak, Modifier.padding(bottom = 12.dp))
             }

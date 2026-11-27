@@ -21,11 +21,13 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.CompositionLocalProvider
@@ -44,6 +46,7 @@ import com.zhuzi.app.ui.LessonScreen
 import com.zhuzi.app.ui.LessonsScreen
 import com.zhuzi.app.ui.MainFrame
 import com.zhuzi.app.ui.ProgressScreen
+import com.zhuzi.app.ui.ReadingColumn
 import com.zhuzi.app.ui.ReviewScreen
 import com.zhuzi.app.ui.Speaker
 import com.zhuzi.app.ui.Tab
@@ -53,16 +56,85 @@ import com.zhuzi.app.ui.theme.ZhuziTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.zhuzi.app.data.AvatarLook
+import com.zhuzi.app.data.AvatarPrefs
+import com.zhuzi.app.data.AvatarStats
+import com.zhuzi.app.data.Backup
+import com.zhuzi.app.data.Celebrations
+import com.zhuzi.app.data.Lesson
+import com.zhuzi.app.data.Milestone
+import com.zhuzi.app.data.MyWords
+import com.zhuzi.app.data.WordOfDay
+import com.zhuzi.app.data.greetingNow
+import com.zhuzi.app.data.levelFor
+import com.zhuzi.app.data.proverbOfDay
+import com.zhuzi.app.reminder.Alarms
+import com.zhuzi.app.reminder.DailyWord
+import com.zhuzi.app.reminder.Push
+import com.zhuzi.app.reminder.Updates
+import com.zhuzi.app.ui.AvatarScreen
+import com.zhuzi.app.ui.CelebrationOverlay
+import com.zhuzi.app.ui.ExamScreen
+import com.zhuzi.app.ui.MyWordsScreen
+import com.zhuzi.app.ui.OnboardingScreen
+import com.zhuzi.app.ui.PhotoImportScreen
+import com.zhuzi.app.ui.RestoreDialog
+import com.zhuzi.app.ui.ThemePref
+import com.zhuzi.app.ui.Voice
+import com.zhuzi.app.ui.VoiceSheet
 
-/** Écran plein (sans barre du bas) : aucun, la révision du jour, ou une leçon (son numéro). */
-private const val NONE = 0
-private const val REVIEW = -1
-private const val AVATAR = -2
-private const val MYWORDS = -3
-private const val PHOTO = -4
-private const val MYREVIEW = -5
-/** Examen blanc : -11 pour le HSK 1, -12 pour le HSK 2. */
-private const val EXAM_BASE = -10
+/** Écran plein (sans barre du bas) ouvert par-dessus les onglets. */
+private sealed interface Overlay {
+    /** Aucun : les onglets, avec la barre du bas. */
+    object None : Overlay
+    /** La révision du jour. */
+    object Review : Overlay
+    /** Mon avatar. */
+    object Avatar : Overlay
+    /** Mes mots, l'import d'une photo, la révision de mes mots. */
+    object MyWords : Overlay
+    object Photo : Overlay
+    object MyReview : Overlay
+    /** Examen blanc d'un niveau HSK (1 à 4). */
+    data class Exam(val level: Int) : Overlay
+    /** Une leçon (son numéro). */
+    data class LessonOf(val id: Int) : Overlay
+}
+
+/**
+ * L'écran plein est gardé (rotation, retour dans l'appli) sous forme d'un nombre, comme avant :
+ * 0 aucun, -1 révision, -2 avatar, -3 mes mots, -4 photo, -5 révision de mes mots,
+ * -11 à -14 examen blanc HSK 1 à 4, sinon le numéro de la leçon.
+ */
+private val OverlaySaver = Saver<Overlay, Int>(
+    save = { o ->
+        when (o) {
+            Overlay.None -> 0
+            Overlay.Review -> -1
+            Overlay.Avatar -> -2
+            Overlay.MyWords -> -3
+            Overlay.Photo -> -4
+            Overlay.MyReview -> -5
+            is Overlay.Exam -> -10 - o.level
+            is Overlay.LessonOf -> o.id
+        }
+    },
+    restore = { n ->
+        when {
+            n == -1 -> Overlay.Review
+            n == -2 -> Overlay.Avatar
+            n == -3 -> Overlay.MyWords
+            n == -4 -> Overlay.Photo
+            n == -5 -> Overlay.MyReview
+            n in -14..-11 -> Overlay.Exam(-10 - n)
+            n > 0 -> Overlay.LessonOf(n)
+            else -> Overlay.None
+        }
+    },
+)
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -78,10 +150,10 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         if (::speaker.isInitialized) speaker.check()
-        exactOk = com.zhuzi.app.reminder.Alarms.canExact(this)
-        batteryOk = com.zhuzi.app.reminder.Alarms.batteryFree(this)
+        exactOk = Alarms.canExact(this)
+        batteryOk = Alarms.batteryFree(this)
         // L'accord « heure exacte » vient peut-être d'être donné : on reprogramme les alarmes
-        com.zhuzi.app.reminder.Alarms.scheduleAll(this)
+        Alarms.scheduleAll(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,27 +167,27 @@ class MainActivity : ComponentActivity() {
         val progress = Progress(this)
         val srs = Srs(this)
         val streak = Streak(this)
-        val myWords = com.zhuzi.app.data.MyWords(this)
+        val myWords = MyWords(this)
         val allWords = allLessons.flatMap { it.words }
         val total = allWords.size
         val settings = getSharedPreferences("settings", MODE_PRIVATE)
-        val wordOfDay = com.zhuzi.app.data.WordOfDay.today(this)
+        val wordOfDay = WordOfDay.today(this)
         val startLesson = intent?.getIntExtra(EXTRA_LESSON, 0) ?: 0
         val versionName = runCatching { packageManager.getPackageInfo(packageName, 0).versionName }
             .getOrNull() ?: ""
-        com.zhuzi.app.reminder.Push.scheduleAll(this)
+        Push.scheduleAll(this)
 
         setContent {
             // Langue choisie (français, anglais, russe), gardée sur le téléphone
             var lang by remember { mutableStateOf(LangPref.get(this@MainActivity)) }
             // Mascotte : tenue, accessoire, fond choisis
-            var look by remember { mutableStateOf(com.zhuzi.app.data.AvatarPrefs.get(this@MainActivity)) }
-            val setLook: (com.zhuzi.app.data.AvatarLook) -> Unit = { l ->
-                com.zhuzi.app.data.AvatarPrefs.set(this@MainActivity, l); look = l
+            var look by remember { mutableStateOf(AvatarPrefs.get(this@MainActivity)) }
+            val setLook: (AvatarLook) -> Unit = { l ->
+                AvatarPrefs.set(this@MainActivity, l); look = l
             }
             // Apparence choisie : automatique, clair ou sombre
-            var themeMode by remember { mutableIntStateOf(com.zhuzi.app.ui.ThemePref.get(this@MainActivity)) }
-            val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
+            var themeMode by remember { mutableIntStateOf(ThemePref.get(this@MainActivity)) }
+            val systemDark = isSystemInDarkTheme()
             val dark = when (themeMode) {
                 1 -> false
                 2 -> true
@@ -130,11 +202,13 @@ class MainActivity : ComponentActivity() {
             CompositionLocalProvider(LocalLang provides lang) {
             ZhuziTheme(darkTheme = dark) {
                 var tab by rememberSaveable { mutableStateOf(Tab.HOME) }
-                var overlay by rememberSaveable { mutableIntStateOf(if (allLessons.any { it.id == startLesson }) startLesson else NONE) }
+                var overlay: Overlay by rememberSaveable(stateSaver = OverlaySaver) {
+                    mutableStateOf<Overlay>(if (allLessons.any { it.id == startLesson }) Overlay.LessonOf(startLesson) else Overlay.None)
+                }
                 // Change à chaque progrès pour rafraîchir les onglets
                 var version by rememberSaveable { mutableIntStateOf(0) }
-                val close: () -> Unit = { overlay = NONE; version++ }
-                val openLesson: (com.zhuzi.app.data.Lesson) -> Unit = { overlay = it.id }
+                val close: () -> Unit = { overlay = Overlay.None; version++ }
+                val openLesson: (Lesson) -> Unit = { overlay = Overlay.LessonOf(it.id) }
 
                 // Rappel : réglage de l'appli + accord Android pour les notifications
                 var reminderOn by remember {
@@ -143,13 +217,13 @@ class MainActivity : ComponentActivity() {
                 var fromButton by remember { mutableStateOf(false) }
                 var reminderAt by remember { mutableStateOf(Reminders.time(this@MainActivity)) }
                 // Mot du jour (le matin) et nouvelles versions : réglages de l'appli
-                var wordOn by remember { mutableStateOf(com.zhuzi.app.reminder.DailyWord.isEnabled(this@MainActivity)) }
-                var wordAt by remember { mutableStateOf(com.zhuzi.app.reminder.DailyWord.time(this@MainActivity)) }
-                var updatesOn by remember { mutableStateOf(com.zhuzi.app.reminder.Updates.isEnabled(this@MainActivity)) }
-                var updateName by remember { mutableStateOf(com.zhuzi.app.reminder.Updates.available(this@MainActivity)) }
+                var wordOn by remember { mutableStateOf(DailyWord.isEnabled(this@MainActivity)) }
+                var wordAt by remember { mutableStateOf(DailyWord.time(this@MainActivity)) }
+                var updatesOn by remember { mutableStateOf(Updates.isEnabled(this@MainActivity)) }
+                var updateName by remember { mutableStateOf(Updates.available(this@MainActivity)) }
                 LaunchedEffect(Unit) {
-                    com.zhuzi.app.reminder.Updates.check(this@MainActivity)
-                    updateName = com.zhuzi.app.reminder.Updates.available(this@MainActivity)
+                    Updates.check(this@MainActivity)
+                    updateName = Updates.available(this@MainActivity)
                 }
                 val askPermission = rememberLauncherForActivityResult(
                     ActivityResultContracts.RequestPermission(),
@@ -196,38 +270,38 @@ class MainActivity : ComponentActivity() {
                     voiceSheet = false
                     Speaker.installIntents().firstOrNull { runCatching { startActivity(it) }.isSuccess }
                 }
-                if (voiceSheet) com.zhuzi.app.ui.VoiceSheet(onInstall = openVoiceInstall) { voiceSheet = false }
+                if (voiceSheet) VoiceSheet(onInstall = openVoiceInstall) { voiceSheet = false }
 
                 // Sauvegarde des progrès dans un fichier, et restauration
                 val exportLauncher = rememberLauncherForActivityResult(
                     ActivityResultContracts.CreateDocument("application/json"),
                 ) { uri ->
                     if (uri != null) {
-                        val ok = com.zhuzi.app.data.Backup.export(this@MainActivity, uri)
-                        android.widget.Toast.makeText(this@MainActivity,
+                        val ok = Backup.export(this@MainActivity, uri)
+                        Toast.makeText(this@MainActivity,
                             if (ok) tr(lang, "Progrès sauvegardés.", "Progress saved.", "Прогресс сохранён.")
                             else tr(lang, "La sauvegarde a échoué.", "Backup failed.", "Не удалось сохранить."),
-                            android.widget.Toast.LENGTH_LONG).show()
+                            Toast.LENGTH_LONG).show()
                     }
                 }
-                var restoreUri by remember { mutableStateOf<android.net.Uri?>(null) }
+                var restoreUri by remember { mutableStateOf<Uri?>(null) }
                 val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
                     if (uri != null) restoreUri = uri
                 }
                 restoreUri?.let { uri ->
-                    com.zhuzi.app.ui.RestoreDialog(
+                    RestoreDialog(
                         onConfirm = {
                             restoreUri = null
-                            if (com.zhuzi.app.data.Backup.import(this@MainActivity, uri)) {
-                                com.zhuzi.app.reminder.Push.scheduleAll(this@MainActivity)
-                                android.widget.Toast.makeText(this@MainActivity,
+                            if (Backup.import(this@MainActivity, uri)) {
+                                Push.scheduleAll(this@MainActivity)
+                                Toast.makeText(this@MainActivity,
                                     tr(lang, "Progrès restaurés.", "Progress restored.", "Прогресс восстановлен."),
-                                    android.widget.Toast.LENGTH_LONG).show()
+                                    Toast.LENGTH_LONG).show()
                                 recreate()
                             } else {
-                                android.widget.Toast.makeText(this@MainActivity,
+                                Toast.makeText(this@MainActivity,
                                     tr(lang, "Ce fichier n'est pas une sauvegarde Zhúzi.", "This file isn't a Zhúzi backup.",
-                                        "Это не резервная копия Zhúzi."), android.widget.Toast.LENGTH_LONG).show()
+                                        "Это не резервная копия Zhúzi."), Toast.LENGTH_LONG).show()
                             }
                         },
                         onDismiss = { restoreUri = null },
@@ -242,10 +316,10 @@ class MainActivity : ComponentActivity() {
                     mine = myWords.all()
                 }
                 // Fêtes d'étapes : vérifiées à chaque retour sur les onglets
-                var celebration by remember { mutableStateOf<com.zhuzi.app.data.Milestone?>(null) }
+                var celebration by remember { mutableStateOf<Milestone?>(null) }
                 LaunchedEffect(overlay, version) {
-                    if (overlay == NONE) {
-                        celebration = com.zhuzi.app.data.Celebrations.pending(
+                    if (overlay == Overlay.None) {
+                        celebration = Celebrations.pending(
                             this@MainActivity,
                             streak = streak.current(),
                             known = srs.knownCount(allWords),
@@ -253,12 +327,14 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
-                val lesson = allLessons.firstOrNull { it.id == overlay }
+                // Lu une fois : les branches ci-dessous testent cette valeur
+                val current = overlay
+                val lesson = (current as? Overlay.LessonOf)?.let { o -> allLessons.firstOrNull { it.id == o.id } }
                 val bars = WindowInsets.systemBars.asPaddingValues()
 
                 when {
-                    !onboarded -> Surface {
-                        com.zhuzi.app.ui.OnboardingScreen(
+                    !onboarded -> FullScreen {
+                        OnboardingScreen(
                             lang = lang,
                             onLang = { l -> LangPref.set(this@MainActivity, l); lang = l },
                             onDone = { level, remind, h ->
@@ -279,14 +355,13 @@ class MainActivity : ComponentActivity() {
                             contentPadding = bars,
                         )
                     }
-                    // Révision du jour, plein écran
                     // Mon avatar, plein écran
-                    overlay == AVATAR -> Surface {
+                    current == Overlay.Avatar -> FullScreen {
                         BackHandler(onBack = close)
                         val known = srs.knownCount(allWords)
-                        com.zhuzi.app.ui.AvatarScreen(
+                        AvatarScreen(
                             look = look,
-                            stats = com.zhuzi.app.data.AvatarStats(
+                            stats = AvatarStats(
                                 known = known,
                                 streak = streak.current(),
                                 lessonsMastered = allLessons.count { l ->
@@ -299,10 +374,10 @@ class MainActivity : ComponentActivity() {
                             contentPadding = bars,
                         )
                     }
-                    overlay <= EXAM_BASE - 1 && overlay >= EXAM_BASE - 4 -> Surface {
+                    current is Overlay.Exam && current.level in 1..4 -> FullScreen {
                         BackHandler(onBack = close)
-                        val examLevel = EXAM_BASE - overlay
-                        com.zhuzi.app.ui.ExamScreen(
+                        val examLevel = current.level
+                        ExamScreen(
                             level = examLevel,
                             best = progress.bestExam(examLevel),
                             speak = speaker::speak,
@@ -315,30 +390,30 @@ class MainActivity : ComponentActivity() {
                             contentPadding = bars,
                         )
                     }
-                    overlay == MYWORDS -> Surface {
+                    current == Overlay.MyWords -> FullScreen {
                         BackHandler(onBack = close)
-                        com.zhuzi.app.ui.MyWordsScreen(
+                        MyWordsScreen(
                             words = mine,
                             dueCount = srs.dueWords(mine.map { it.toWord() }).size,
                             speak = speaker::speak,
                             onAdd = addMine,
                             onRemove = { w -> myWords.remove(w.id); mine = myWords.all() },
-                            onReview = { overlay = MYREVIEW },
-                            onPhoto = { overlay = PHOTO },
+                            onReview = { overlay = Overlay.MyReview },
+                            onPhoto = { overlay = Overlay.Photo },
                             onBack = close,
                             contentPadding = bars,
                         )
                     }
-                    overlay == PHOTO -> Surface {
-                        BackHandler { overlay = MYWORDS }
-                        com.zhuzi.app.ui.PhotoImportScreen(
-                            onCreate = { items -> addMine(items, "photo"); overlay = MYWORDS },
-                            onBack = { overlay = MYWORDS },
+                    current == Overlay.Photo -> FullScreen {
+                        BackHandler { overlay = Overlay.MyWords }
+                        PhotoImportScreen(
+                            onCreate = { items -> addMine(items, "photo"); overlay = Overlay.MyWords },
+                            onBack = { overlay = Overlay.MyWords },
                             contentPadding = bars,
                         )
                     }
-                    overlay == MYREVIEW -> Surface {
-                        BackHandler { overlay = MYWORDS }
+                    current == Overlay.MyReview -> FullScreen {
+                        BackHandler { overlay = Overlay.MyWords }
                         // Les mots à revoir ; sinon tous, pour s'entraîner (liste figée pendant la séance)
                         val session = remember { mine.map { it.toWord() }.let { w -> srs.dueWords(w).ifEmpty { w.shuffled() } } }
                         ReviewScreen(
@@ -348,11 +423,11 @@ class MainActivity : ComponentActivity() {
                                 srs.answer(word, knew)
                                 streak.markActive()
                             },
-                            onBack = { overlay = MYWORDS },
+                            onBack = { overlay = Overlay.MyWords },
                             contentPadding = bars,
                         )
                     }
-                    overlay == REVIEW -> Surface {
+                    current == Overlay.Review -> FullScreen {
                         BackHandler(onBack = close)
                         ReviewScreen(
                             dueWords = srs.dueWords(reviewPool),
@@ -366,7 +441,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     // Une leçon, plein écran
-                    lesson != null -> Surface {
+                    lesson != null -> FullScreen {
                         BackHandler(onBack = close)
                         LessonScreen(
                             lesson = lesson,
@@ -390,11 +465,11 @@ class MainActivity : ComponentActivity() {
                         // Bouton central : la révision s'il y a des mots à revoir, sinon la leçon à reprendre
                         val startSession: () -> Unit = {
                             if (srs.dueWords(reviewPool).isNotEmpty()) {
-                                overlay = REVIEW
+                                overlay = Overlay.Review
                             } else {
                                 val nextLesson = allLessons.firstOrNull { srs.knownCount(it.words) < it.words.size }
                                     ?: allLessons.first()
-                                overlay = nextLesson.id
+                                overlay = Overlay.LessonOf(nextLesson.id)
                             }
                         }
                         MainFrame(tab, { tab = it }, startSession) { padding ->
@@ -402,7 +477,7 @@ class MainActivity : ComponentActivity() {
                             val v = version
                             val bestScore: (Int, QuizMode) -> Int =
                                 { id, mode -> if (v >= 0) progress.bestScore(id, mode) else -1 }
-                            val lessonKnown: (com.zhuzi.app.data.Lesson) -> Int = { l -> srs.knownCount(l.words) }
+                            val lessonKnown: (Lesson) -> Int = { l -> srs.knownCount(l.words) }
                             AnimatedContent(tab, transitionSpec = { fadeIn() togetherWith fadeOut() },
                                 label = "tab") { t ->
                                 when (t) {
@@ -411,8 +486,8 @@ class MainActivity : ComponentActivity() {
                                             ?: allLessons.last()
                                         HomeScreen(
                                             todayLabel = todayLabel(lang),
-                                            greeting = com.zhuzi.app.data.greetingNow(),
-                                            proverb = com.zhuzi.app.data.proverbOfDay(),
+                                            greeting = greetingNow(),
+                                            proverb = proverbOfDay(),
                                             streakDays = streak.current(),
                                             dueWords = srs.dueWords(reviewPool),
                                             dueTomorrow = srs.dueTomorrow(allWords),
@@ -423,16 +498,16 @@ class MainActivity : ComponentActivity() {
                                             nextKnown = lessonKnown(next),
                                             wordOfDay = wordOfDay,
                                             wordOfDayKnown = srs.boxOf(wordOfDay) > 0,
-                                            voiceMissing = speaker.voice == com.zhuzi.app.ui.Voice.MISSING,
+                                            voiceMissing = speaker.voice == Voice.MISSING,
                                             onVoice = { voiceSheet = true },
                                             speak = speaker::speak,
-                                            onReview = { overlay = REVIEW },
+                                            onReview = { overlay = Overlay.Review },
                                             onOpen = openLesson,
                                             onSearch = { tab = Tab.CHARS },
                                             onReminder = { tab = Tab.PROGRESS },
                                             onSeeAll = { tab = Tab.LESSONS },
                                             look = look,
-                                            onAvatar = { overlay = AVATAR },
+                                            onAvatar = { overlay = Overlay.Avatar },
                                             contentPadding = padding,
                                             activeToday = streak.activeToday(),
                                             reminderOn = reminderOn,
@@ -440,13 +515,14 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                     Tab.LESSONS -> LessonsScreen(bestScore, lessonKnown, openLesson, padding,
-                                        myCount = mine.size, onMyWords = { overlay = MYWORDS },
+                                        myCount = mine.size, onMyWords = { overlay = Overlay.MyWords },
                                         bestExam = { l -> if (v >= 0) progress.bestExam(l) else -1 },
-                                        onExam = { l -> overlay = EXAM_BASE - l })
+                                        onExam = { l -> overlay = Overlay.Exam(l) })
                                     Tab.CHARS -> CharactersScreen(
                                         boxOf = { w -> if (v >= 0) srs.boxOf(w) else 0 },
                                         speak = speaker::speak,
                                         contentPadding = padding,
+                                        version = v,
                                     )
                                     Tab.PROGRESS -> ProgressScreen(
                                         streakDays = streak.current(),
@@ -478,18 +554,18 @@ class MainActivity : ComponentActivity() {
                                         versionName = versionName,
                                         wordOn = wordOn,
                                         onWordChange = { on ->
-                                            com.zhuzi.app.reminder.DailyWord.setEnabled(this@MainActivity, on)
+                                            DailyWord.setEnabled(this@MainActivity, on)
                                             wordOn = on
                                             if (on) needPermission()
                                         },
                                         wordTime = wordAt,
                                         onWordTime = { h, m ->
-                                            com.zhuzi.app.reminder.DailyWord.setTime(this@MainActivity, h, m)
+                                            DailyWord.setTime(this@MainActivity, h, m)
                                             wordAt = h to m
                                         },
                                         updatesOn = updatesOn,
                                         onUpdatesChange = { on ->
-                                            com.zhuzi.app.reminder.Updates.setEnabled(this@MainActivity, on)
+                                            Updates.setEnabled(this@MainActivity, on)
                                             updatesOn = on
                                             if (on) needPermission()
                                         },
@@ -497,34 +573,34 @@ class MainActivity : ComponentActivity() {
                                         exactOk = exactOk,
                                         batteryOk = batteryOk,
                                         onExact = {
-                                            runCatching { startActivity(com.zhuzi.app.reminder.Alarms.exactSettings(this@MainActivity)) }
+                                            runCatching { startActivity(Alarms.exactSettings(this@MainActivity)) }
                                         },
                                         onBattery = {
-                                            runCatching { startActivity(com.zhuzi.app.reminder.Alarms.batterySettings(this@MainActivity)) }
+                                            runCatching { startActivity(Alarms.batterySettings(this@MainActivity)) }
                                                 .onFailure {
                                                     runCatching { startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }
                                                 }
                                         },
-                                        onExport = { exportLauncher.launch(com.zhuzi.app.data.Backup.fileName()) },
+                                        onExport = { exportLauncher.launch(Backup.fileName()) },
                                         onImport = { importLauncher.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) },
                                         onTest = {
                                             if (Reminders.canNotify(this@MainActivity)) {
-                                                com.zhuzi.app.reminder.DailyWord.show(this@MainActivity, test = true)
+                                                DailyWord.show(this@MainActivity, test = true)
                                             } else {
                                                 needPermission()
                                             }
                                         },
                                         onUpdate = {
                                             startActivity(Intent(Intent.ACTION_VIEW,
-                                                android.net.Uri.parse(com.zhuzi.app.reminder.Updates.APK_URL)))
+                                                Uri.parse(Updates.APK_URL)))
                                         },
                                         lang = lang,
                                         look = look,
-                                        onAvatar = { overlay = AVATAR },
+                                        onAvatar = { overlay = Overlay.Avatar },
                                         week = streak.lastDays(7),
                                         themeMode = themeMode,
                                         onThemeChange = { m ->
-                                            com.zhuzi.app.ui.ThemePref.set(this@MainActivity, m)
+                                            ThemePref.set(this@MainActivity, m)
                                             themeMode = m
                                         },
                                         onLangChange = { l ->
@@ -540,9 +616,9 @@ class MainActivity : ComponentActivity() {
                 }
                 // La fête d'une étape, par-dessus tout le reste
                 celebration?.let { m ->
-                    com.zhuzi.app.ui.CelebrationOverlay(
+                    CelebrationOverlay(
                         milestone = m, look = look,
-                        level = com.zhuzi.app.data.levelFor(srs.knownCount(allWords)).number,
+                        level = levelFor(srs.knownCount(allWords)).number,
                         onDone = { celebration = null },
                     )
                 }
@@ -555,6 +631,12 @@ class MainActivity : ComponentActivity() {
         speaker.shutdown()
         super.onDestroy()
     }
+}
+
+/** Un écran plein : fond du thème, contenu limité à la largeur de lecture sur tablette ou en paysage. */
+@Composable
+private fun FullScreen(content: @Composable () -> Unit) {
+    Surface { ReadingColumn(propagateMinConstraints = true, content = content) }
 }
 
 /** « Mercredi 26 novembre », « Wednesday 26 November », « Среда, 26 ноября » */

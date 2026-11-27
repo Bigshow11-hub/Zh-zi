@@ -51,6 +51,10 @@ jobs:
           name: zhuzi-ecrans
           path: app/build/screens/*.png
           if-no-files-found: ignore
+      # Version « release » réduite par R8 (non signée) : vérifie seulement qu'elle se construit
+      - name: Vérifier la version réduite (R8)
+        continue-on-error: true
+        run: ./gradlew assembleRelease --no-daemon
       # Sur main : remplace le fichier du lien fixe
       # https://github.com/Bigshow11-hub/Zh-zi/releases/latest/download/zhuzi.apk
       - name: Publier la dernière version

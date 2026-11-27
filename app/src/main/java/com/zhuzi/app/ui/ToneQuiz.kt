@@ -68,6 +68,8 @@ import com.zhuzi.app.ui.theme.Rule
 import com.zhuzi.app.ui.theme.TileShape
 import com.zhuzi.app.ui.theme.Wrong
 import com.zhuzi.app.ui.theme.toneColor
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.Color
 
 /**
  * Quiz des tons : on entend le mot, on voit ses caractères et son pinyin sans accents,
@@ -93,7 +95,7 @@ fun ToneQuiz(
     val bottom = contentPadding.calculateBottomPadding()
     // Marge du bas = hauteur réelle du panneau de réponse (mesurée), pour ne jamais cacher les choix
     var panelHeight by remember { mutableIntStateOf(0) }
-    val density = androidx.compose.ui.platform.LocalDensity.current
+    val density = LocalDensity.current
     val panelSpace = if (panelHeight > 0) with(density) { panelHeight.toDp() } + 16.dp else 220.dp
 
     val word = words[index]
@@ -106,7 +108,7 @@ fun ToneQuiz(
     Box(Modifier.fillMaxSize()) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-                .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = bottom + panelSpace),
+                .padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = bottom + panelSpace),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             header()
@@ -300,7 +302,7 @@ private fun ToneButton(tone: Int, enabled: Boolean, onClick: () -> Unit, modifie
 
 /** La courbe de hauteur du ton, sur 5 niveaux (1 grave, 5 aigu) : 55, 35, 214, 51 ; le neutre est un point. */
 @Composable
-private fun ToneContour(tone: Int, color: androidx.compose.ui.graphics.Color, modifier: Modifier) {
+private fun ToneContour(tone: Int, color: Color, modifier: Modifier) {
     Canvas(modifier) {
         val w = size.width
         val h = size.height

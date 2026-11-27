@@ -2,6 +2,7 @@ package com.zhuzi.app.ui
 
 import com.zhuzi.app.data.level
 import com.zhuzi.app.data.number
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,13 +34,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zhuzi.app.data.CharInfo
 import com.zhuzi.app.data.GrammarPoint
+import com.zhuzi.app.data.Lesson
 import com.zhuzi.app.data.T3
 import com.zhuzi.app.data.Tones
 import com.zhuzi.app.data.Word
@@ -47,6 +51,7 @@ import com.zhuzi.app.data.charInfos
 import com.zhuzi.app.data.allLessons
 import com.zhuzi.app.ui.theme.Accent
 import com.zhuzi.app.ui.theme.Accent2
+import com.zhuzi.app.ui.theme.AccentFill
 import com.zhuzi.app.ui.theme.Ink
 import com.zhuzi.app.ui.theme.InkSoft
 import com.zhuzi.app.ui.theme.Kai
@@ -126,7 +131,7 @@ fun CharDetail(info: CharInfo, speak: (String) -> Unit) {
     val words = remember(info) { allLessons.flatMap { it.words }.filter { info.char in it.hanzi } }
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
-            .padding(start = 22.dp, end = 22.dp, bottom = 24.dp),
+            .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         StrokeOrderView(info.char.toString(), 170.dp)
@@ -307,7 +312,7 @@ fun GrammarCard(point: GrammarPoint, modifier: Modifier = Modifier, onClick: () 
             Text(point.pattern.get(lang) + "  ·  " + lessonName(point.lesson).lowercase(), fontSize = 12.sp,
                 color = InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 2.dp))
         }
-        Text("›", fontSize = 22.sp, color = InkSoft, modifier = Modifier.padding(start = 6.dp))
+        Chevron(Modifier.padding(start = 6.dp))
     }
 }
 
@@ -326,8 +331,8 @@ fun GrammarDetail(point: GrammarPoint, speak: (String) -> Unit, modifier: Modifi
                 .background(Brush.linearGradient(listOf(a, Accent2))).padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
             Column {
-                Text(tr("STRUCTURE", "PATTERN", "СТРУКТУРА"), color = Color.White.copy(alpha = 0.8f), fontSize = 11.sp,
-                    fontWeight = FontWeight.ExtraBold, letterSpacing = 1.4.sp)
+                Text(tr("Structure", "Pattern", "Структура"), color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold)
                 Text(point.pattern.get(lang), color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp,
                     modifier = Modifier.padding(top = 4.dp))
             }
@@ -367,9 +372,9 @@ fun GrammarDetail(point: GrammarPoint, speak: (String) -> Unit, modifier: Modifi
 fun GrammarSheetContent(point: GrammarPoint, speak: (String) -> Unit) {
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
-            .padding(start = 22.dp, end = 22.dp, bottom = 24.dp),
+            .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
     ) {
-        Text(lessonName(point.lesson).uppercase(), style = Kicker)
+        Text(lessonName(point.lesson), style = Kicker)
         GrammarDetail(point, speak, Modifier.padding(top = 4.dp))
     }
 }
@@ -381,7 +386,7 @@ fun CultureCard(text: T3, modifier: Modifier = Modifier) {
         modifier.fillMaxWidth().heightIn(min = 60.dp).softCard(RoundedCornerShape(16.dp)).padding(16.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        Box(Modifier.size(38.dp).clip(com.zhuzi.app.ui.theme.TileShape).background(com.zhuzi.app.ui.theme.AccentFill), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(38.dp).clip(TileShape).background(AccentFill), contentAlignment = Alignment.Center) {
             Text("知", fontFamily = Kai, fontSize = 22.sp, color = Color.White)
         }
         Spacer(Modifier.width(12.dp))
@@ -399,10 +404,10 @@ fun lessonTint(id: Int): Color = InkSoft
 
 /** Petit triangle « lecture », dessiné (pas de police). */
 @Composable
-fun PlayIcon(color: Color, size: androidx.compose.ui.unit.Dp) {
-    androidx.compose.foundation.Canvas(Modifier.size(size)) {
+fun PlayIcon(color: Color, size: Dp) {
+    Canvas(Modifier.size(size)) {
         val w = this.size.width
-        val p = androidx.compose.ui.graphics.Path().apply {
+        val p = Path().apply {
             moveTo(w * 0.2f, w * 0.1f); lineTo(w * 0.92f, w * 0.5f); lineTo(w * 0.2f, w * 0.9f); close()
         }
         drawPath(p, color)
@@ -411,10 +416,10 @@ fun PlayIcon(color: Color, size: androidx.compose.ui.unit.Dp) {
 
 /** « Leçon 3 » (HSK 1) ou « HSK 2 · Leçon 1 ». */
 @Composable
-fun lessonName(lesson: com.zhuzi.app.data.Lesson): String =
+fun lessonName(lesson: Lesson): String =
     (if (lesson.level > 1) "HSK ${lesson.level} · " else "") + tr("Leçon ", "Lesson ", "Урок ") + lesson.number
 
 /** Même chose à partir du numéro global (règles de grammaire). */
 @Composable
-fun lessonName(id: Int): String = com.zhuzi.app.data.allLessons.firstOrNull { it.id == id }?.let { lessonName(it) }
+fun lessonName(id: Int): String = allLessons.firstOrNull { it.id == id }?.let { lessonName(it) }
     ?: (tr("Leçon ", "Lesson ", "Урок ") + id)

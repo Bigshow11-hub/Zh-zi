@@ -25,7 +25,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -57,6 +60,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -73,6 +77,7 @@ import com.zhuzi.app.ui.theme.Mist
 import com.zhuzi.app.ui.theme.Paper
 import com.zhuzi.app.ui.theme.PillShape
 import com.zhuzi.app.ui.theme.Rule
+import com.zhuzi.app.ui.theme.SheetBg
 import com.zhuzi.app.ui.theme.SmoothShape
 import com.zhuzi.app.ui.theme.Thumb
 
@@ -81,6 +86,30 @@ import com.zhuzi.app.ui.theme.Thumb
  * grands titres qui laissent place à une barre compacte, sélecteur segmenté, panneaux à poignée.
  * Les couleurs du thème sont lues AVANT les blocs Canvas (jamais dedans).
  */
+
+// ---------------------------------------------------------------------------------------------
+// Largeur de lecture : sur tablette ou en paysage, le contenu ne s'étire pas sur tout l'écran.
+// ---------------------------------------------------------------------------------------------
+
+/** Largeur maximale du contenu (≈ 600 dp, centrée). Un téléphone tenu droit est plus étroit : rien ne change. */
+val ReadingWidth = 600.dp
+
+/**
+ * Centre son contenu dans une colonne d'au plus [ReadingWidth]. `propagateMinConstraints` : le contenu
+ * remplit toute la colonne (comme dans un `Surface`) ; sinon il garde des contraintes libres (comme dans un `Scaffold`).
+ */
+@Composable
+fun ReadingColumn(
+    modifier: Modifier = Modifier,
+    propagateMinConstraints: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    Box(modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        Box(Modifier.widthIn(max = ReadingWidth).fillMaxSize(), propagateMinConstraints = propagateMinConstraints) {
+            content()
+        }
+    }
+}
 
 // ---------------------------------------------------------------------------------------------
 // Pictogrammes : un seul trait (1,6 sur une grille de 24), bouts ronds, comme les SF Symbols.
@@ -166,7 +195,7 @@ fun ZIcon(
             }
             Glyph.GRID -> {
                 // La case d'écriture 田字格 : cadre doux, croix en tirets
-                val r = androidx.compose.ui.geometry.CornerRadius(3.4f * u, 3.4f * u)
+                val r = CornerRadius(3.4f * u, 3.4f * u)
                 if (filled) drawRoundRect(soft, p(4f, 4f), Size(16f * u, 16f * u), r)
                 drawRoundRect(tint, p(4f, 4f), Size(16f * u, 16f * u), r, style = stroke)
                 val dash = PathEffect.dashPathEffect(floatArrayOf(1.9f * u, 1.9f * u))
@@ -174,7 +203,7 @@ fun ZIcon(
                 drawLine(tint, p(6.6f, 12f), p(17.4f, 12f), stroke.width * 0.75f, pathEffect = dash)
             }
             Glyph.CHART -> {
-                val r = androidx.compose.ui.geometry.CornerRadius(1.2f * u, 1.2f * u)
+                val r = CornerRadius(1.2f * u, 1.2f * u)
                 listOf(Triple(4.4f, 13.2f, 3.6f), Triple(10.2f, 8.4f, 3.6f), Triple(16f, 4.4f, 3.6f)).forEach { (x, y, w) ->
                     if (filled) drawRoundRect(soft, p(x, y), Size(w * u, (19.6f - y) * u), r)
                     drawRoundRect(tint, p(x, y), Size(w * u, (19.6f - y) * u), r, style = stroke)
@@ -411,11 +440,13 @@ fun TopBar(back: String, right: String, onBack: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ZIcon(Glyph.CHEVRON_LEFT, accent, size = 24.dp, weight = 1.45f)
-            Text(back, color = accent, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+            Text(back, color = accent, style = MaterialTheme.typography.bodyLarge, maxLines = 1,
+                overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 160.dp))
         }
-        Spacer(Modifier.weight(1f))
+        // Le repère de droite prend la place qui reste et se termine par « … » s'il est trop long
         Text(right, color = InkSoft, style = MaterialTheme.typography.bodyMedium, maxLines = 1,
-            overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(start = 12.dp))
+            overflow = TextOverflow.Ellipsis, textAlign = TextAlign.End,
+            modifier = Modifier.weight(1f).padding(start = 12.dp))
     }
 }
 
@@ -497,7 +528,7 @@ fun ZhuziSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = if (grouped) com.zhuzi.app.ui.theme.SheetBg else Paper,
+        containerColor = if (grouped) SheetBg else Paper,
         contentColor = Ink,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         dragHandle = { Grabber() },
@@ -527,12 +558,12 @@ fun ActionLink(text: String, glyph: Glyph, onClick: () -> Unit, modifier: Modifi
 @Composable
 fun ToolbarButton(label: String, onClick: () -> Unit, content: @Composable () -> Unit) {
     Box(
-        Modifier.size(48.dp).clip(androidx.compose.foundation.shape.CircleShape)
+        Modifier.size(48.dp).clip(CircleShape)
             .clickable(role = Role.Button, onClickLabel = null, onClick = onClick)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
-        Box(Modifier.size(40.dp).clip(androidx.compose.foundation.shape.CircleShape).background(Paper),
+        Box(Modifier.size(40.dp).clip(CircleShape).background(Paper),
             contentAlignment = Alignment.Center) { content() }
     }
 }
